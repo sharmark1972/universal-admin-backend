@@ -1,0 +1,243 @@
+# Citation Style Guide
+
+## Overview
+This guide provides comprehensive examples for major citation styles used in academic publishing. Always check journal requirements for specific formatting preferences.
+
+## APA Style (7th Edition)
+
+### In-Text Citations
+**Parenthetical Citation:**
+- (Smith, 2023)
+- (Smith & Johnson, 2023)
+- (Smith et al., 2023)
+- (Smith, 2023, p. 45)
+
+**Narrative Citation:**
+- Smith (2023) found that...
+- Smith and Johnson (2023) reported...
+- Smith et al. (2023) demonstrated...
+
+### Reference List Examples
+
+**Journal Article:**
+Smith, J. A., & Johnson, B. K. (2023). Title of the article. *Journal Name, 45*(3), 123-145. https://doi.org/10.1000/abcd123
+
+**Book:**
+Johnson, B. K. (2023). *Title of the book* (2nd ed.). Publisher Name. https://doi.org/10.1000/efgh456
+
+**Book Chapter:**
+Smith, J. A. (2023). Title of the chapter. In B. K. Johnson (Ed.), *Book title* (pp. 45-67). Publisher Name.
+
+**Website:**
+Smith, J. A. (2023, March 15). *Title of webpage*. Website Name. https://www.example.com/page
+
+**Conference Paper:**
+Smith, J. A., & Johnson, B. K. (2023, March). Title of paper. *Proceedings of the Conference Name* (pp. 123-145). https://doi.org/10.1000/ijkl789
+
+## MLA Style (9th Edition)
+
+### In-Text Citations
+- (Smith 123)
+- (Smith and Johnson 123)
+- (Smith et al. 123)
+
+### Works Cited Examples
+
+**Journal Article:**
+Smith, John A., and Barbara K. Johnson. "Title of the Article." *Journal Name*, vol. 45, no. 3, 2023, pp. 123-45. *JSTOR*, doi:10.1000/abcd123.
+
+**Book:**
+Johnson, Barbara K. *Title of the Book*. 2nd ed., Publisher Name, 2023.
+
+**Book Chapter:**
+Smith, John A. "Title of the Chapter." *Book Title*, edited by Barbara K. Johnson, Publisher Name, 2023, pp. 45-67.
+
+**Website:**
+Smith, John A. "Title of Webpage." *Website Name*, 15 Mar. 2023, www.example.com/page.
+
+## Chicago Style (17th Edition)
+
+### Notes and Bibliography
+
+**Footnote:**
+1. John A. Smith and Barbara K. Johnson, "Title of the Article," *Journal Name* 45, no. 3 (2023): 123-45, https://doi.org/10.1000/abcd123.
+
+**Bibliography:**
+Smith, John A., and Barbara K. Johnson. "Title of the Article." *Journal Name* 45, no. 3 (2023): 123-45. https://doi.org/10.1000/abcd123.
+
+### Author-Date
+
+**In-Text Citation:**
+(Smith and Johnson 2023, 123)
+
+**Reference List:**
+Smith, John A., and Barbara K. Johnson. 2023. "Title of the Article." *Journal Name* 45 (3): 123-45. https://doi.org/10.1000/abcd123.
+
+## Vancouver Style
+
+### In-Text Citations
+- Numbered superscript: Smith¹
+- Numbered in parentheses: (1)
+
+### Reference List Examples
+
+**Journal Article:**
+1. Smith JA, Johnson BK. Title of the article. J Name. 2023;45(3):123-45. doi:10.1000/abcd123.
+
+**Book:**
+2. Johnson BK. Title of the book. 2nd ed. City: Publisher Name; 2023.
+
+**Book Chapter:**
+3. Smith JA. Title of the chapter. In: Johnson BK, editor. Book title. City: Publisher Name; 2023. p. 45-67.
+
+## Harvard Style
+
+### In-Text Citations
+- (Smith 2023, p. 45)
+- (Smith and Johnson 2023)
+- (Smith et al. 2023)
+
+### Reference List Examples
+
+**Journal Article:**
+Smith, J.A. and Johnson, B.K. (2023) 'Title of the article', *Journal Name*, 45(3), pp. 123-145. doi: 10.1000/abcd123.
+
+**Book:**
+Johnson, B.K. (2023) *Title of the book*. 2nd edn. City: Publisher Name.
+
+## Digital Object Identifiers (DOIs)
+
+### DOI Format
+- Always include DOI when available
+- Format: https://doi.org/10.1000/abcd123
+- Do not use "doi:" prefix in APA 7th edition
+
+### DOI Resolution
+- All DOIs should resolve to the correct resource
+- Test DOIs before submission
+- Use official DOI resolver when in doubt
+
+## Common Citation Elements
+
+### Authors
+- List all authors up to the style limit
+- Use "et al." when exceeding limits
+- Include initials and surnames consistently
+- Use institutional authors when appropriate
+
+### Titles
+- Use sentence case for article titles (APA, Vancouver)
+- Use title case for article titles (MLA, Chicago)
+- Italicize journal and book titles
+- Include subtitle information
+
+### Publication Information
+- Volume numbers in italics
+- Issue numbers in parentheses
+- Page ranges with full numbers
+- Include publisher location when required
+
+## Electronic Sources
+
+### Online Articles
+- Include DOI when available
+- Include URL when DOI not available
+- Include access date for stable URLs
+- Note format when applicable
+
+### Databases
+- Cite the original source, not the database
+- Include database name when required
+- Note accession numbers when relevant
+
+### Social Media
+- Include author and handle
+- Include post date and time
+- Include platform name
+- Include URL when available
+
+## Special Cases
+
+### Multiple Works by Same Author
+- Arrange chronologically
+- Use a, b, c for same year
+- Include full dates for disambiguation
+
+### Translated Works
+- Include original author
+- Include translator information
+- Include original publication date
+- Note translation in citation
+
+### Government Documents
+- Use agency as author
+- Include report numbers
+- Include publication information
+- Note series when applicable
+
+## Citation Management Tools
+
+### Recommended Software
+- EndNote
+- Mendeley
+- Zotero
+- RefWorks
+
+### Best Practices
+- Verify automatic citations
+- Update style guides regularly
+- Backup citation libraries
+- Use consistent formatting
+
+## Avoiding Plagiarism
+
+### Proper Attribution
+- Credit all sources used
+- Distinguish direct quotes from paraphrases
+- Include page numbers for direct quotes
+- Cite ideas, not just words
+
+### Common Mistakes
+- Incomplete citations
+- Missing page numbers
+- Incorrect formatting
+- Failure to cite all sources
+
+## Journal-Specific Requirements
+
+### Checking Requirements
+- Read author guidelines carefully
+- Follow specific formatting rules
+- Use required citation style
+- Include all required elements
+
+### Style Variations
+- Journal-specific modifications
+- Field-specific conventions
+- Regional preferences
+- Historical considerations
+
+## Resources and Support
+
+### Online Guides
+- Purdue OWL
+- Citation Machine
+- BibMe
+- EasyBib
+
+### Style Manuals
+- Publication Manual of the APA
+- MLA Handbook
+- Chicago Manual of Style
+- ICMJE Recommendations
+
+### Getting Help
+- University writing centers
+- Library research services
+- Editorial assistance
+- Peer review feedback
+
+---
+**Last Updated:** [Current Date]
+**Version:** 1.0
+**Review Date:** [Next Review Date]

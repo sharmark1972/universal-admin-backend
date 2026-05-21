@@ -1,0 +1,41 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ijrcam.com/sitemap.xml
+Sitemap: https://ijrcam.com/api/sitemap-papers.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Block admin areas
+Disallow: /admin/
+Disallow: /api/auth/
+Disallow: /api/admin/
+
+# Block search and filter URLs
+Disallow: /*?search=*
+Disallow: /*?filter=*
+Disallow: /*?sort=*
+
+# Block temporary and development files
+Disallow: /*.tmp
+Disallow: /*.log
+Disallow: /temp/
+Disallow: /dev/
+
+# Allow academic crawlers
+User-agent: Googlebot-Scholar
+Allow: /papers/
+Allow: /authors/
+Allow: /api/papers/*/pdf/public
+Crawl-delay: 0.5
+
+User-agent: bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: SemanticScholarBot
+Allow: /papers/
+Allow: /authors/
+Crawl-delay: 0.5
