@@ -3,7 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateScopusPDF } from '@/lib/generateScopusPDF';
-import { uploadToR2 } from '@/lib/r2-upload';
+import path from 'path';
+import fs from 'fs/promises';
 
 export async function POST(
   request: NextRequest,
@@ -80,21 +81,26 @@ export async function POST(
     // Generate PDF
     const pdfBuffer = await generateScopusPDF(paperData);
 
+    // Save PDF to file system
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'papers');
+    await fs.mkdir(uploadsDir, { recursive: true });
+
     const filename = `${paperId}-regenerated-${Date.now()}.pdf`;
-    const filePath = await uploadToR2(pdfBuffer, filename, 'papers', 'application/pdf');
+    const filepath = path.join(uploadsDir, filename);
+    await fs.writeFile(filepath, pdfBuffer);
 
     // Update paper with new file path
     await prisma.paper.update({
       where: { id: paperId },
       data: {
-        filePath
+        filePath: `/uploads/papers/${filename}`
       }
     });
 
     return NextResponse.json({
       success: true,
       message: 'Paper regenerated successfully',
-      filePath
+      filePath: `/uploads/papers/${filename}`
     });
   } catch (error) {
     console.error('Error regenerating paper:', error);

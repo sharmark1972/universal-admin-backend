@@ -12,8 +12,7 @@ const s3Client = new AWS.S3({
 export async function uploadToR2(
   fileBuffer: Buffer,
   fileName: string,
-  folder: string = 'uploads',
-  contentType: string = 'application/octet-stream'
+  folder: string = 'uploads'
 ): Promise<string> {
   try {
     const key = `${folder}/${Date.now()}-${fileName}`;
@@ -22,7 +21,7 @@ export async function uploadToR2(
       Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!,
       Key: key,
       Body: fileBuffer,
-      ContentType: contentType,
+      ContentType: 'application/octet-stream',
     };
 
     await s3Client.putObject(params).promise();

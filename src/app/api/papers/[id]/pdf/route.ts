@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
-import { stat } from 'fs/promises';
+import { buildStoredFileResponse } from '@/lib/file-storage';
 
 export async function GET(
   request: NextRequest,
@@ -41,42 +39,12 @@ export async function GET(
       );
     }
 
-    // Construct the file path
-    let filePath: string;
-    if (paper.filePath.startsWith('/uploads/')) {
-      filePath = join(process.cwd(), 'public', paper.filePath);
-    } else if (paper.filePath.startsWith('/')) {
-      filePath = join(process.cwd(), 'public', paper.filePath);
-    } else {
-      filePath = join(process.cwd(), 'public', 'uploads', paper.filePath);
-    }
-
-    console.log('Resolved file path:', filePath);
-
-    // Check if file exists
-    let fileStats;
-    try {
-      fileStats = await stat(filePath);
-    } catch (err) {
-      console.error('PDF file not found at:', filePath, 'Error:', err);
-      return NextResponse.json(
-        { error: 'PDF file not found on server', path: filePath },
-        { status: 404 }
-      );
-    }
-
-    // Read the file
-    const fileBuffer = await readFile(filePath);
-    console.log('Read PDF file, size:', fileBuffer.length);
-
-    // Return the file with proper headers
-    return new NextResponse(fileBuffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Length': fileBuffer.length.toString(),
-        'Content-Disposition': `inline; filename="${encodeURIComponent(paper.title)}.pdf"`,
-        'Cache-Control': 'public, max-age=3600',
-        'Access-Control-Allow-Origin': '*',
+    return await buildStoredFileResponse(paper.filePath, {
+      filename: `${encodeURIComponent(paper.title)}.pdf`,
+      disposition: 'inline',
+      cacheControl: 'public, max-age=3600',
+      extraHeaders: {
+        'Access-Control-Allow-Origin': '*'
       }
     });
   } catch (error) {

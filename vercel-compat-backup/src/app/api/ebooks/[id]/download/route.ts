@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { buildStoredFileResponse } from '@/lib/file-storage';
+import { join } from 'path';
+import { readFile } from 'fs/promises';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,9 +32,18 @@ export async function GET(
     // For now, allow all public ebooks and logged-in users for other types
     // In a real implementation, you'd check user session and purchase status here
 
-    return await buildStoredFileResponse(ebook.file_path, {
-      filename: `${ebook.title}.pdf`,
-      disposition: 'attachment'
+    // Read the PDF file
+    const fullPath = join(process.cwd(), 'public', ebook.file_path);
+    const fileBuffer = await readFile(fullPath);
+
+    // Set appropriate headers
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/pdf');
+    headers.set('Content-Disposition', `attachment; filename="${ebook.title}.pdf"`);
+
+    return new NextResponse(new Uint8Array(fileBuffer), {
+      status: 200,
+      headers,
     });
   } catch (error) {
     console.error('Error downloading ebook:', error);

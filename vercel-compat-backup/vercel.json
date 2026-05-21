@@ -1,0 +1,14 @@
+{
+  "installCommand": "yarn install --ignore-optional",
+  "buildCommand": "yarn build",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/((?!uploads|_next/static|_next/image|favicon.ico).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

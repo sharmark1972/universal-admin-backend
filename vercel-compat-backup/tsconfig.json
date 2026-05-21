@@ -23,7 +23,8 @@
       ]
     },
     "types": [
-      "node"
+      "node",
+      "express"
     ],
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -33,12 +34,11 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true,
-    "allowJs": true,
-    "incremental": true
+    "strictNullChecks": true
   },
   "include": [
     "src",
+    "api",
     ".next/types/**/*.ts"
   ],
   "exclude": [

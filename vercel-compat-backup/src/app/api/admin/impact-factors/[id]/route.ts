@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { uploadToR2 } from '@/lib/r2-upload';
 
 export async function GET(
   request: NextRequest,
@@ -88,8 +87,22 @@ export async function PUT(
     if (certificateFile) {
       const bytes = await certificateFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const filename = `impact_factor_${year}_${Date.now()}.pdf`;
-      certificatePath = await uploadToR2(buffer, filename, 'certificates', certificateFile.type || 'application/pdf');
+      
+      // Create uploads directory if it doesn't exist
+      const { writeFile, mkdir } = await import('fs/promises');
+      const path = await import('path');
+      
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'certificates');
+      await mkdir(uploadsDir, { recursive: true });
+      
+      // Generate unique filename
+      const timestamp = Date.now();
+      const filename = `impact_factor_${year}_${timestamp}.pdf`;
+      certificatePath = `/uploads/certificates/${filename}`;
+      
+      // Save file
+      const filePath = path.join(uploadsDir, filename);
+      await writeFile(filePath, buffer);
     }
 
     const impactFactor = await prisma.impactFactor.update({

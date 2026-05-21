@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { uploadToR2, deleteFromR2 } from '@/lib/r2-upload';
-import { isRemoteFilePath } from '@/lib/file-storage';
+import { writeFile, mkdir, unlink } from 'fs/promises';
+import { join } from 'path';
+import { existsSync } from 'fs';
 
 export const dynamic = 'force-dynamic';
 
@@ -164,34 +165,54 @@ export async function PUT(
       }
     }
 
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'ebooks');
+    if (!existsSync(uploadsDir)) {
+      await mkdir(uploadsDir, { recursive: true });
+    }
+
     const timestamp = Date.now();
     let relativePdfPath = existingEbook.file_path;
     let relativeCoverPath = existingEbook.coverImage;
 
     // Save new PDF file if provided
     if (pdfFile) {
-      if (isRemoteFilePath(existingEbook.file_path)) {
-        await deleteFromR2(existingEbook.file_path);
+      // Delete old PDF file
+      if (existingEbook.file_path) {
+        const oldPdfPath = join(process.cwd(), 'public', existingEbook.file_path);
+        if (existsSync(oldPdfPath)) {
+          await unlink(oldPdfPath);
+        }
       }
 
       const pdfExtension = pdfFile.name.split('.').pop();
       const pdfFileName = `ebook_${timestamp}.${pdfExtension}`;
+      const pdfFilePath = join(uploadsDir, pdfFileName);
+      relativePdfPath = `/uploads/ebooks/${pdfFileName}`;
+
       const pdfBytes = await pdfFile.arrayBuffer();
       const pdfBuffer = Buffer.from(pdfBytes);
-      relativePdfPath = await uploadToR2(pdfBuffer, pdfFileName, 'ebooks', pdfFile.type || 'application/pdf');
+      await writeFile(pdfFilePath, pdfBuffer);
     }
 
     // Save new cover image if provided
     if (coverFile) {
-      if (isRemoteFilePath(existingEbook.coverImage)) {
-        await deleteFromR2(existingEbook.coverImage);
+      // Delete old cover file
+      if (existingEbook.coverImage) {
+        const oldCoverPath = join(process.cwd(), 'public', existingEbook.coverImage);
+        if (existsSync(oldCoverPath)) {
+          await unlink(oldCoverPath);
+        }
       }
 
       const coverExtension = coverFile.name.split('.').pop();
       const coverFileName = `ebook_cover_${timestamp}.${coverExtension}`;
+      const coverFilePath = join(uploadsDir, coverFileName);
+      relativeCoverPath = `/uploads/ebooks/${coverFileName}`;
+
       const coverBytes = await coverFile.arrayBuffer();
       const coverBuffer = Buffer.from(coverBytes);
-      relativeCoverPath = await uploadToR2(coverBuffer, coverFileName, 'ebooks/covers', coverFile.type || 'application/octet-stream');
+      await writeFile(coverFilePath, coverBuffer);
     }
 
     // Update ebook record in database
@@ -264,12 +285,19 @@ export async function DELETE(
       return NextResponse.json({ error: 'Ebook not found' }, { status: 404 });
     }
 
-    if (isRemoteFilePath(existingEbook.file_path)) {
-      await deleteFromR2(existingEbook.file_path);
+    // Delete associated files
+    if (existingEbook.file_path) {
+      const pdfPath = join(process.cwd(), 'public', existingEbook.file_path);
+      if (existsSync(pdfPath)) {
+        await unlink(pdfPath);
+      }
     }
 
-    if (isRemoteFilePath(existingEbook.coverImage)) {
-      await deleteFromR2(existingEbook.coverImage);
+    if (existingEbook.coverImage) {
+      const coverPath = join(process.cwd(), 'public', existingEbook.coverImage);
+      if (existsSync(coverPath)) {
+        await unlink(coverPath);
+      }
     }
 
     // Delete ebook record (this will cascade delete related records)

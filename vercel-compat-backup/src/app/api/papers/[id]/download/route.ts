@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { buildStoredFileResponse, getFileNameFromPath } from '@/lib/file-storage';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+import { stat } from 'fs/promises';
 
 export async function GET(
   request: NextRequest,
@@ -58,6 +60,25 @@ export async function GET(
       );
     }
 
+    // Check if file exists
+    // Handle file path - if it starts with /uploads/, prepend 'public' to the path
+    let filePath: string;
+    if (paper.filePath.startsWith('/uploads/')) {
+      filePath = join(process.cwd(), 'public', paper.filePath);
+    } else {
+      filePath = join(process.cwd(), paper.filePath);
+    }
+    
+    try {
+      await stat(filePath);
+    } catch {
+      console.error('File not found:', filePath);
+      return NextResponse.json(
+        { error: 'File not found on server' },
+        { status: 404 }
+      );
+    }
+
     // Record the download
     // First verify the user exists in the database
     if (!session.user.id) {
@@ -96,15 +117,41 @@ export async function GET(
       }
     });
 
-    return await buildStoredFileResponse(paper.filePath, {
-      filename: getFileNameFromPath(paper.filePath),
-      disposition: 'attachment',
-      extraHeaders: {
+    // Read and return the file
+    const fileBuffer = await readFile(filePath);
+    
+    // Determine content type based on file extension
+    const fileName = paper.filePath.split('/').pop() || 'document';
+    const fileExtension = fileName.split('.').pop()?.toLowerCase();
+    let contentType = 'application/octet-stream';
+    
+    switch (fileExtension) {
+      case 'pdf':
+        contentType = 'application/pdf';
+        break;
+      case 'doc':
+        contentType = 'application/msword';
+        break;
+      case 'docx':
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        break;
+    }
+
+    // Create response with file
+    const response = new NextResponse(fileBuffer as BodyInit, {
+      status: 200,
+      headers: {
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',
+        // Add reference to public PDF URL for search engines
         'X-Public-PDF-URL': `/api/papers/${paperId}/pdf/public`
       }
     });
+
+    return response;
 
   } catch (error) {
     console.error('Error downloading paper:', error);

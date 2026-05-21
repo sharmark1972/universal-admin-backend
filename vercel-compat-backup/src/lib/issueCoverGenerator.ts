@@ -1,4 +1,5 @@
-import { uploadToR2 } from './r2-upload';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface IssueCoverOptions {
   volume: string;
@@ -94,8 +95,18 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
 export async function generateIssueCover(options: IssueCoverOptions): Promise<string> {
   const svgContent = generateIssueCoverSVG(options);
   const filename = `issue_cover_${Date.now()}.svg`;
-
-  return uploadToR2(Buffer.from(svgContent, 'utf-8'), filename, 'covers', 'image/svg+xml');
+  const filepath = path.join(process.cwd(), 'public', 'uploads', 'covers', filename);
+  
+  // Ensure directory exists
+  const dir = path.dirname(filepath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  
+  // Write SVG file
+  fs.writeFileSync(filepath, svgContent, 'utf-8');
+  
+  return `/uploads/covers/${filename}`;
 }
 
 export function generateIssueCoverFilename(issueId: string): string {

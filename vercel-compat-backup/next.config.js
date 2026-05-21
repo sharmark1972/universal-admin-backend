@@ -2,15 +2,6 @@
 const nextConfig = {
   // Required for react-pdf compatibility with Next.js < v15
   swcMinify: false,
-
-  // Keep Vercel builds focused on compilation; type/lint checks can exceed
-  // worker memory on this legacy codebase and should run separately.
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   
   // Image optimization for Core Web Vitals
   images: {

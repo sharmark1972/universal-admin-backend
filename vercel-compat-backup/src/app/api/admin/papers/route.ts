@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
+import { existsSync } from 'fs';
 import { generateScopusPDF } from '@/lib/generateScopusPDF';
-import { uploadToR2 } from '@/lib/r2-upload';
 
 export const dynamic = 'force-dynamic';
 
@@ -307,6 +309,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'papers');
+    if (!existsSync(uploadsDir)) {
+      await mkdir(uploadsDir, { recursive: true });
+    }
+
     let relativeFilePath: string;
 
     if (generatePDF) {
@@ -349,8 +357,15 @@ export async function POST(request: NextRequest) {
         };
 
         const pdfBuffer = await generateScopusPDF(pdfData);
+        
+        // Generate unique filename for generated PDF
+        const timestamp = Date.now();
+        const fileName = `paper_${timestamp}_generated.pdf`;
+        const filePath = join(uploadsDir, fileName);
+        relativeFilePath = `/uploads/papers/${fileName}`;
 
-        relativeFilePath = await uploadToR2(pdfBuffer, `paper_${Date.now()}_generated.pdf`, 'papers', 'application/pdf');
+        // Save generated PDF
+        await writeFile(filePath, pdfBuffer);
       } catch (pdfError) {
         console.error('Error generating PDF:', pdfError);
         return NextResponse.json(
@@ -363,9 +378,13 @@ export async function POST(request: NextRequest) {
       const timestamp = Date.now();
       const fileExtension = file.name.split('.').pop();
       const fileName = `paper_${timestamp}.${fileExtension}`;
+      const filePath = join(uploadsDir, fileName);
+      relativeFilePath = `/uploads/papers/${fileName}`;
+
+      // Save file
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      relativeFilePath = await uploadToR2(buffer, fileName, 'papers', file.type || 'application/octet-stream');
+      await writeFile(filePath, buffer);
     }
 
     // Validate issue if provided
