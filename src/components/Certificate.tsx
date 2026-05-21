@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Award, Download, Calendar, Shield, Star, BookOpen, GraduationCap } from 'lucide-react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { Award, Calendar, Shield, Star, BookOpen, GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 import { ISSN_PRINT, ISSN_ONLINE, type CertificateProps } from '@/types/certificate';
 
@@ -28,7 +26,6 @@ export default function Certificate({
   customDate,
   template = 'classic',
 }: CertificateProps) {
-  const [isGenerating, setIsGenerating] = useState(false);
   const certificateRef = useRef<HTMLDivElement>(null);
 
   const formatDate = (dateString: string) => {
@@ -72,59 +69,6 @@ export default function Certificate({
         return ``;
       default:
         return 'The International Journal of Academic Research in Commerce & Management (IJARCM) hereby presents this certificate in formal recognition of distinguished scholarly achievement and contribution to academic excellence.';
-    }
-  };
-
-  const downloadPDF = async () => {
-    if (!certificateRef.current) return;
-
-    setIsGenerating(true);
-    try {
-      const canvas = await html2canvas(certificateRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        allowTaint: true,
-        logging: false,
-        proxy: undefined,
-        imageTimeout: 0,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
-        compress: true,
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth(); // 297mm
-      const pageHeight = pdf.internal.pageSize.getHeight(); // 210mm
-      
-      // Calculate image dimensions
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height / canvas.width) * imgWidth;
-      
-      // If content is taller than page, scale to fit
-      let finalWidth = imgWidth;
-      let finalHeight = imgHeight;
-      
-      if (imgHeight > pageHeight) {
-        const ratio = pageHeight / imgHeight;
-        finalWidth = imgWidth * ratio;
-        finalHeight = pageHeight;
-      }
-      
-      // Center horizontally if needed
-      const xOffset = (pageWidth - finalWidth) / 2;
-      
-      pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, finalHeight);
-      pdf.save(`certificate-${certificateNumber}.pdf`);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Error generating certificate. Please try again.');
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -705,25 +649,6 @@ export default function Certificate({
         </div>
       </div>
 
-      {/* Download Button */}
-      {showDownload && !isPreview && (
-        <div className="mt-8 text-center">
-          <button
-            onClick={downloadPDF}
-            disabled={isGenerating}
-            className="inline-flex items-center gap-3 px-8 py-4 text-white rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-            style={{
-              background: templateStyles.headerGradient,
-              border: `2px solid ${templateStyles.goldAccent}`,
-            }}
-          >
-            <Download className="w-5 h-5" />
-            <span className="font-semibold tracking-wide">
-              {isGenerating ? 'Generating Certificate...' : 'Download Certificate (PDF)'}
-            </span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
