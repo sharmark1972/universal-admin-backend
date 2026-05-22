@@ -4,13 +4,32 @@ import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+function getStripeConfig() {
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+  if (!apiKey || !endpointSecret) {
+    return null;
+  }
+
+  return {
+    stripe: new Stripe(apiKey, {
+      apiVersion: '2025-08-27.basil',
+    }),
+    endpointSecret,
+  };
+}
 
 export async function POST(request: NextRequest) {
+  const stripeConfig = getStripeConfig();
+
+  if (!stripeConfig) {
+    return NextResponse.json(
+      { error: 'Stripe configuration is missing' },
+      { status: 500 }
+    );
+  }
+
   const body = await request.text();
   const headersList = headers();
   const sig = headersList.get('stripe-signature')!;
@@ -18,7 +37,7 @@ export async function POST(request: NextRequest) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+    event = stripeConfig.stripe.webhooks.constructEvent(body, sig, stripeConfig.endpointSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return NextResponse.json(
