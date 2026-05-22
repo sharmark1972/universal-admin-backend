@@ -1,8 +1,8 @@
 {
-  "watch": ["api"],
+  "watch": ["legacy-api"],
   "ext": "ts,mts,js,json",
-  "ignore": ["api/dist/*"],
-  "exec": "tsx api/server.ts",
+  "ignore": ["legacy-api/dist/*"],
+  "exec": "tsx legacy-api/server.ts",
   "env": {
     "NODE_ENV": "development"
   },

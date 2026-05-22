@@ -2,7 +2,7 @@ node_modules
 build
 dist
 .git
-api
+legacy-api
 .trae
 .log
 .figma
