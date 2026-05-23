@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react';
 import { Award, Calendar, Shield, Star, BookOpen, GraduationCap } from 'lucide-react';
-import Image from 'next/image';
 import { ISSN_PRINT, ISSN_ONLINE, type CertificateProps } from '@/types/certificate';
 
 // Managing Director Signature - use the PNG asset that exists in public/uploads/signatures
@@ -595,11 +594,9 @@ export default function Certificate({
             {/* Signature Section */}
             <div className="text-right">
               <div className="w-36 flex flex-col items-end">
-                <Image
+                <img
                   src={MANAGING_DIRECTOR_SIGNATURE}
                   alt="Authorized Signature"
-                  width={140}
-                  height={50}
                   className="max-h-14 max-w-full object-contain mb-1"
                   style={{ filter: 'contrast(1.1)' }}
                 />
