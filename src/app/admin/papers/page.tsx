@@ -100,7 +100,7 @@ export default function AdminPapersPage() {
   const [assigning, setAssigning] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin()) {
       redirect('/dashboard');
     }
   }, [isAdmin]);
