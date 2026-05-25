@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Bachelor of Computer Applications — Certificate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink:        #1a2238;        /* deep navy */
+    --ink-soft:   #2c3554;
+    --paper:      #fbf6ea;        /* warm cream */
+    --paper-edge: #f1e7cf;
+    --gold:       #b08433;
+    --gold-deep:  #8a6422;
+    --gold-light: #d8b25a;
+    --crimson:    #7a1b1b;
+    --rule:       #b08433;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #2a2a2a;
+    font-family: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+  }
+
+  /* Page sized like an A4 landscape sheet at ~96dpi */
+  .page {
+    width: 1123px;
+    height: 794px;
+    margin: 32px auto;
+    position: relative;
+    background:
+      radial-gradient(ellipse at top left, #fffaee 0%, transparent 55%),
+      radial-gradient(ellipse at bottom right, #f6ecd2 0%, transparent 55%),
+      linear-gradient(180deg, #fbf6ea 0%, #f5ecd4 100%);
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.45),
+      0 8px 20px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+
+  /* paper texture overlay */
+  .page::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(176,132,51,0.04) 0 1px, transparent 2px),
+      radial-gradient(circle at 70% 60%, rgba(122,27,27,0.03) 0 1px, transparent 2px),
+      radial-gradient(circle at 40% 80%, rgba(0,0,0,0.025) 0 1px, transparent 2px);
+    background-size: 7px 7px, 11px 11px, 5px 5px;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+
+  /* deckle / aged edges */
+  .page::after {
+    content: "";
+    position: absolute; inset: 0;
+    box-shadow:
+      inset 0 0 60px rgba(176,132,51,0.18),
+      inset 0 0 180px rgba(122,27,27,0.06);
+    pointer-events: none;
+  }
+
+  /* ====== Ornate border system ====== */
+  .border-outer {
+    position: absolute;
+    inset: 28px;
+    border: 2px solid var(--gold);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .border-inner {
+    position: absolute;
+    inset: 40px;
+    border: 1px solid var(--gold);
+    pointer-events: none;
+  }
+  .border-fine {
+    position: absolute;
+    inset: 46px;
+    border: 1px solid rgba(176,132,51,0.45);
+    pointer-events: none;
+  }
+
+  /* Greek-key style ornamental band — sits BETWEEN the corners */
+  .ornament-band {
+    position: absolute;
+    left: 150px; right: 150px;
+    height: 18px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='18' viewBox='0 0 60 18'><g fill='none' stroke='%23b08433' stroke-width='1.2'><path d='M2 9 H58'/><path d='M6 9 V3 H14 V9'/><path d='M22 9 V15 H30 V9'/><path d='M38 9 V3 H46 V9'/><path d='M54 9 V15 H60'/><circle cx='2' cy='9' r='1' fill='%23b08433'/><circle cx='58' cy='9' r='1' fill='%23b08433'/></g></svg>");
+    background-repeat: repeat-x;
+    background-size: 60px 18px;
+    opacity: 0.85;
+  }
+  .ornament-band.top    { top: 64px; }
+  .ornament-band.bottom { bottom: 64px; }
+
+  /* Corner flourishes */
+  .corner {
+    position: absolute;
+    width: 90px; height: 90px;
+    pointer-events: none;
+  }
+  .corner svg { width: 100%; height: 100%; display: block; }
+  .corner.tl { top: 38px; left: 38px; }
+  .corner.tr { top: 38px; right: 38px; transform: scaleX(-1); }
+  .corner.bl { bottom: 38px; left: 38px; transform: scaleY(-1); }
+  .corner.br { bottom: 38px; right: 38px; transform: scale(-1, -1); }
+
+  /* ====== Content layout ====== */
+  .content {
+    position: absolute;
+    inset: 112px 90px 250px 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Header */
+  .crest-wrap {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .crest { width: 64px; height: 64px; flex-shrink: 0; }
+  .university {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .uni-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    line-height: 1;
+    margin: 0;
+  }
+  .uni-tag {
+    margin-top: 6px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.28em;
+    color: var(--gold-deep);
+    text-transform: uppercase;
+  }
+
+  .divider {
+    margin: 10px 0 2px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--gold);
+  }
+  .divider .rule {
+    width: 140px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+  }
+  .divider .dia {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    transform: rotate(45deg);
+  }
+
+  /* Title block */
+  .title-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.45em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    margin: 6px 0 2px;
+  }
+  .title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: 0.06em;
+    color: var(--crimson);
+    margin: 2px 0 0;
+    line-height: 1.05;
+  }
+  .title-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 4px 0 0;
+  }
+
+  /* Body copy */
+  .body {
+    margin-top: 10px;
+    max-width: 820px;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .body .preamble {
+    font-style: italic;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* Recipient name */
+  .recipient {
+    margin: 6px 0 2px;
+    font-family: 'Great Vibes', 'Cormorant Garamond', cursive;
+    font-size: 52px;
+    color: var(--crimson);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+  }
+  .recipient-rule {
+    width: 520px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 2px auto 8px;
+  }
+
+  /* Degree statement */
+  .degree-statement {
+    margin-top: 2px;
+    font-size: 15px;
+    line-height: 1.35;
+    color: var(--ink);
+    max-width: 780px;
+  }
+  .degree-name {
+    display: block;
+    margin-top: 6px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+    color: var(--crimson);
+  }
+  .degree-name small {
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  .with-honors {
+    margin-top: 2px;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--gold-deep);
+    letter-spacing: 0.05em;
+  }
+
+  /* Footer: date / signatures / seal — sits clear of bottom ornament band */
+  .footer {
+    position: absolute;
+    left: 150px; right: 150px;
+    bottom: 90px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 30px;
+  }
+
+  /* Awarded-on date — own absolute slot, in the strip ABOVE the footer */
+  .awarded-on {
+    position: absolute;
+    left: 150px; right: 150px;
+    bottom: 232px;
+    text-align: center;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+  .awarded-on strong {
+    font-style: normal;
+    color: var(--crimson);
+    font-weight: 600;
+  }
+  .sig-block {
+    text-align: center;
+  }
+  .sig-line {
+    border-top: 1px solid var(--ink);
+    width: 220px;
+    margin: 0 auto 6px;
+  }
+  .sig-name {
+    font-family: 'Great Vibes', cursive;
+    font-size: 30px;
+    color: var(--ink);
+    line-height: 1;
+    margin: 0 0 6px;
+    transform: translateY(2px);
+  }
+  .sig-role {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .sig-role small {
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Seal */
+  .seal {
+    width: 118px; height: 118px;
+    position: relative;
+  }
+  .seal svg { width: 100%; height: 100%; }
+
+  /* Meta row — placed between the top ornament band and the crest, clear of corners */
+  .meta-row {
+    position: absolute;
+    top: 100px;
+    left: 160px; right: 160px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--gold-deep);
+    text-transform: uppercase;
+  }
+
+  /* Print */
+  @page { size: A4 landscape; margin: 0; }
+  @media print {
+    html, body { background: white; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      width: 100vw; height: 100vh;
+    }
+  }
+
+  /* Screen scale-down for narrow viewports */
+  @media (max-width: 1180px) {
+    body { display: flex; justify-content: center; }
+    .page { transform: scale(0.86); transform-origin: top center; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page" data-screen-label="01 Certificate">
+
+  <!-- Decorative frame -->
+  <div class="border-outer"></div>
+  <div class="border-inner"></div>
+  <div class="border-fine"></div>
+  <div class="ornament-band top"></div>
+  <div class="ornament-band bottom"></div>
+
+  <!-- Corner flourishes -->
+  <div class="corner tl">
+    <svg viewBox="0 0 110 110">
+      <g fill="none" stroke="#b08433" stroke-width="1.2" stroke-linecap="round">
+        <path d="M10 60 C 10 30, 30 10, 60 10" />
+        <path d="M18 60 C 18 34, 34 18, 60 18" opacity="0.6"/>
+        <path d="M28 28 Q 40 22, 52 28 Q 46 40, 52 52 Q 40 46, 28 52 Q 34 40, 28 28 Z" fill="#b08433" fill-opacity="0.18"/>
+        <circle cx="40" cy="40" r="3" fill="#b08433"/>
+        <path d="M60 10 Q 70 18, 70 28" />
+        <path d="M10 60 Q 18 70, 28 70" />
+        <path d="M60 18 Q 68 24, 68 32" opacity="0.5"/>
+        <path d="M18 60 Q 24 68, 32 68" opacity="0.5"/>
+        <!-- leaves -->
+        <path d="M52 28 Q 64 24, 76 32 Q 70 36, 60 34 Q 56 32, 52 28 Z" fill="#b08433" fill-opacity="0.25"/>
+        <path d="M28 52 Q 24 64, 32 76 Q 36 70, 34 60 Q 32 56, 28 52 Z" fill="#b08433" fill-opacity="0.25"/>
+      </g>
+    </svg>
+  </div>
+  <div class="corner tr">
+    <svg viewBox="0 0 110 110">
+      <g fill="none" stroke="#b08433" stroke-width="1.2" stroke-linecap="round">
+        <path d="M10 60 C 10 30, 30 10, 60 10" />
+        <path d="M18 60 C 18 34, 34 18, 60 18" opacity="0.6"/>
+        <path d="M28 28 Q 40 22, 52 28 Q 46 40, 52 52 Q 40 46, 28 52 Q 34 40, 28 28 Z" fill="#b08433" fill-opacity="0.18"/>
+        <circle cx="40" cy="40" r="3" fill="#b08433"/>
+        <path d="M60 10 Q 70 18, 70 28" />
+        <path d="M10 60 Q 18 70, 28 70" />
+        <path d="M52 28 Q 64 24, 76 32 Q 70 36, 60 34 Q 56 32, 52 28 Z" fill="#b08433" fill-opacity="0.25"/>
+        <path d="M28 52 Q 24 64, 32 76 Q 36 70, 34 60 Q 32 56, 28 52 Z" fill="#b08433" fill-opacity="0.25"/>
+      </g>
+    </svg>
+  </div>
+  <div class="corner bl">
+    <svg viewBox="0 0 110 110">
+      <g fill="none" stroke="#b08433" stroke-width="1.2" stroke-linecap="round">
+        <path d="M10 60 C 10 30, 30 10, 60 10" />
+        <path d="M18 60 C 18 34, 34 18, 60 18" opacity="0.6"/>
+        <path d="M28 28 Q 40 22, 52 28 Q 46 40, 52 52 Q 40 46, 28 52 Q 34 40, 28 28 Z" fill="#b08433" fill-opacity="0.18"/>
+        <circle cx="40" cy="40" r="3" fill="#b08433"/>
+        <path d="M60 10 Q 70 18, 70 28" />
+        <path d="M10 60 Q 18 70, 28 70" />
+        <path d="M52 28 Q 64 24, 76 32 Q 70 36, 60 34 Q 56 32, 52 28 Z" fill="#b08433" fill-opacity="0.25"/>
+        <path d="M28 52 Q 24 64, 32 76 Q 36 70, 34 60 Q 32 56, 28 52 Z" fill="#b08433" fill-opacity="0.25"/>
+      </g>
+    </svg>
+  </div>
+  <div class="corner br">
+    <svg viewBox="0 0 110 110">
+      <g fill="none" stroke="#b08433" stroke-width="1.2" stroke-linecap="round">
+        <path d="M10 60 C 10 30, 30 10, 60 10" />
+        <path d="M18 60 C 18 34, 34 18, 60 18" opacity="0.6"/>
+        <path d="M28 28 Q 40 22, 52 28 Q 46 40, 52 52 Q 40 46, 28 52 Q 34 40, 28 28 Z" fill="#b08433" fill-opacity="0.18"/>
+        <circle cx="40" cy="40" r="3" fill="#b08433"/>
+        <path d="M60 10 Q 70 18, 70 28" />
+        <path d="M10 60 Q 18 70, 28 70" />
+        <path d="M52 28 Q 64 24, 76 32 Q 70 36, 60 34 Q 56 32, 52 28 Z" fill="#b08433" fill-opacity="0.25"/>
+        <path d="M28 52 Q 24 64, 32 76 Q 36 70, 34 60 Q 32 56, 28 52 Z" fill="#b08433" fill-opacity="0.25"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Top meta -->
+  <div class="meta-row">
+    <span>Certificate No. &nbsp;·&nbsp; SVU / BCA / 2025 / 04217</span>
+    <span>Roll No. &nbsp;·&nbsp; 21BCA1042</span>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+
+    <div class="crest-wrap">
+      <!-- University Crest -->
+      <svg class="crest" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1a2238"/>
+            <stop offset="100%" stop-color="#2c3554"/>
+          </linearGradient>
+        </defs>
+        <!-- Outer ring -->
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#b08433" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#b08433" stroke-width="0.6"/>
+        <!-- Laurel -->
+        <g fill="none" stroke="#b08433" stroke-width="1" stroke-linecap="round">
+          <path d="M12 50 Q 22 30, 40 22"/>
+          <path d="M88 50 Q 78 30, 60 22"/>
+          <path d="M18 42 q -2 -4, -4 -2"/>
+          <path d="M22 34 q -3 -3, -5 -1"/>
+          <path d="M28 28 q -3 -3, -5 -2"/>
+          <path d="M82 42 q 2 -4, 4 -2"/>
+          <path d="M78 34 q 3 -3, 5 -1"/>
+          <path d="M72 28 q 3 -3, 5 -2"/>
+        </g>
+        <!-- Shield -->
+        <path d="M50 24 L 72 32 L 72 52 Q 72 68, 50 78 Q 28 68, 28 52 L 28 32 Z"
+              fill="url(#shield)" stroke="#b08433" stroke-width="1.2"/>
+        <!-- Open book -->
+        <g fill="#fbf6ea" stroke="#b08433" stroke-width="0.8">
+          <path d="M36 48 L 50 51 L 50 64 L 36 61 Z"/>
+          <path d="M64 48 L 50 51 L 50 64 L 64 61 Z"/>
+          <path d="M50 51 L 50 64" stroke="#b08433" stroke-width="0.6"/>
+          <path d="M39 52 L 47 53.5 M 39 55 L 47 56.5 M 39 58 L 47 59.5" stroke="#b08433" stroke-width="0.4" fill="none"/>
+          <path d="M53 53.5 L 61 52 M 53 56.5 L 61 55 M 53 59.5 L 61 58" stroke="#b08433" stroke-width="0.4" fill="none"/>
+        </g>
+        <!-- Star -->
+        <path d="M50 32 l 1.5 4 l 4 0 l -3.2 2.4 l 1.2 4 l -3.5 -2.5 l -3.5 2.5 l 1.2 -4 l -3.2 -2.4 l 4 0 z" fill="#d8b25a"/>
+        <!-- motto banner -->
+        <path d="M22 84 Q 50 92, 78 84" fill="none" stroke="#b08433" stroke-width="0.8"/>
+        <text x="50" y="89" text-anchor="middle" font-family="Cinzel, serif" font-size="5" letter-spacing="1.2" fill="#8a6422">VIDYA · VIVEKA · VIJAYA</text>
+      </svg>
+
+      <div class="university">
+        <h1 class="uni-name">SARASWATI VIDYAPEETH UNIVERSITY</h1>
+        <div class="uni-tag">Established 1972 &nbsp;·&nbsp; Pune, India</div>
+      </div>
+    </div>
+
+    <div class="divider">
+      <span class="rule"></span>
+      <span class="dia"></span>
+      <span class="rule"></span>
+    </div>
+
+    <div class="title-eyebrow">The Senate of the University Hereby Confers</div>
+    <h2 class="title">Diploma of Graduation</h2>
+    <div class="title-sub">— upon the recommendation of the Faculty of Computer Applications —</div>
+
+    <div class="body">
+      <p class="preamble" style="margin: 18px 0 0;">This is to certify that</p>
+    </div>
+
+    <div class="recipient">Aarav Subramanian Iyer</div>
+    <div class="recipient-rule"></div>
+
+    <div class="degree-statement">
+      having successfully fulfilled all the academic requirements prescribed by the University and
+      having been examined and found worthy, is admitted to the degree of
+      <span class="degree-name">
+        Bachelor of Computer Applications
+        <small>(B.C.A.) &nbsp;·&nbsp; First Class with Distinction &nbsp;·&nbsp; C.G.P.A. 8.92 / 10</small>
+      </span>
+      <div class="with-honors">
+        — with all the rights, privileges and honours pertaining thereto —
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Date line: own slot between content and footer signatures -->
+  <div class="awarded-on">
+    Given under the seal of the University at Pune, this <strong>Eighteenth</strong> day of <strong>June</strong>, in the year Two Thousand and Twenty-Five.
+  </div>
+
+  <!-- Footer signatures + seal -->
+  <footer class="footer">
+    <div class="sig-block">
+      <div class="sig-name">Dr. Meera Khanna</div>
+      <div class="sig-line"></div>
+      <div class="sig-role">Registrar<small>Office of Academic Affairs</small></div>
+    </div>
+
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 150 150">
+        <defs>
+          <path id="sealCircle" d="M75,75 m-58,0 a58,58 0 1,1 116,0 a58,58 0 1,1 -116,0" />
+        </defs>
+        <!-- outer rings -->
+        <circle cx="75" cy="75" r="68" fill="none" stroke="#7a1b1b" stroke-width="1.2"/>
+        <circle cx="75" cy="75" r="64" fill="none" stroke="#7a1b1b" stroke-width="0.6"/>
+        <circle cx="75" cy="75" r="48" fill="none" stroke="#7a1b1b" stroke-width="1"/>
+        <!-- text along circle -->
+        <text font-family="Cinzel, serif" font-size="8" letter-spacing="2.5" fill="#7a1b1b">
+          <textPath href="#sealCircle" startOffset="0">SARASWATI VIDYAPEETH UNIVERSITY · OFFICIAL SEAL ·</textPath>
+        </text>
+        <!-- center mark -->
+        <g transform="translate(75 75)">
+          <path d="M0 -22 l 4 12 l 12 1 l -9 8 l 3 12 l -10 -7 l -10 7 l 3 -12 l -9 -8 l 12 -1 z" fill="#7a1b1b" opacity="0.85"/>
+          <text y="22" text-anchor="middle" font-family="Cinzel, serif" font-size="7" fill="#7a1b1b" letter-spacing="1">1972</text>
+        </g>
+        <!-- decorative dots -->
+        <g fill="#7a1b1b">
+          <circle cx="75" cy="11" r="1.5"/>
+          <circle cx="75" cy="139" r="1.5"/>
+          <circle cx="11" cy="75" r="1.5"/>
+          <circle cx="139" cy="75" r="1.5"/>
+        </g>
+        <!-- subtle stamp imperfection -->
+        <circle cx="75" cy="75" r="68" fill="none" stroke="#7a1b1b" stroke-width="2" stroke-dasharray="0.5 3" opacity="0.35"/>
+      </svg>
+    </div>
+
+    <div class="sig-block">
+      <div class="sig-name">Prof. Anand R. Deshpande</div>
+      <div class="sig-line"></div>
+      <div class="sig-role">Vice-Chancellor<small>Saraswati Vidyapeeth University</small></div>
+    </div>
+  </footer>
+
+</main>
+
+</body>
+</html>

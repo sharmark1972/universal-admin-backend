@@ -137,7 +137,7 @@ export default function SampleCertificate() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" style={{ maxWidth: '1220px' }}>
             <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between rounded-t-2xl z-10">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg text-white shadow-md">
@@ -156,7 +156,7 @@ export default function SampleCertificate() {
               </button>
             </div>
             
-            <div className="p-6">
+            <div className="px-6 pt-4">
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -170,13 +170,16 @@ export default function SampleCertificate() {
                 </div>
               </div>
               
+            </div>
+            <div style={{ overflowX: 'auto', padding: '0 24px 24px' }}>
               <Certificate
                 {...sampleData}
                 isPreview={true}
                 showDownload={false}
               />
-              
-              <div className="mt-6 text-center space-y-4">
+            </div>
+
+            <div className="px-6 pb-6 text-center space-y-4">
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-2">Certificate Features:</h4>
                   <ul className="text-sm text-gray-600 space-y-1 text-left">
@@ -196,7 +199,6 @@ export default function SampleCertificate() {
                     Close Preview
                   </button>
                 </div>
-              </div>
             </div>
           </div>
         </div>

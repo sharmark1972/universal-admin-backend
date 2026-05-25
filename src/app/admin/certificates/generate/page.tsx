@@ -512,45 +512,52 @@ export default function GenerateCertificatePage() {
           </div>
         </div>
 
-        {/* Generated Certificate Preview */}
-        {showCertificate && generatedCertificate && (
-          <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
+      </div>
+
+      {/* Generated Certificate Preview - full width outside max-w-7xl */}
+      {showCertificate && generatedCertificate && (
+        <div className="px-4 pb-8">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4">
               <h3 className="text-xl font-semibold text-gray-900">Generated Certificate</h3>
               <button
                 onClick={() => setShowCertificate(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
               >
                 ×
               </button>
             </div>
-            
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-green-600" />
-                <span className="text-green-800 font-medium">Certificate generated successfully!</span>
+
+            <div className="px-6 pb-4">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="text-green-800 font-medium">Certificate generated successfully!</span>
+                </div>
               </div>
             </div>
 
-            <Certificate
-              certificateNumber={generatedCertificate.certificateNumber}
-              authorName={customName}
-              title={generatedCertificate.title}
-              institution={customInstitution}
-              issuedAt={generatedCertificate.issuedAt}
-              type={generatedCertificate.type}
-              conferenceName={generatedCertificate.conferenceName}
-              conferenceDates={generatedCertificate.conferenceDates}
-              topic={topic}
-              prize={prize}
-              customDate={generatedCertificate.customDate}
-              showDownload={true}
-              isPreview={false}
-              template={selectedTemplate}
-            />
+            <div style={{ overflowX: 'auto', padding: '0 24px 24px' }}>
+              <Certificate
+                certificateNumber={generatedCertificate.certificateNumber}
+                authorName={customName}
+                title={generatedCertificate.title}
+                institution={customInstitution}
+                issuedAt={generatedCertificate.issuedAt}
+                type={generatedCertificate.type}
+                conferenceName={generatedCertificate.conferenceName}
+                conferenceDates={generatedCertificate.conferenceDates}
+                topic={topic}
+                prize={prize}
+                customDate={generatedCertificate.customDate}
+                showDownload={true}
+                isPreview={false}
+                template={selectedTemplate}
+              />
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
