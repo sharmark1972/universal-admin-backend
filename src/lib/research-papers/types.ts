@@ -14,6 +14,7 @@ export interface ParsedResearchPaper {
   sections: Array<{
     heading: string;
     content: string;
+    isFullWidth?: boolean;
   }>;
 }
 
@@ -36,6 +37,7 @@ export interface ResearchPaperDraftUpdateInput {
     id?: string;
     heading: string;
     content: string;
+    isFullWidth?: boolean;
   }>;
 }
 

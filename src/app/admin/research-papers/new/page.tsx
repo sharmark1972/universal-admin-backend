@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { redirect, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -96,6 +96,8 @@ export default function NewResearchPaperPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [extractionStatus, setExtractionStatus] = useState<'idle' | 'gemini' | 'zai' | 'basic' | 'done'>('idle');
+  const [extractionMethod, setExtractionMethod] = useState<'gemini' | 'zai' | 'basic' | null>(null);
 
   if (!isAdmin()) {
     redirect('/dashboard');
@@ -106,6 +108,7 @@ export default function NewResearchPaperPage() {
     0,
   );
   const active = draft.sections[activeSectionIndex];
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const selectedIssue = useMemo(
     () => issues.find((issue) => issue.id === issueId),
@@ -157,6 +160,9 @@ export default function NewResearchPaperPage() {
       setIsProcessing(true);
       setError('');
       setMessage('');
+      setExtractionStatus('gemini');
+      setExtractionMethod(null);
+
       const formData = new FormData();
       formData.append('file', file);
       if (issueId) formData.append('issueId', issueId);
@@ -168,10 +174,20 @@ export default function NewResearchPaperPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to read file');
 
+      const method = data.extractionMethod as 'gemini' | 'zai' | 'basic';
+      setExtractionMethod(method);
+      setExtractionStatus('done');
       setDraftId(data.draft.id);
       applyBackendDraft(data.draft);
-      setMessage('File read successfully. Review and save the extracted draft.');
+      setMessage(
+        method === 'gemini'
+          ? 'Extracted successfully with Gemini AI.'
+          : method === 'zai'
+          ? 'Extracted successfully with ZAI AI.'
+          : 'Extracted using basic mode — please verify the data carefully.',
+      );
     } catch (err) {
+      setExtractionStatus('idle');
       setError(err instanceof Error ? err.message : 'Failed to read file');
     } finally {
       setIsProcessing(false);
@@ -214,6 +230,12 @@ export default function NewResearchPaperPage() {
     });
     setIssueId(backendDraft.issueId || '');
     setActiveSectionId(mappedSections[0]?.id || 'abstract');
+  };
+
+  const scrollToSection = (id: string) => {
+    setActiveSectionId(id);
+    const el = sectionRefs.current[id];
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const updateActiveSection = (changes: Partial<typeof active>) => {
@@ -478,8 +500,69 @@ export default function NewResearchPaperPage() {
                   <Link href="/admin/research-papers/pdf-template">Template</Link>
                 </Button>
               </div>
-              {message ? <p className="mt-3 text-sm text-emerald-700">{message}</p> : null}
+
+              {/* Extraction status loader */}
+              {isProcessing && (
+                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
+                    Extracting with Gemini AI...
+                  </div>
+                </div>
+              )}
+
+              {/* Extraction result badge */}
+              {!isProcessing && extractionMethod && (
+                <div className={`mt-3 rounded-lg border p-3 text-sm ${
+                  extractionMethod === 'gemini' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' :
+                  extractionMethod === 'zai'    ? 'border-blue-200 bg-blue-50 text-blue-700' :
+                                                  'border-amber-200 bg-amber-50 text-amber-700'
+                }`}>
+                  {extractionMethod === 'gemini' && '✓ Extracted with Gemini AI'}
+                  {extractionMethod === 'zai'    && '✓ Extracted with ZAI AI'}
+                  {extractionMethod === 'basic'  && '⚠ Basic extraction used — please verify the data'}
+                </div>
+              )}
+
               {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+            </section>
+
+            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/50">
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label className="text-sm font-medium text-slate-700">Abstract</label>
+                    <span className={`text-xs font-medium ${
+                      draft.abstract.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length > 148
+                        ? 'text-red-600'
+                        : 'text-slate-400'
+                    }`}>
+                      {draft.abstract.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length} / 148 words
+                    </span>
+                  </div>
+                  {draft.abstract.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length > 148 && (
+                    <p className="mb-1 text-xs text-red-600">Abstract exceeds 148 words — it will be truncated in the PDF.</p>
+                  )}
+                  <SectionEditor
+                    content={draft.abstract}
+                    onChange={(html) => setDraft((prev) => ({ ...prev, abstract: html }))}
+                    size="small"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Keywords</label>
+                  <Input
+                    value={draft.keywords.join(', ')}
+                    placeholder="keyword one, keyword two"
+                    onChange={(event) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        keywords: event.target.value.split(',').map((item) => item.trim()).filter(Boolean),
+                      }))
+                    }
+                  />
+                </div>
+              </div>
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/50">
@@ -598,8 +681,8 @@ export default function NewResearchPaperPage() {
 
           <div className="space-y-6">
             <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/50">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
+              <div className="space-y-4">
+                <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">Title</label>
                   <Input
                     value={draft.title}
@@ -635,26 +718,6 @@ export default function NewResearchPaperPage() {
                     onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))}
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Abstract</label>
-                  <SectionEditor
-                    content={draft.abstract}
-                    onChange={(html) => setDraft((prev) => ({ ...prev, abstract: html }))}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Keywords</label>
-                  <Input
-                    value={draft.keywords.join(', ')}
-                    placeholder="keyword one, keyword two"
-                    onChange={(event) =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        keywords: event.target.value.split(',').map((item) => item.trim()).filter(Boolean),
-                      }))
-                    }
-                  />
-                </div>
               </div>
             </section>
 
@@ -662,7 +725,7 @@ export default function NewResearchPaperPage() {
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-950">Paper Sections</h2>
-                  <p className="text-sm text-slate-500">Use the same headings that appear in the manuscript.</p>
+                  <p className="text-sm text-slate-500">Click a section in the outline to jump to it.</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={addSection}>
                   <Plus className="h-4 w-4" />
@@ -670,120 +733,122 @@ export default function NewResearchPaperPage() {
                 </Button>
               </div>
 
-              <div className="grid md:grid-cols-[280px_1fr]">
-                <div className="border-r border-slate-200 bg-[#f8fafc] p-4">
+              <div className="grid md:grid-cols-[260px_1fr]" style={{ minHeight: '600px' }}>
+                {/* Left: Section Outline */}
+                <div className="border-r border-slate-200 bg-[#f8fafc] p-4 sticky top-0 self-start" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
                   <div className="mb-3 flex items-center justify-between">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Outline</p>
-                    <Badge variant="outline" className="bg-white">
-                      {draft.sections.length}
-                    </Badge>
+                    <Badge variant="outline" className="bg-white">{draft.sections.length}</Badge>
                   </div>
                   {draft.sections.map((section, index) => (
                     <button
                       key={section.id}
                       type="button"
-                      onClick={() => setActiveSectionId(section.id)}
+                      onClick={() => scrollToSection(section.id)}
                       className={`mb-2 flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left text-sm transition ${
                         activeSectionId === section.id
                           ? 'border-slate-400 bg-white text-slate-950 shadow-sm'
                           : 'border-transparent bg-transparent text-slate-700 hover:border-slate-200 hover:bg-white'
                       }`}
                     >
-                      <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                          activeSectionId === section.id
-                            ? 'bg-slate-900 text-white'
-                            : 'bg-white text-slate-500 ring-1 ring-slate-200'
-                        }`}
-                      >
+                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                        activeSectionId === section.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200'
+                      }`}>
                         {index + 1}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-medium">
-                          {section.heading.replace(/^\d+\.\s*/, '') || 'Untitled'}
+                          {section.heading.replace(/^\d+(\.\d+)*\.?\s*/, '') || 'Untitled'}
                         </span>
-                        <span className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              section.cleaned ? 'bg-emerald-500' : 'bg-amber-500'
-                            }`}
-                          />
-                          {section.cleaned ? 'Ready' : 'Empty'}
+                        <span className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">
+                          <span className={`h-1.5 w-1.5 rounded-full ${section.cleaned ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                          {section.cleaned ? 'Has content' : 'Empty'}
                         </span>
                       </span>
-                      {section.cleaned ? null : <X className="h-4 w-4 shrink-0 text-amber-500" />}
                     </button>
                   ))}
                 </div>
 
-                <div className="bg-white p-6">
-                  <div className="rounded-xl border border-slate-200 bg-white p-5">
-                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Section {activeSectionIndex + 1}
-                        </p>
-                        <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">
-                          {active.heading.replace(/^\d+\.\s*/, '') || 'Untitled'}
-                        </h3>
+                {/* Right: Continuous scroll — all sections */}
+                <div className="divide-y divide-slate-100 overflow-y-auto" style={{ maxHeight: '85vh' }}>
+                  {draft.sections.map((section, index) => (
+                    <div
+                      key={section.id}
+                      ref={(el) => { sectionRefs.current[section.id] = el; }}
+                      className="p-6"
+                      onClick={() => setActiveSectionId(section.id)}
+                    >
+                      {/* Section header */}
+                      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Section {index + 1}</p>
+                          <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                            {section.heading.replace(/^\d+(\.\d+)*\.?\s*/, '') || 'Untitled'}
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={section.isFullWidth ? 'full' : '2col'}
+                            onValueChange={(value) =>
+                              setDraft((prev) => ({
+                                ...prev,
+                                sections: prev.sections.map((s) =>
+                                  s.id === section.id ? { ...s, isFullWidth: value === 'full' } : s
+                                ),
+                              }))
+                            }
+                          >
+                            <SelectTrigger className="h-8 w-36 text-xs bg-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="full">1-column</SelectItem>
+                              <SelectItem value="2col">2-column</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-red-500"
+                            onClick={(e) => { e.stopPropagation(); setActiveSectionId(section.id); setTimeout(removeActiveSection, 0); }}
+                            disabled={draft.sections.length <= 1}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => moveActiveSection(-1)} disabled={activeSectionIndex === 0}>
-                          Up
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => moveActiveSection(1)}
-                          disabled={activeSectionIndex === draft.sections.length - 1}
-                        >
-                          Down
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={removeActiveSection} disabled={draft.sections.length <= 1}>
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
 
-                    <div className="mb-4">
-                      <label className="mb-1 block text-sm font-medium text-slate-700">Heading</label>
-                      <Input
-                        value={active.heading}
-                        placeholder="Section heading"
-                        className="bg-white"
-                        onChange={(event) => updateActiveSection({ heading: event.target.value })}
+                      {/* Heading input */}
+                      <div className="mb-3">
+                        <Input
+                          value={section.heading}
+                          placeholder="Section heading"
+                          className="bg-white text-sm"
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) =>
+                            setDraft((prev) => ({
+                              ...prev,
+                              sections: prev.sections.map((s) =>
+                                s.id === section.id ? { ...s, heading: e.target.value } : s
+                              ),
+                            }))
+                          }
+                        />
+                      </div>
+
+                      {/* TipTap editor */}
+                      <SectionEditor
+                        content={section.cleaned}
+                        onChange={(html) =>
+                          setDraft((prev) => ({
+                            ...prev,
+                            sections: prev.sections.map((s) =>
+                              s.id === section.id
+                                ? { ...s, cleaned: html, status: html.trim() ? 'complete' : 'missing' }
+                                : s
+                            ),
+                          }))
+                        }
                       />
                     </div>
-
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={active.status === 'complete' ? 'default' : 'outline'}>
-                          {active.status === 'complete' ? 'Ready' : 'Empty'}
-                        </Badge>
-                        <Badge variant="outline" className="bg-white">
-                          {active.cleaned.length} chars
-                        </Badge>
-                        {!active.isFullWidth && <Badge className="bg-blue-100 text-blue-700">2-column</Badge>}
-                      </div>
-                      <Select
-                        value={active.isFullWidth ? 'full' : '2col'}
-                        onValueChange={(value) => updateActiveSection({ isFullWidth: value === 'full' })}
-                      >
-                        <SelectTrigger className="w-40 bg-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="full">1-column (Full width)</SelectItem>
-                          <SelectItem value="2col">2-column</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <SectionEditor
-                      content={active.cleaned}
-                      onChange={(html) => updateSectionContent(html)}
-                    />
-                  </div>
+                  ))}
                 </div>
               </div>
             </section>

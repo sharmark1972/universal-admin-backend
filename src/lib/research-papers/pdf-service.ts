@@ -93,6 +93,10 @@ async function buildPdfHtml(draft: Awaited<ReturnType<typeof prisma.researchPape
     }
     .research-paper-sheet { box-shadow: none; }
     .pdf-preview-stage { padding: 0; }
+    .pdf-content-section table {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     @media print {
       body * { visibility: visible !important; }
       body { margin: 0; }
@@ -118,51 +122,58 @@ async function buildPdfHtml(draft: Awaited<ReturnType<typeof prisma.researchPape
       </header>
 
       <section class="pdf-paper-title">
-        <h2>${escapeHtml(draft.title || 'Untitled Research Paper')}</h2>
+        <h2>${escapeHtml(cleanTitle(draft.title || 'Untitled Research Paper'))}</h2>
         <div class="pdf-authors">
-          <p>${escapeHtml(draft.authors.map((author: any) => author.name).join(', '))}</p>
+          <p>${escapeHtml(draft.authors.map((a: any) => a.name).join(', '))}</p>
           ${draft.authors[0]?.affiliation ? `<p>${escapeHtml(draft.authors[0].affiliation)}</p>` : ''}
           ${draft.authors[0]?.email ? `<p>${escapeHtml(draft.authors[0].email)}</p>` : ''}
         </div>
       </section>
 
-      <section class="pdf-first-page-grid">
-        <aside class="pdf-article-info">
-          <h3>Article-Info</h3>
-          <div class="pdf-info-block">
-            <p>Article History:</p>
-            <span>Accepted: ${escapeHtml(draft.publishedAt ? formatDate(draft.publishedAt) : '')}</span>
-            <span>Published: ${escapeHtml(publishedDate)}</span>
-          </div>
-          <div class="pdf-info-block">
-            <p>Publication Issue:</p>
-            <span>${issue ? `Volume ${escapeHtml(issue.volume)}, Issue ${escapeHtml(issue.issueNumber)}` : ''}</span>
-            <span>${escapeHtml(publishedDate)}</span>
-          </div>
-          ${draft.doi ? `<div class="pdf-info-block"><p>DOI:</p><span>${escapeHtml(draft.doi)}</span></div>` : ''}
-        </aside>
+      <!-- Article-Info + Abstract float layout -->
+      <div class="pdf-first-page-section">
+        <div class="pdf-first-page-columns">
 
-        <section class="pdf-abstract-panel">
-          <h3>Abstract</h3>
-          <h4>Abstract</h4>
-          <p>${escapeHtml(truncateAbstract(draft.abstract || '', 250).text)}</p>
-          <div class="pdf-keywords"><strong>Keywords:</strong> ${escapeHtml(parseKeywords(draft.keywords).join(', '))}</div>
-        </section>
-      </section>
+          <!-- LEFT: Article-Info (float left) -->
+          <aside class="pdf-article-info">
+            <h3>Article-Info</h3>
+            <div class="pdf-info-block">
+              <p>Article History:</p>
+              <span>Accepted: ${escapeHtml(draft.publishedAt ? formatDate(draft.publishedAt) : '')}</span>
+              <span>Published: ${escapeHtml(publishedDate)}</span>
+            </div>
+            <div class="pdf-info-block">
+              <p>Publication Issue:</p>
+              <span>${issue ? `Volume ${escapeHtml(issue.volume)}, Issue ${escapeHtml(issue.issueNumber)}` : ''}</span>
+              <span>${escapeHtml(publishedDate)}</span>
+            </div>
+            ${draft.doi ? `<div class="pdf-info-block"><p>DOI:</p><span>${escapeHtml(draft.doi)}</span></div>` : ''}
+          </aside>
 
-      <main class="pdf-content" style="column-count: 2;">
-        ${truncateAbstract(draft.abstract || '', 250).isTruncated ? `
-          <section class="pdf-content-section" style="column-span: all;">
+          <!-- RIGHT: Abstract max 148 words + Keywords (fixed, no full width) -->
+          <section class="pdf-abstract-panel">
             <h3>Abstract</h3>
-            <p>${escapeHtml(draft.abstract || '')}</p>
+            <p>${escapeHtml(getFirstNWords(draft.abstract || '', 148))}</p>
+            <div class="pdf-keywords">
+              <strong>Keywords:</strong> ${escapeHtml(parseKeywords(draft.keywords).join(', '))}
+            </div>
           </section>
-        ` : ''}
-        ${draft.sections.map((section: any) => `
-          <section class="pdf-content-section" style="${section.isFullWidth ? 'column-span: all;' : ''}">
+
+        </div><!-- end float columns -->
+
+      </div><!-- end pdf-first-page-section -->
+
+      <!-- Body sections: 2 column -->
+      <main class="pdf-content">
+        ${draft.sections.map((section: any) => {
+          const isReferences = /^(references|bibliography|works cited)/i.test(section.heading.trim());
+          const forceFullWidth = section.isFullWidth || isReferences;
+          return `
+          <section class="pdf-content-section${isReferences ? ' pdf-references-section' : ''}" style="${forceFullWidth ? 'column-span: all;' : ''}">
             <h3>${escapeHtml(section.heading)}</h3>
             ${section.content || ''}
-          </section>
-        `).join('')}
+          </section>`;
+        }).join('')}
       </main>
 
     </article>
@@ -178,10 +189,20 @@ function buildWatermarkSvg(logoBase64: string): string {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
 
-function truncateAbstract(text: string, wordLimit: number): { text: string; isTruncated: boolean } {
+function getFirstNWords(text: string, n: number): string {
   const words = text.trim().split(/\s+/);
-  if (words.length <= wordLimit) return { text, isTruncated: false };
-  return { text: words.slice(0, wordLimit).join(' ') + '...', isTruncated: true };
+  if (words.length <= n) return text.trim();
+  return words.slice(0, n).join(' ');
+}
+
+function getRemainingWords(text: string, n: number): string {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= n) return '';
+  return words.slice(n).join(' ');
+}
+
+function cleanTitle(title: string): string {
+  return title.replace(/^["'"]+|["'"]+$/g, '').trim();
 }
 
 function parseKeywords(value: unknown): string[] {

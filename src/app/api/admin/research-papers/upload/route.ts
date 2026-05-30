@@ -20,13 +20,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File is required' }, { status: 400 });
     }
 
-    const draft = await createResearchPaperDraftFromUpload(
+    const { draft, extractionMethod } = await createResearchPaperDraftFromUpload(
       file,
       session.user.id,
       typeof issueId === 'string' ? issueId : null,
     );
 
-    return NextResponse.json({ draft }, { status: 201 });
+    return NextResponse.json({ draft, extractionMethod }, { status: 201 });
   } catch (error) {
     console.error('Error uploading research paper:', error);
     return NextResponse.json(

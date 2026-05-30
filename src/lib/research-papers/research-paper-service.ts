@@ -1,10 +1,10 @@
 import { ResearchPaperStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import {
-  extractDocumentTextFromBuffer,
+  extractStructuredDataFromDocx,
   extractDocumentHtmlFromBuffer,
 } from './docx-extractor';
-import { parseResearchPaperText } from './parser';
+import { extractWithGemini } from './gemini-extractor';
 import {
   removeStoredResearchPaperFile,
   validateResearchPaperFile,
@@ -13,6 +13,7 @@ import {
 import { validateDraftUpdate, validatePublishReady } from './validation';
 import type { ResearchPaperDraftUpdateInput } from './types';
 import { generateResearchPaperPdf } from './pdf-service';
+import { analyzeSectionLayout } from './layout-analyzer';
 
 const includeDraftRelations = {
   authors: { orderBy: { authorOrder: 'asc' as const } },
@@ -33,113 +34,80 @@ const includeDraftRelations = {
 export async function createResearchPaperDraftFromUpload(file: File, createdBy: string, issueId?: string | null) {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const extension = validateResearchPaperFile(file);
-  const [extracted, extractedHtml] = await Promise.all([
-    extractDocumentTextFromBuffer(fileBuffer, extension),
+
+  // Run both extractions in parallel
+  const [structured, htmlResult] = await Promise.all([
+    extractStructuredDataFromDocx(fileBuffer, extension),
     extractDocumentHtmlFromBuffer(fileBuffer, extension),
   ]);
+
+  // Try Gemini for metadata — fallback to regex if Gemini fails
+  const gemini = await extractWithGemini(structured.rawHtml
+    ? structured.rawHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    : '');
+
+  const title = gemini?.title || structured.title;
+  const abstract = gemini?.abstract || structured.abstract;
+  const keywords = gemini?.keywords.length ? gemini.keywords : structured.keywords;
+  const affiliation = gemini?.affiliation || structured.affiliation;
+  const authors = gemini?.authors.length
+    ? gemini.authors.map((a) => ({
+        name: a.name,
+        email: gemini.email || undefined,
+        affiliation: affiliation || undefined,
+        isCorresponding: a.isCorresponding,
+      }))
+    : structured.authors;
+
+  const extractionMethod = gemini?.extractionMethod || 'basic';
   const storedFile = await storeResearchPaperFile(file, fileBuffer);
-  const parsed = parseResearchPaperText(extracted.text);
-  const htmlSections = mapSectionsToHtml(extractedHtml.html, parsed.sections);
 
   try {
-    return await prisma.researchPaperDraft.create({
+    const sanitizedKeywords = keywords.filter((k) => typeof k === 'string');
+
+    const draft = await prisma.researchPaperDraft.create({
       data: {
-        title: parsed.title || null,
-        abstract: parsed.abstract || null,
-        keywords: parsed.keywords,
+        title: title ? title.trim() : null,
+        abstract: abstract ? abstract.trim() : null,
+        keywords: sanitizedKeywords.length > 0 ? sanitizedKeywords : [],
         issueId: issueId || null,
         createdBy,
         sourceFilePath: storedFile.fileUrl,
         sourceFileName: storedFile.originalName,
         sourceFileSize: storedFile.size,
-        extractedText: extracted.text || null,
-        status: extracted.text ? ResearchPaperStatus.EXTRACTED : ResearchPaperStatus.UPLOADED,
+        extractedText: structured.rawHtml || null,
+        status: structured.rawHtml ? ResearchPaperStatus.EXTRACTED : ResearchPaperStatus.UPLOADED,
         authors: {
-          create: parsed.authors.map((author, index) => ({
-            name: author.name,
-            email: author.email || null,
-            affiliation: author.affiliation || parsed.affiliation || null,
+          create: authors.map((author, index) => ({
+            name: author.name.trim(),
+            email: author.email ? author.email.trim() : null,
+            affiliation: author.affiliation ? author.affiliation.trim() : null,
             authorOrder: index,
             isCorresponding: Boolean(author.isCorresponding),
           })),
         },
         sections: {
-          create: htmlSections.map((section, index) => ({
-            heading: section.heading,
-            content: section.content,
+          create: structured.sections.map((section, index) => ({
+            heading: section.heading ? section.heading.trim() : 'Untitled Section',
+            content: section.content ? section.content.trim() : '',
             sectionOrder: index,
+            isFullWidth: analyzeSectionLayout(
+              section.heading ? section.heading.trim() : 'Untitled Section',
+              section.content ? section.content.trim() : ''
+            ),
           })),
         },
       },
       include: includeDraftRelations,
     });
+
+    return { draft, extractionMethod };
   } catch (error) {
     await removeStoredResearchPaperFile(storedFile.fileUrl);
     throw error;
   }
 }
 
-function extractAllHtmlHeadings(fullHtml: string): { text: string; index: number; endIndex: number }[] {
-  const headings: { text: string; index: number; endIndex: number }[] = [];
-
-  // Match <h1>-<h6> tags (Word Heading styles via styleMap)
-  const hTagRegex = /<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi;
-  let match: RegExpExecArray | null;
-  while ((match = hTagRegex.exec(fullHtml)) !== null) {
-    const text = match[1].replace(/<[^>]+>/g, '').trim();
-    if (text) headings.push({ text, index: match.index, endIndex: match.index + match[0].length });
-  }
-
-  // Match <p><strong>...</strong></p> — bold paragraph headings (no Word style)
-  const boldParaRegex = /<p[^>]*>\s*<strong[^>]*>(.*?)<\/strong>\s*<\/p>/gi;
-  while ((match = boldParaRegex.exec(fullHtml)) !== null) {
-    const text = match[1].replace(/<[^>]+>/g, '').trim();
-    if (text && text.length < 150) {
-      headings.push({ text, index: match.index, endIndex: match.index + match[0].length });
-    }
-  }
-
-  // Match <p><b>...</b></p> — bold paragraph headings alternate form
-  const boldBRegex = /<p[^>]*>\s*<b[^>]*>(.*?)<\/b>\s*<\/p>/gi;
-  while ((match = boldBRegex.exec(fullHtml)) !== null) {
-    const text = match[1].replace(/<[^>]+>/g, '').trim();
-    if (text && text.length < 150) {
-      headings.push({ text, index: match.index, endIndex: match.index + match[0].length });
-    }
-  }
-
-  return headings.sort((a, b) => a.index - b.index);
-}
-
-function mapSectionsToHtml(
-  fullHtml: string,
-  parsedSections: { heading: string; content: string }[],
-): { heading: string; content: string }[] {
-  if (!fullHtml || parsedSections.length === 0) return parsedSections;
-
-  const htmlHeadings = extractAllHtmlHeadings(fullHtml);
-
-  return parsedSections.map((section) => {
-    const headingNorm = section.heading.replace(/^\d+(\.\d+)*\.?\s*/, '').trim().toLowerCase();
-    const matchedIdx = htmlHeadings.findIndex(
-      (h) =>
-        h.text.toLowerCase().includes(headingNorm) ||
-        headingNorm.includes(h.text.toLowerCase()),
-    );
-
-    if (matchedIdx === -1) return section;
-
-    const startPos = htmlHeadings[matchedIdx].endIndex;
-    const nextHeading = htmlHeadings[matchedIdx + 1];
-    const endPos = nextHeading ? nextHeading.index : fullHtml.length;
-    const htmlContent = fullHtml.slice(startPos, endPos).trim();
-
-    return {
-      heading: section.heading,
-      content: htmlContent || section.content,
-    };
-  });
-}
 
 export async function listResearchPaperDrafts(params: {
   page?: number;
@@ -239,6 +207,7 @@ export async function updateResearchPaperDraft(id: string, input: ResearchPaperD
         heading: section.heading.trim(),
         content: section.content || '',
         sectionOrder: index,
+        isFullWidth: section.isFullWidth ?? true,
       }))
       .filter((section) => section.heading.length > 0 || section.content.length > 0);
 
@@ -286,4 +255,84 @@ export async function publishResearchPaperDraft(id: string) {
     },
     include: includeDraftRelations,
   });
+}
+
+function styleUrlsInHtml(html: string): string {
+  // Match URLs: https://example.com, www.example.com, or doi.org links
+  const urlRegex = /(?<![">])(https?:\/\/[^\s<>")\]]+|www\.[^\s<>")\]]+|doi\.org\/[^\s<>")\]]+)/gi;
+
+  return html.replace(urlRegex, (match) => {
+    // Ensure proper URL format
+    let fullUrl = match;
+    if (match.startsWith('www.')) {
+      fullUrl = `https://${match}`;
+    }
+
+    // Create styled link - will be rendered in PDF with blue color
+    return `<a href="${escapeHtml(fullUrl)}" style="color: #0066cc; text-decoration: underline;">${escapeHtml(match)}</a>`;
+  });
+}
+
+function detectTableCaptions(html: string): Array<{ caption: string; tableHtml: string; index: number }> {
+  const results: Array<{ caption: string; tableHtml: string; index: number }> = [];
+
+  // Match caption patterns: "Table 1:", "Figure 1:", "Fig 2.", etc.
+  const captionRegex = /(Table|Figure|Fig|Figure)\s+(\d+[\w]*)\s*[:.\-]?\s*([^\n<]*)/gi;
+  let match;
+
+  while ((match = captionRegex.exec(html)) !== null) {
+    const captionStart = match.index;
+    const captionText = match[0];
+
+    // Look for table after caption (within next 500 chars)
+    const searchAfterCaption = html.slice(captionStart, captionStart + 1000);
+    const tableMatch = searchAfterCaption.match(/<table[\s\S]*?<\/table>/i);
+
+    if (tableMatch) {
+      results.push({
+        caption: captionText,
+        tableHtml: tableMatch[0],
+        index: captionStart,
+      });
+    }
+  }
+
+  return results;
+}
+
+function wrapTableWithCaption(html: string): string {
+  const captions = detectTableCaptions(html);
+
+  if (captions.length === 0) return html;
+
+  let result = html;
+
+  // Process captions in reverse order to maintain indices
+  for (let i = captions.length - 1; i >= 0; i--) {
+    const { caption, tableHtml, index } = captions[i];
+
+    // Find the actual position of table in result (may have shifted)
+    const tableIndex = result.indexOf(tableHtml);
+
+    if (tableIndex !== -1) {
+      // Wrap table with caption styling
+      const wrapped = `<div style="text-align: center; margin: 12px 0;">
+        <p style="font-weight: bold; font-size: 0.95em; margin: 0 0 8px 0;">${escapeHtml(caption)}</p>
+        ${tableHtml}
+      </div>`;
+
+      result = result.substring(0, tableIndex) + wrapped + result.substring(tableIndex + tableHtml.length);
+    }
+  }
+
+  return result;
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

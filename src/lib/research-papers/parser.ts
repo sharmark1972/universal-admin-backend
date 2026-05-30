@@ -155,13 +155,45 @@ function findSectionHeadingIndexes(lines: string[]) {
 }
 
 function buildSections(lines: string[], headingIndexes: number[]) {
-  return headingIndexes.map((headingIndex, position) => {
+  const sections = headingIndexes.map((headingIndex, position) => {
     const nextHeadingIndex = headingIndexes[position + 1] ?? lines.length;
     return {
       heading: lines[headingIndex],
       content: lines.slice(headingIndex + 1, nextHeadingIndex).join('\n\n').trim(),
     };
   });
+
+  // Group subsections under top-level sections
+  const groupedSections: typeof sections = [];
+
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    const isSubsection = /^\d+\.\d+/.test(section.heading.trim());
+    const isTopLevel = /^\d+\.?\s+[A-Z]/.test(section.heading.trim());
+
+    if (isSubsection) {
+      // Merge subsection into previous top-level section
+      if (groupedSections.length > 0) {
+        const lastSection = groupedSections[groupedSections.length - 1];
+        lastSection.content += '\n\n' + `<h4 style="margin-top: 12px; margin-bottom: 8px; font-weight: 700;">` +
+          section.heading.replace(/^\d+\.\d+\.?\s*/, '') + '</h4>\n\n' + section.content;
+      }
+    } else {
+      groupedSections.push(section);
+    }
+  }
+
+  // Check if last section is References and mark it
+  if (groupedSections.length > 0) {
+    const lastSection = groupedSections[groupedSections.length - 1];
+    const headingLower = lastSection.heading.toLowerCase().trim();
+    if (/^references?\b/.test(headingLower) || /^bibliography\b/.test(headingLower) || /^works? cited\b/.test(headingLower)) {
+      // Mark as references section - can be used for special formatting later
+      (lastSection as any).isReferencesSection = true;
+    }
+  }
+
+  return groupedSections;
 }
 
 function isAbstractMarker(line: string) {
@@ -194,7 +226,26 @@ function detectTitle(lines: string[], contentBoundaryIndex: number) {
   const candidates = topBlock.filter((line) => isLikelyTitleLine(line));
 
   if (candidates.length > 0) {
-    return candidates[0];
+    // Check if next line is continuation of title (multi-line title)
+    const firstCandidateIndex = topBlock.findIndex((line) => line === candidates[0]);
+    let title = candidates[0];
+
+    // Look ahead for continuation lines (lines that are long but don't start a new section)
+    for (let i = firstCandidateIndex + 1; i < Math.min(firstCandidateIndex + 3, topBlock.length); i++) {
+      const nextLine = topBlock[i];
+      if (!isLikelyTitleLine(nextLine) && !isLikelyAuthorLine(nextLine) && !isLikelyAffiliationLine(nextLine)) {
+        // This might be a title continuation
+        if (nextLine.length > 10 && /[a-z]/i.test(nextLine) && !META_PATTERNS.some(p => p.test(nextLine))) {
+          title += ' ' + nextLine;
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+
+    return title;
   }
 
   return topBlock[0] || lines[0] || '';
@@ -215,7 +266,7 @@ function isLikelyTitleLine(line: string) {
 function detectTopMatter(lines: string[], titleIndex: number, contentBoundaryIndex: number) {
   const searchStart = titleIndex >= 0 ? titleIndex + 1 : 0;
   const topMatterLines = lines.slice(searchStart, contentBoundaryIndex);
-  const authors: Array<{ name: string; isCorresponding?: boolean }> = [];
+  const authors: Array<{ name: string; email?: string; affiliation?: string; isCorresponding?: boolean }> = [];
   const affiliationLines: string[] = [];
   let lastRelevantIndex = searchStart - 1;
   let seenAuthor = false;
@@ -267,13 +318,42 @@ function detectTopMatter(lines: string[], titleIndex: number, contentBoundaryInd
         lastRelevantIndex = absoluteIndex;
         continue;
       }
+      // Continue collecting affiliation-like lines (address continuation)
+      if (!isAbstractMarker(line) && !isKeywordsMarker(line) && !isSectionHeading(line) && !isLikelyAuthorLine(line)) {
+        const clean = line.trim();
+        // If line looks like address continuation (has location/address keywords or is short)
+        if (LOCATION_PATTERNS.some(p => p.test(clean)) || (clean.length < 100 && /[a-z]/i.test(clean) && !META_PATTERNS.some(p => p.test(clean)))) {
+          affiliationLines.push(line);
+          lastRelevantIndex = absoluteIndex;
+          continue;
+        }
+      }
       break;
     }
   }
 
+  const deduped = dedupeByName(authors);
+  const affiliationText = affiliationLines.join(', ').trim();
+  const extractedEmails = extractEmailsFromText(affiliationText);
+
+  // Assign first email to first (corresponding) author if available
+  if (extractedEmails.length > 0 && deduped.length > 0) {
+    deduped[0].email = extractedEmails[0];
+  }
+
+  // Clean affiliation text by removing emails
+  const cleanAffiliation = affiliationText.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '').trim();
+
+  // Assign affiliation to all authors
+  deduped.forEach((author) => {
+    if (cleanAffiliation) {
+      author.affiliation = cleanAffiliation;
+    }
+  });
+
   return {
-    authors: dedupeByName(authors),
-    affiliation: affiliationLines.join(', ').trim(),
+    authors: deduped,
+    affiliation: cleanAffiliation,
     endIndex: Number.isFinite(lastRelevantIndex) ? lastRelevantIndex + 1 : searchStart,
   };
 }
@@ -321,7 +401,7 @@ function splitAuthorLine(line: string) {
     .filter(Boolean);
 }
 
-function dedupeByName(authors: Array<{ name: string; isCorresponding?: boolean }>) {
+function dedupeByName(authors: Array<{ name: string; email?: string; affiliation?: string; isCorresponding?: boolean }>) {
   const seen = new Set<string>();
   return authors.filter((author) => {
     const key = author.name.toLowerCase();
@@ -394,6 +474,18 @@ function parseKeywords(value: string) {
     .map((keyword) => keyword.trim())
     .filter(Boolean)
     .slice(0, 12);
+}
+
+function extractEmailsFromText(text: string): string[] {
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  const matches = text.match(emailRegex) || [];
+  return [...new Set(matches)];
+}
+
+function extractAffiliationAndEmail(line: string): { affiliation: string; emails: string[] } {
+  const emails = extractEmailsFromText(line);
+  const affiliationText = line.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '').trim();
+  return { affiliation: affiliationText, emails };
 }
 
 function minIndex(values: number[]) {

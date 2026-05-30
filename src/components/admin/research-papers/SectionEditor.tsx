@@ -11,9 +11,10 @@ import './section-editor.css';
 interface SectionEditorProps {
   content: string;
   onChange: (html: string) => void;
+  size?: 'small' | 'medium' | 'large';
 }
 
-export function SectionEditor({ content, onChange }: SectionEditorProps) {
+export function SectionEditor({ content, onChange, size = 'large' }: SectionEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -66,7 +67,7 @@ export function SectionEditor({ content, onChange }: SectionEditorProps) {
   };
 
   return (
-    <div className="section-editor-wrapper">
+    <div className={`section-editor-wrapper section-editor-${size}`}>
       <div className="section-editor-toolbar">
         <Button
           variant="outline"
