@@ -208,13 +208,11 @@ async function tryLayoutZai(apiKey: string, sectionSummary: string): Promise<Sec
 
 function parseMetadataResponse(raw: string): Omit<GeminiExtractedData, 'extractionMethod'> | null {
   try {
-    const cleaned = raw
-      .trim()
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '')
-      .trim();
+    // Extract JSON object from response (handles thinking blocks, extra text etc.)
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
 
+    const cleaned = jsonMatch[0].trim();
     const parsed = JSON.parse(cleaned) as GeminiExtractedData;
 
     if (!parsed.title && !parsed.abstract) return null;
@@ -237,14 +235,11 @@ function parseMetadataResponse(raw: string): Omit<GeminiExtractedData, 'extracti
 
 function parseLayoutResponse(raw: string): SectionLayout[] | null {
   try {
-    const cleaned = raw
-      .trim()
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '')
-      .trim();
+    // Extract JSON array from response (handles thinking blocks, extra text etc.)
+    const jsonMatch = raw.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return null;
 
-    const parsed = JSON.parse(cleaned);
+    const parsed = JSON.parse(jsonMatch[0]);
 
     if (!Array.isArray(parsed)) return null;
 
