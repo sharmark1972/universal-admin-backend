@@ -86,6 +86,8 @@ export default function NewResearchPaperPage() {
   const { isAdmin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const editId = searchParams.get('edit') || '';
+  const isEditMode = !!editId;
   const [file, setFile] = useState<File | null>(null);
   const [draft, setDraft] = useState<ResearchPaperDraft>(blankDraft());
   const [draftId, setDraftId] = useState(searchParams.get('id') || '');
@@ -149,6 +151,52 @@ export default function NewResearchPaperPage() {
 
     fetchDraft();
   }, [draftId]);
+
+  useEffect(() => {
+    if (!editId) return;
+
+    const fetchPaper = async () => {
+      try {
+        setError('');
+        const response = await fetch(`/api/admin/papers/${editId}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to load paper');
+
+        const paper = data.paper;
+        setIssueId(paper.issueId || '');
+        setPaperStatus(paper.status || 'PUBLISHED');
+        setPaperType(paper.paperType || '');
+
+        const keywords = paper.keywords
+          ? paper.keywords.split(',').map((k: string) => k.trim()).filter(Boolean)
+          : [];
+
+        const authors = (paper.paperAuthors || []).map((pa: any) => ({
+          name: `${pa.user.firstName} ${pa.user.lastName}`.trim(),
+          email: pa.user.email || '',
+          affiliation: '',
+          corresponding: pa.isCorresponding,
+        }));
+
+        setDraft((prev) => ({
+          ...prev,
+          title: paper.title || '',
+          abstract: paper.abstract || '',
+          keywords,
+          authors,
+          doi: paper.doi || '',
+          category: paper.category || '',
+          sections: [
+            { id: 'abstract', heading: 'Abstract', original: paper.abstract || '', cleaned: paper.abstract || '', notes: [], status: 'complete', isFullWidth: true },
+          ],
+        }));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load paper');
+      }
+    };
+
+    fetchPaper();
+  }, [editId]);
 
   const reset = () => {
     setFile(null);
@@ -443,15 +491,15 @@ export default function NewResearchPaperPage() {
         submitData.append('file', pdfFile);
       }
 
-      const response = await fetch('/api/admin/papers', {
-        method: 'POST',
-        body: submitData,
-      });
+      const response = await fetch(
+        isEditMode ? `/api/admin/papers/${editId}` : '/api/admin/papers',
+        { method: isEditMode ? 'PATCH' : 'POST', body: submitData }
+      );
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to submit paper');
+      if (!response.ok) throw new Error(data.error || (isEditMode ? 'Failed to update paper' : 'Failed to submit paper'));
 
-      setMessage('Paper submitted successfully!');
+      setMessage(isEditMode ? 'Paper updated successfully!' : 'Paper submitted successfully!');
       router.push('/admin/papers');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit paper');
@@ -636,9 +684,9 @@ export default function NewResearchPaperPage() {
                   Back
                 </Link>
               </Button>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Add Research Paper</h1>
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{isEditMode ? 'Edit Research Paper' : 'Add Research Paper'}</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Upload the manuscript, review the extracted details, and prepare the paper for journal formatting.
+                {isEditMode ? 'Update paper details, regenerate PDF and submit changes.' : 'Upload the manuscript, review the extracted details, and prepare the paper for journal formatting.'}
               </p>
             </div>
             <div className="flex gap-2">
@@ -1152,7 +1200,7 @@ export default function NewResearchPaperPage() {
                 onClick={createPaper}
               >
                 <Save className="h-4 w-4" />
-                {isSaving ? 'Submitting...' : 'Submit Paper'}
+                {isSaving ? (isEditMode ? 'Updating...' : 'Submitting...') : (isEditMode ? 'Update Paper' : 'Submit Paper')}
               </Button>
             </section>
 
