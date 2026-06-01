@@ -4,14 +4,18 @@ import { prisma } from '@/lib/prisma';
 import { deleteFromR2, uploadToR2 } from '@/lib/r2-upload';
 
 async function launchBrowser() {
-  const isVercel = !!process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+  const isVercel = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 
   if (isVercel) {
     const chromium = (await import('@sparticuz/chromium')).default;
     const puppeteer = await import('puppeteer-core');
-    const executablePath = await chromium.executablePath();
+    chromium.setHeadlessMode = true;
+    chromium.setGraphicsMode = false;
+    const executablePath = await chromium.executablePath(
+      'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
+    );
     return puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
       defaultViewport: { width: 1280, height: 800 },
       executablePath,
       headless: true,
