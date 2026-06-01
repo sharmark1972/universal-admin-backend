@@ -3,36 +3,59 @@ import { join } from 'path';
 import { prisma } from '@/lib/prisma';
 import { deleteFromR2, uploadToR2 } from '@/lib/r2-upload';
 
-async function launchBrowser() {
+async function generatePdfFromHtml(html: string): Promise<Buffer> {
   const isVercel = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 
   if (isVercel) {
-    const chromium = (await import('@sparticuz/chromium')).default;
-    const puppeteer = await import('puppeteer-core');
-    chromium.setHeadlessMode = true;
-    chromium.setGraphicsMode = false;
-    const executablePath = await chromium.executablePath(
-      'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
-    );
-    return puppeteer.launch({
-      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-      defaultViewport: { width: 1280, height: 800 },
-      executablePath,
-      headless: true,
+    const token = process.env.BLESS_TOKEN;
+    if (!token) throw new Error('BLESS_TOKEN environment variable is not set.');
+
+    const response = await fetch(`https://chrome.browserless.io/pdf?token=${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        html,
+        options: {
+          format: 'A4',
+          printBackground: true,
+          preferCSSPageSize: true,
+          displayHeaderFooter: true,
+          headerTemplate: '<span></span>',
+          footerTemplate: `<div style="width:100%;font-family:'Times New Roman',serif;font-size:9px;color:#475569;padding:0 14mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #cbd5e1;">
+            <span>International Journal of Academic Research in Commerce &amp; Management</span>
+            <span>www.ijarcm.com</span>
+            <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+          </div>`,
+          margin: { top: '10mm', bottom: '18mm', left: '0', right: '0' },
+        },
+      }),
     });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Browserless PDF error: ${response.status} — ${text}`);
+    }
+
+    return Buffer.from(await response.arrayBuffer());
   } else {
     const { chromium } = await import('playwright');
-    const playwrightBrowser = await chromium.launch({ headless: true });
-    return {
-      newPage: async () => {
-        const page = await playwrightBrowser.newPage();
-        return {
-          setContent: (html: string, opts: any) => page.setContent(html, opts),
-          pdf: (opts: any) => page.pdf(opts),
-        };
-      },
-      close: () => playwrightBrowser.close(),
-    };
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle' });
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        displayHeaderFooter: true,
+        headerTemplate: '<span></span>',
+        footerTemplate: `<div style="width:100%;font-family:'Times New Roman',serif;font-size:9px;color:#475569;padding:0 14mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #cbd5e1;"><span>International Journal of Academic Research in Commerce &amp; Management</span><span>www.ijarcm.com</span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>`,
+        margin: { top: '10mm', bottom: '18mm', left: '0', right: '0' },
+      });
+      return Buffer.from(pdf);
+    } finally {
+      await browser.close();
+    }
   }
 }
 
@@ -48,31 +71,10 @@ export interface PreviewPdfData {
   issue?: { volume: string; issueNumber: string; year: number; publishDate: string } | null;
 }
 
-const PDF_OPTIONS = {
-  format: 'A4' as const,
-  printBackground: true,
-  preferCSSPageSize: true,
-  displayHeaderFooter: true,
-  headerTemplate: '<span></span>',
-  footerTemplate: `<div style="width:100%;font-family:'Times New Roman',serif;font-size:9px;color:#475569;padding:0 14mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #cbd5e1;">
-    <span>International Journal of Academic Research in Commerce &amp; Management</span>
-    <span>www.ijarcm.com</span>
-    <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
-  </div>`,
-  margin: { top: '10mm', bottom: '18mm', left: '0', right: '0' },
-};
 
 export async function generatePreviewPdfFromData(data: PreviewPdfData): Promise<Buffer> {
   const html = await buildPdfHtmlFromData(data);
-  const browser = await launchBrowser();
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle' });
-    const pdf = await page.pdf(PDF_OPTIONS);
-    return Buffer.from(pdf);
-  } finally {
-    await browser.close();
-  }
+  return generatePdfFromHtml(html);
 }
 
 async function buildPdfHtmlFromData(data: PreviewPdfData): Promise<string> {
@@ -190,39 +192,29 @@ export async function generateResearchPaperPdf(draftId: string, mode: 'preview' 
   if (!draft) throw new Error('Research paper draft not found.');
 
   const html = await buildPdfHtml(draft);
-  const browser = await launchBrowser();
+  const pdf = await generatePdfFromHtml(html);
+
+  const fileName = mode === 'final' ? 'research-paper.pdf' : 'research-paper-preview.pdf';
+  const path = await uploadToR2(
+    pdf,
+    fileName,
+    `${PDF_FOLDER_PREFIX}/${draft.id}`,
+    'application/pdf',
+  );
 
   try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle' });
-    const pdf = await page.pdf(PDF_OPTIONS);
-
-    const fileName = mode === 'final' ? 'research-paper.pdf' : 'research-paper-preview.pdf';
-    const path = await uploadToR2(
-      Buffer.from(pdf),
-      fileName,
-      `${PDF_FOLDER_PREFIX}/${draft.id}`,
-      'application/pdf',
-    );
-
-    try {
-      await prisma.researchPaperDraft.update({
-        where: { id: draft.id },
-        data: mode === 'final'
-          ? { pdfPath: path, status: 'PDF_GENERATED' }
-          : { previewPdfPath: path },
-      });
-    } catch (error) {
-      await deleteFromR2(path);
-      throw error;
-    }
-
-    return {
-      path,
-    };
-  } finally {
-    await browser.close();
+    await prisma.researchPaperDraft.update({
+      where: { id: draft.id },
+      data: mode === 'final'
+        ? { pdfPath: path, status: 'PDF_GENERATED' }
+        : { previewPdfPath: path },
+    });
+  } catch (error) {
+    await deleteFromR2(path);
+    throw error;
   }
+
+  return { path };
 }
 
 async function buildPdfHtml(draft: Awaited<ReturnType<typeof prisma.researchPaperDraft.findUnique>> & Record<string, any>) {
