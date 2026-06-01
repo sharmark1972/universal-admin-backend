@@ -1,8 +1,36 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { chromium } from 'playwright';
 import { prisma } from '@/lib/prisma';
 import { deleteFromR2, uploadToR2 } from '@/lib/r2-upload';
+
+async function launchBrowser() {
+  const isVercel = !!process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+
+  if (isVercel) {
+    const chromium = (await import('@sparticuz/chromium')).default;
+    const puppeteer = await import('puppeteer-core');
+    const executablePath = await chromium.executablePath();
+    return puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: { width: 1280, height: 800 },
+      executablePath,
+      headless: true,
+    });
+  } else {
+    const { chromium } = await import('playwright');
+    const playwrightBrowser = await chromium.launch({ headless: true });
+    return {
+      newPage: async () => {
+        const page = await playwrightBrowser.newPage();
+        return {
+          setContent: (html: string, opts: any) => page.setContent(html, opts),
+          pdf: (opts: any) => page.pdf(opts),
+        };
+      },
+      close: () => playwrightBrowser.close(),
+    };
+  }
+}
 
 const PDF_FOLDER_PREFIX = 'research-papers/pdfs';
 
@@ -16,25 +44,27 @@ export interface PreviewPdfData {
   issue?: { volume: string; issueNumber: string; year: number; publishDate: string } | null;
 }
 
+const PDF_OPTIONS = {
+  format: 'A4' as const,
+  printBackground: true,
+  preferCSSPageSize: true,
+  displayHeaderFooter: true,
+  headerTemplate: '<span></span>',
+  footerTemplate: `<div style="width:100%;font-family:'Times New Roman',serif;font-size:9px;color:#475569;padding:0 14mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #cbd5e1;">
+    <span>International Journal of Academic Research in Commerce &amp; Management</span>
+    <span>www.ijarcm.com</span>
+    <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+  </div>`,
+  margin: { top: '10mm', bottom: '18mm', left: '0', right: '0' },
+};
+
 export async function generatePreviewPdfFromData(data: PreviewPdfData): Promise<Buffer> {
   const html = await buildPdfHtmlFromData(data);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchBrowser();
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle' });
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: true,
-      displayHeaderFooter: true,
-      headerTemplate: '<span></span>',
-      footerTemplate: `<div style="width:100%;font-family:'Times New Roman',serif;font-size:9px;color:#475569;padding:0 14mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #cbd5e1;">
-        <span>International Journal of Academic Research in Commerce &amp; Management</span>
-        <span>www.ijarcm.com</span>
-        <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
-      </div>`,
-      margin: { top: '10mm', bottom: '18mm', left: '0', right: '0' },
-    });
+    const pdf = await page.pdf(PDF_OPTIONS);
     return Buffer.from(pdf);
   } finally {
     await browser.close();
@@ -156,24 +186,12 @@ export async function generateResearchPaperPdf(draftId: string, mode: 'preview' 
   if (!draft) throw new Error('Research paper draft not found.');
 
   const html = await buildPdfHtml(draft);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle' });
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: true,
-      displayHeaderFooter: true,
-      headerTemplate: '<span></span>',
-      footerTemplate: `<div style="width:100%;font-family:'Times New Roman',serif;font-size:9px;color:#475569;padding:0 14mm;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #cbd5e1;">
-        <span>International Journal of Academic Research in Commerce &amp; Management</span>
-        <span>www.ijarcm.com</span>
-        <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
-      </div>`,
-      margin: { top: '10mm', bottom: '18mm', left: '0', right: '0' },
-    });
+    const pdf = await page.pdf(PDF_OPTIONS);
 
     const fileName = mode === 'final' ? 'research-paper.pdf' : 'research-paper-preview.pdf';
     const path = await uploadToR2(

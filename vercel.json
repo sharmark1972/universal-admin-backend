@@ -1,4 +1,12 @@
 {
   "installCommand": "yarn install --ignore-optional",
-  "buildCommand": "yarn prisma migrate deploy && yarn build"
+  "buildCommand": "yarn prisma migrate deploy && yarn build",
+  "functions": {
+    "src/app/api/admin/research-papers/preview-pdf/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/admin/research-papers/[id]/generate-preview-pdf/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }
