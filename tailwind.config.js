@@ -9,8 +9,8 @@ export default {
   	},
   	extend: {
   			fontFamily: {
-  				sans: ['var(--font-lato)', 'var(--font-inter)', 'sans-serif'],
-  				serif: ['var(--font-playfair)', 'serif'],
+  				sans: ['var(--font-lato)', 'sans-serif'],
+  				serif: ['var(--font-lato)', 'sans-serif'],
   			},
   			borderRadius: {
   			lg: 'var(--radius)',

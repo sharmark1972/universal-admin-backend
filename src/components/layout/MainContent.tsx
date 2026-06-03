@@ -20,8 +20,8 @@ const MainContent = ({ children }: MainContentProps) => {
             <UserStatusAlert />
           </div>
         )}
-        <div className="p-4 lg:p-6">
-          <BreadcrumbContainer className="mb-4" />
+        <div>
+          <BreadcrumbContainer className="mb-4 px-4 lg:px-6" />
           {children}
         </div>
       </main>

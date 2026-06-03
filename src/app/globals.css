@@ -4,46 +4,46 @@
 
 @layer base {
   :root {
-    /* Professional Academic Color Palette */
-    --background: 0 0% 100%; /* White */
-    --foreground: 222.2 84% 4.9%; /* Slate 900 */
-    
+    /* WJIIS Color Palette — Teal + Navy + Orange */
+    --background: 0 0% 100%;
+    --foreground: 196 47% 19%; /* Dark Navy #1a3a4a */
+
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    
+    --card-foreground: 196 47% 19%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    
-    /* Primary: Deep Navy Blue for authority and trust */
-    --primary: 222.2 47.4% 11.2%; /* Slate 900 */
-    --primary-foreground: 210 40% 98%;
-    
-    /* Secondary: Muted Gray for structure */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    
-    /* Muted: Subtle backgrounds */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    
-    /* Accent: Scholarly Blue or Gold */
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    
+    --popover-foreground: 196 47% 19%;
+
+    /* Primary: Dark Navy */
+    --primary: 196 47% 19%; /* #1a3a4a */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Light Teal bg */
+    --secondary: 191 44% 92%;
+    --secondary-foreground: 196 47% 19%;
+
+    /* Muted */
+    --muted: 191 44% 92%;
+    --muted-foreground: 191 30% 45%;
+
+    /* Accent: Orange */
+    --accent: 20 80% 54%; /* #e8622a */
+    --accent-foreground: 0 0% 100%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    
-    --radius: 0.3rem; /* Sharper corners for a more professional look */
-    
-    --chart-1: 221.2 83.2% 53.3%;
-    --chart-2: 212 95% 68%;
-    --chart-3: 216 92% 60%;
-    --chart-4: 210 98% 78%;
-    --chart-5: 212 97% 87%;
+
+    --border: 191 30% 85%;
+    --input: 191 30% 85%;
+    --ring: 191 44% 40%; /* Teal */
+
+    --radius: 0.3rem;
+
+    --chart-1: 191 44% 40%;
+    --chart-2: 191 44% 55%;
+    --chart-3: 20 80% 54%;
+    --chart-4: 45 90% 51%;
+    --chart-5: 196 47% 30%;
   }
 
   .dark {
@@ -86,7 +86,9 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif font-bold tracking-tight text-slate-900;
+    @apply font-sans tracking-tight;
+    font-weight: 800;
+    color: hsl(var(--primary));
   }
   
   h1 {
@@ -102,7 +104,8 @@
   }
   
   p {
-    @apply leading-relaxed mb-4 text-slate-700;
+    @apply leading-relaxed mb-4;
+    color: hsl(var(--foreground));
   }
 }
 

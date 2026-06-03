@@ -91,20 +91,20 @@ const IndexingDatabases = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative overflow-hidden">
+    <section className="py-16 relative overflow-hidden" style={{background: '#f0f9fb'}}>
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-500 rounded-full filter blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 rounded-full filter blur-3xl" style={{background: '#1a6b7a'}}></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full filter blur-3xl" style={{background: '#1a3a4a'}}></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full text-sm font-bold mb-4 shadow-lg">
+          <div className="inline-flex items-center px-4 py-2 text-white rounded-full text-sm font-bold mb-4 shadow-lg" style={{background: '#1a3a4a'}}>
             <Database className="w-4 h-4 mr-2" />
             Indexed In
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{color: '#1a3a4a'}}>
             Indexing Databases
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
@@ -119,22 +119,23 @@ const IndexingDatabases = () => {
         </div>
 
         {/* Additional info banner */}
-        <div className="mt-12 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-indigo-200 shadow-lg">
+        <div className="mt-12 bg-white rounded-2xl p-6 shadow-lg" style={{border: '1px solid #b2dde6'}}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{background: '#1a6b7a'}}>
                 <Award className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-1">Enhanced Research Visibility</h4>
+                <h4 className="text-lg font-bold mb-1" style={{color: '#1a3a4a'}}>Enhanced Research Visibility</h4>
                 <p className="text-gray-600 text-sm">
-                  Articles published in IJARCM are discoverable across multiple prestigious academic databases, ensuring maximum reach and impact for your research.
+                  Articles published in WJIIS are discoverable across multiple prestigious academic databases, ensuring maximum reach and impact for your research.
                 </p>
               </div>
             </div>
             <a
               href="/about"
-              className="flex-shrink-0 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="flex-shrink-0 px-6 py-3 text-white rounded-xl font-bold text-sm transition-all duration-300 shadow-lg"
+              style={{background: '#e8622a'}}
             >
               Learn More
             </a>

@@ -105,64 +105,68 @@ export default function HomePage() {
         }}
       />
       
-      <div className="min-h-screen bg-white font-sans">
+      <div className="min-h-screen font-sans">
         
         {/* Hero Section */}
-        <section className="relative bg-slate-50 border-b border-slate-200">
+        <section className="relative border-b border-slate-200" style={{background: 'linear-gradient(135deg, #1a3a4a 0%, #1a6b7a 100%)'}}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-8 space-y-6">
-                <div className="inline-flex items-center px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-semibold tracking-wide uppercase">
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase" style={{background: 'rgba(255,255,255,0.15)', color: '#87d4e0'}}>
                   ISSN: 3108-2211
                 </div>
 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight text-white">
                   World Journal of <br className="hidden md:block" />
-                  <span className="text-slate-700">Interdisciplinary Innovation Sciences</span>
+                  <span style={{color: '#87d4e0'}}>Interdisciplinary Innovation Sciences</span>
                 </h1>
 
-                <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
+                <p className="text-xl max-w-2xl leading-relaxed" style={{color: '#b2e0e8'}}>
                   Publishing rigorous, peer-reviewed research that bridges disciplinary boundaries and advances scientific knowledge for a global audience.
                 </p>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Link
                     href="/submit"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors font-medium text-lg shadow-sm"
+                    className="inline-flex items-center justify-center px-6 py-3 text-white rounded-md transition-colors font-medium text-lg shadow-sm"
+                    style={{background: '#e8622a'}}
+                    onMouseEnter={e => (e.currentTarget.style.background='#c94f1f')}
+                    onMouseLeave={e => (e.currentTarget.style.background='#e8622a')}
                   >
                     Submit Manuscript
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Link>
-                  
+
                   <Link
                     href="/library"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-50 transition-colors font-medium text-lg"
+                    className="inline-flex items-center justify-center px-6 py-3 rounded-md transition-colors font-medium text-lg"
+                    style={{background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.3)'}}
                   >
                     Browse Library
                   </Link>
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-8 pt-8 border-t border-slate-200 max-w-lg">
+                <div className="grid grid-cols-3 gap-8 pt-8 max-w-lg" style={{borderTop: '1px solid rgba(255,255,255,0.2)'}}>
                   <div>
-                    <div className="text-3xl font-bold text-slate-900">{stats.totalPapers.toLocaleString()}+</div>
-                    <div className="text-sm text-slate-500 font-medium">Published Papers</div>
+                    <div className="text-3xl font-bold text-white">{stats.totalPapers.toLocaleString()}+</div>
+                    <div className="text-sm font-medium" style={{color: '#87d4e0'}}>Published Papers</div>
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-slate-900">{stats.totalAuthors.toLocaleString()}+</div>
-                    <div className="text-sm text-slate-500 font-medium">Authors</div>
+                    <div className="text-3xl font-bold text-white">{stats.totalAuthors.toLocaleString()}+</div>
+                    <div className="text-sm font-medium" style={{color: '#87d4e0'}}>Authors</div>
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-slate-900">12+</div>
-                    <div className="text-sm text-slate-500 font-medium">Indexing</div>
+                    <div className="text-3xl font-bold text-white">12+</div>
+                    <div className="text-sm font-medium" style={{color: '#87d4e0'}}>Indexing</div>
                   </div>
                 </div>
               </div>
-              
+
               {/* Leadership/Board Preview */}
               <div className="lg:col-span-4">
-                <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-                  <h3 className="font-serif font-bold text-lg text-slate-900 mb-4 border-b border-slate-100 pb-2">Editorial Leadership</h3>
+                <div className="rounded-lg p-6 shadow-sm" style={{background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)'}}>
+                  <h3 className="font-serif font-bold text-lg text-white mb-4 pb-2" style={{borderBottom: '1px solid rgba(255,255,255,0.2)'}}>Editorial Leadership</h3>
                   <OurLeadership />
                 </div>
               </div>
@@ -234,28 +238,28 @@ export default function HomePage() {
             ) : latestPapers.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {latestPapers.map((paper) => (
-                  <div key={paper.id} className="group bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all duration-200">
+                  <div key={paper.id} className="group bg-white rounded-lg p-6 border border-slate-200 hover:shadow-md transition-all duration-200" style={{borderTop: '3px solid #1a6b7a'}}>
                     <div className="flex items-start justify-between mb-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style={{background: '#e8f6f8', color: '#1a6b7a'}}>
                         {paper.category}
                       </span>
                       <span className="text-xs text-slate-500">
                         {new Date(paper.issuePublishDate || paper.publishedAt).toLocaleDateString()}
                       </span>
                     </div>
-                    
-                    <h3 className="font-serif font-bold text-lg mb-2 text-slate-900 group-hover:text-blue-700 transition-colors line-clamp-2">
+
+                    <h3 className="font-serif font-bold text-lg mb-2 transition-colors line-clamp-2" style={{color: '#1a3a4a'}}>
                       <Link href={`/papers/${paper.id}`}>{paper.title}</Link>
                     </h3>
-                    
+
                     <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-4">
                       {paper.abstract}
                     </p>
-                    
+
                     <div className="mb-4 text-xs text-slate-500">
-                      <span className="font-semibold text-slate-700">Authors:</span> {paper.authors.join(', ')}
+                      <span className="font-semibold" style={{color: '#1a6b7a'}}>Authors:</span> {paper.authors.join(', ')}
                     </div>
-                    
+
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                       <div className="flex items-center text-xs text-slate-500">
                         <Download className="w-3 h-3 mr-1" />
@@ -263,7 +267,8 @@ export default function HomePage() {
                       </div>
                       <Link
                         href={`/papers/${paper.id}`}
-                        className="text-slate-900 hover:text-blue-700 font-medium text-sm flex items-center"
+                        className="font-medium text-sm flex items-center"
+                        style={{color: '#e8622a'}}
                       >
                         Read More <ArrowRight className="w-3 h-3 ml-1" />
                       </Link>
@@ -282,15 +287,15 @@ export default function HomePage() {
         </section>
 
         {/* Why Choose Us */}
-        <section className="py-16 bg-slate-50 border-y border-slate-200">
+        <section className="py-16 border-y border-slate-200" style={{background: '#f0f9fb'}}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4">Journal Features</h2>
+              <h2 className="text-3xl font-serif font-bold mb-4" style={{color: '#1a3a4a'}}>Journal Features</h2>
               <p className="text-slate-600 max-w-2xl mx-auto">
-                 We are committed to the highest standards of academic publishing.
+                We are committed to the highest standards of academic publishing.
               </p>
             </div>
-            
+
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {[
                 { icon: Globe, title: 'Global Reach', desc: 'Connecting researchers from over 50 countries.' },
@@ -300,9 +305,9 @@ export default function HomePage() {
                 { icon: Target, title: 'High Visibility', desc: 'Indexed in major academic databases for maximum citation.' },
                 { icon: CheckCircle2, title: 'Ethical Standards', desc: 'Strict adherence to COPE guidelines for publication ethics.' }
               ].map((feature, index) => (
-                <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-                  <feature.icon className="w-8 h-8 text-slate-700 mb-4" />
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">{feature.title}</h3>
+                <div key={index} className="bg-white rounded-lg p-6 shadow-sm" style={{border: '1px solid #b2dde6', borderTop: '3px solid #e8622a'}}>
+                  <feature.icon className="w-8 h-8 mb-4" style={{color: '#1a6b7a'}} />
+                  <h3 className="text-lg font-bold mb-2" style={{color: '#1a3a4a'}}>{feature.title}</h3>
                   <p className="text-slate-600 text-sm">{feature.desc}</p>
                 </div>
               ))}
@@ -324,24 +329,26 @@ export default function HomePage() {
         <PublicationStatistics />
 
         {/* CTA */}
-        <section className="py-16 bg-slate-900 text-white">
+        <section className="py-16 text-white" style={{background: 'linear-gradient(135deg, #1a3a4a 0%, #1a6b7a 100%)'}}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6 text-white">
               Submit Your Research Today
             </h2>
-            <p className="text-slate-300 mb-8 text-lg">
+            <p className="mb-8 text-lg" style={{color: '#b2e0e8'}}>
               Join our community of scholars and contribute to the global body of knowledge.
             </p>
             <div className="flex justify-center gap-4">
               <Link
                 href="/submit"
-                className="inline-flex items-center justify-center px-8 py-3 bg-white text-slate-900 rounded-md hover:bg-slate-100 transition-colors font-bold"
+                className="inline-flex items-center justify-center px-8 py-3 text-white rounded-md transition-colors font-bold"
+                style={{background: '#e8622a'}}
               >
                 Start Submission
               </Link>
               <Link
                 href="/submission-guidelines"
-                className="inline-flex items-center justify-center px-8 py-3 border border-slate-600 text-white rounded-md hover:bg-slate-800 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-3 text-white rounded-md transition-colors"
+                style={{border: '1px solid rgba(255,255,255,0.4)'}}
               >
                 Read Guidelines
               </Link>

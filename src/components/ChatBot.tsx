@@ -115,10 +115,9 @@ const ChatBot: React.FC = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 ${
-          isOpen
-            ? 'bg-red-500 hover:bg-red-600 rotate-90'
-            : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+          isOpen ? 'bg-red-500 hover:bg-red-600 rotate-90' : ''
         }`}
+        style={!isOpen ? {background: '#1a3a4a'} : {}}
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
       >
         {isOpen ? (
@@ -139,7 +138,7 @@ const ChatBot: React.FC = () => {
           onKeyDown={handleKeyDown}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex items-center justify-between">
+          <div className="text-white p-4 flex items-center justify-between" style={{background: '#1a3a4a'}}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <Bot className="w-6 h-6" />
@@ -175,18 +174,16 @@ const ChatBot: React.FC = () => {
                 <div
                   className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                     message.sender === 'user'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-md'
+                      ? 'text-white rounded-br-md'
                       : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md'
                   }`}
+                  style={message.sender === 'user' ? {background: '#1a6b7a'} : {}}
                 >
                   {/* Avatar */}
                   <div className={`flex items-start gap-2 ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        message.sender === 'user'
-                          ? 'bg-white/20'
-                          : 'bg-gradient-to-r from-blue-500 to-purple-500'
-                      }`}
+                      className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{background: message.sender === 'user' ? 'rgba(255,255,255,0.2)' : '#1a6b7a'}}
                     >
                       {message.sender === 'user' ? (
                         <User className="w-3.5 h-3.5 text-white" />
@@ -231,7 +228,7 @@ const ChatBot: React.FC = () => {
               <div className="flex justify-start">
                 <div className="bg-white rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-gray-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{background: '#1a6b7a'}}>
                       <Bot className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div className="flex gap-1">
@@ -294,7 +291,8 @@ const ChatBot: React.FC = () => {
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isTyping}
-                className="p-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="p-2.5 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                style={{background: '#e8622a'}}
                 aria-label="Send message"
               >
                 <Send className="w-5 h-5" />

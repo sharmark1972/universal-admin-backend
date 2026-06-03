@@ -1,4 +1,4 @@
-import { Inter, Playfair_Display, Lato } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
 import './globals.css';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import VisitorTrackingProvider from '@/components/providers/VisitorTrackingProvider';
@@ -11,9 +11,7 @@ import StructuredData from '@/components/StructuredData';
 import PerformanceProvider from '@/components/providers/PerformanceProvider';
 import ChatBot from '@/components/ChatBot';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
-const lato = Lato({ weight: ['100', '300', '400', '700', '900'], subsets: ['latin'], variable: '--font-lato' });
+const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-lato', weight: ['300', '400', '500', '600', '700', '800', '900'] });
 
 export const metadata: Metadata = {
   title: {
@@ -93,7 +91,7 @@ export default function RootLayout({
       <head>
         <StructuredData />
       </head>
-      <body className={`${inter.variable} ${playfair.variable} ${lato.variable} font-sans min-h-screen bg-white text-slate-900 antialiased`}>
+      <body className={`${dmSans.variable} font-sans min-h-screen bg-white text-slate-900 antialiased`}>
         <PerformanceProvider>
           <SessionProvider>
             <VisitorTrackingProvider>
