@@ -74,7 +74,7 @@ const Navbar = () => {
       label: 'About',
       id: 'about',
       items: [
-        { href: '/about', label: 'About IJARCM' },
+        { href: '/about', label: 'About WJIIS' },
         { href: '/submission-guidelines', label: 'Submission Guidelines' },
         { href: '/peer-review-process', label: 'Peer Review Process' },
         { href: '/contact', label: 'Contact Us' },

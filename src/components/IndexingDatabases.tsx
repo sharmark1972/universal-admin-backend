@@ -19,11 +19,11 @@ const DatabaseCard = ({ database, index }: { database: IndexingDatabase; index: 
       href={database.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-indigo-100 overflow-hidden animate-slide-in-up"
-      style={{ animationDelay: `${index * 100}ms` }}
+      className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden animate-slide-in-up"
+      style={{ animationDelay: `${index * 100}ms`, border: '1px solid #b2dde6' }}
     >
       {/* Hover gradient effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{background: 'linear-gradient(135deg, rgba(26,107,122,0.06) 0%, rgba(26,58,74,0.06) 100%)'}}></div>
       
       {/* Shine effect on hover */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -48,18 +48,18 @@ const DatabaseCard = ({ database, index }: { database: IndexingDatabase; index: 
 
         {/* Database name */}
         <div className="text-center">
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+          <h3 className="text-xl font-bold mb-2 transition-colors group-hover:[color:#1a6b7a] text-gray-900">
             {database.name}
           </h3>
-          <div className="flex items-center justify-center text-sm text-gray-500 group-hover:text-indigo-500 transition-colors">
+          <div className="flex items-center justify-center text-sm text-gray-500 transition-colors group-hover:[color:#1a6b7a]">
             <Award className="w-4 h-4 mr-1" />
             <span className="font-medium">Verified Indexing</span>
           </div>
         </div>
 
         {/* External link indicator */}
-        <div className="absolute top-4 right-4 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
-          <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110" style={{background: '#e8f6f8'}}>
+          <svg className="w-4 h-4" style={{color: '#1a6b7a'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
         </div>

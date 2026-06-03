@@ -9,24 +9,24 @@ export default function AboutPage() {
   return (
     <>
       <DynamicSEO
-        title="About IJARCM - International Journal of Academic Research in Commerce and Management"
-        description="Learn about IJARCM's mission, vision, and commitment to advancing knowledge in commerce and management through high-quality peer-reviewed research. Join our global academic community."
+        title="About WJIIS - World Journal of Interdisciplinary Innovation Sciences"
+        description="Learn about WJIIS's mission, vision, and commitment to advancing interdisciplinary research. A peer-reviewed, open-access journal publishing rigorous scholarship across disciplines."
         keywords={[
-          'about IJARCM',
-          'academic journal',
-          'commerce research',
-          'management studies',
+          'about WJIIS',
+          'interdisciplinary journal',
+          'innovation sciences',
           'peer review',
+          'open access journal',
           'international journal',
-          'business research',
-          'scholarly publishing'
+          'scholarly publishing',
+          'WJIIS'
         ]}
         canonicalUrl="/about"
       />
       <WebsiteSchema
-        name="IJARCM About Page"
-        url="https://ijrcam.com/about"
-        description="Learn about the International Journal of Academic Research in Commerce and Management - our mission, vision, research areas, and editorial team."
+        name="WJIIS About Page"
+        url="https://wjiis.com/about"
+        description="Learn about the World Journal of Interdisciplinary Innovation Sciences - our mission, vision, research areas, and editorial standards."
       />
       <div className="bg-white py-4 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,9 +43,9 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-serif font-bold text-slate-900 mb-6">About IJARCM</h1>
+            <h1 className="text-4xl font-serif font-bold text-slate-900 mb-6">About WJIIS</h1>
             <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              The International Journal of Academic Research in Commerce and Management is a premier platform for scholarly research, fostering innovation and excellence in business and management studies.
+              The World Journal of Interdisciplinary Innovation Sciences (WJIIS) is a peer-reviewed, open-access academic journal committed to publishing rigorous research that transcends traditional disciplinary boundaries.
             </p>
           </div>
 
@@ -53,36 +53,36 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 gap-8 mb-16">
             <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
               <div className="flex items-center mb-6">
-                <div className="p-3 bg-slate-100 rounded-lg mr-4">
-                  <Target className="h-6 w-6 text-slate-700" />
+                <div className="p-3 rounded-lg mr-4" style={{background: '#e8f6f8'}}>
+                  <Target className="h-6 w-6" style={{color: '#1a6b7a'}} />
                 </div>
                 <h2 className="text-2xl font-serif font-bold text-slate-900">Our Mission</h2>
               </div>
               <p className="text-slate-600 leading-relaxed">
-                To advance knowledge in commerce and management through the publication of high-quality, peer-reviewed research that addresses contemporary challenges and contributes to the development of innovative solutions for business and society.
+                Advancing knowledge through rigorous, interdisciplinary scholarship that addresses real-world challenges. We publish research that transcends traditional disciplinary boundaries to foster innovation and scientific progress.
               </p>
             </div>
             
             <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
               <div className="flex items-center mb-6">
-                <div className="p-3 bg-slate-100 rounded-lg mr-4">
-                  <Globe className="h-6 w-6 text-slate-700" />
+                <div className="p-3 rounded-lg mr-4" style={{background: '#e8f6f8'}}>
+                  <Globe className="h-6 w-6" style={{color: '#1a6b7a'}} />
                 </div>
                 <h2 className="text-2xl font-serif font-bold text-slate-900">Our Vision</h2>
               </div>
               <p className="text-slate-600 leading-relaxed">
-                To be the leading international journal that bridges the gap between academic research and practical application in commerce and management, fostering global collaboration and knowledge exchange.
+                To foster global scholarly collaboration across disciplines to tackle complex problems, while democratizing knowledge through open-access publishing to accelerate scientific progress worldwide.
               </p>
             </div>
           </div>
 
           {/* Key Features */}
           <div className="mb-16">
-            <h2 className="text-3xl font-serif font-bold text-slate-900 text-center mb-12">Why Choose IJARCM?</h2>
+            <h2 className="text-3xl font-serif font-bold text-slate-900 text-center mb-12">Why Choose WJIIS?</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-lg mx-auto mb-6">
-                  <Award className="h-6 w-6 text-slate-700" />
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-6" style={{background: '#e8f6f8'}}>
+                  <Award className="h-6 w-6" style={{color: '#1a6b7a'}} />
                 </div>
                 <h3 className="text-xl font-serif font-bold text-slate-900 mb-3">Rigorous Peer Review</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">
@@ -91,8 +91,8 @@ export default function AboutPage() {
               </div>
               
               <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-lg mx-auto mb-6">
-                  <Globe className="h-6 w-6 text-slate-700" />
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-6" style={{background: '#e8f6f8'}}>
+                  <Globe className="h-6 w-6" style={{color: '#1a6b7a'}} />
                 </div>
                 <h3 className="text-xl font-serif font-bold text-slate-900 mb-3">Global Reach</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">
@@ -101,8 +101,8 @@ export default function AboutPage() {
               </div>
               
               <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm text-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-lg mx-auto mb-6">
-                  <TrendingUp className="h-6 w-6 text-slate-700" />
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-6" style={{background: '#e8f6f8'}}>
+                  <TrendingUp className="h-6 w-6" style={{color: '#1a6b7a'}} />
                 </div>
                 <h3 className="text-xl font-serif font-bold text-slate-900 mb-3">Impact & Innovation</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">
@@ -121,12 +121,12 @@ export default function AboutPage() {
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { title: 'Strategic Management', desc: 'Corporate strategy, competitive advantage, and organizational performance.' },
-                { title: 'Marketing & Consumer Behavior', desc: 'Digital marketing, brand management, and consumer psychology.' },
-                { title: 'Financial Management', desc: 'Corporate finance, investment analysis, and risk management.' },
-                { title: 'Operations & Supply Chain', desc: 'Process optimization, logistics, and supply chain sustainability.' },
-                { title: 'Human Resource Management', desc: 'Talent management, organizational behavior, and workplace dynamics.' },
-                { title: 'International Business', desc: 'Global trade, cross-cultural management, and emerging markets.' }
+                { title: 'Natural Sciences', desc: 'Physics, chemistry, biology, and interdisciplinary natural science research.' },
+                { title: 'Engineering & Technology', desc: 'Applied engineering, emerging technologies, and innovative solutions.' },
+                { title: 'Medicine & Health Sciences', desc: 'Clinical research, public health, and biomedical innovations.' },
+                { title: 'Environmental Sciences', desc: 'Climate change, sustainability, ecology, and environmental policy.' },
+                { title: 'Social Sciences', desc: 'Sociology, economics, psychology, and cross-cultural studies.' },
+                { title: 'Computational Sciences', desc: 'AI, data science, algorithms, and computational methodologies.' }
               ].map((area, index) => (
                 <div key={index} className="bg-slate-50 rounded-lg p-6 border border-slate-100 hover:border-slate-300 transition-colors">
                   <h3 className="text-lg font-serif font-bold text-slate-900 mb-2">{area.title}</h3>
@@ -139,23 +139,23 @@ export default function AboutPage() {
           </div>
 
           {/* Statistics Strip */}
-          <div className="bg-slate-900 rounded-lg p-12 text-white mb-16">
-            <div className="grid md:grid-cols-4 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
+          <div className="rounded-lg p-12 text-white mb-16" style={{background: 'linear-gradient(135deg, #1a3a4a 0%, #1a6b7a 100%)'}}>
+            <div className="grid md:grid-cols-4 gap-8 text-center divide-y md:divide-y-0 md:divide-x" style={{borderColor: 'rgba(255,255,255,0.15)'}}>
               <div className="pt-4 md:pt-0">
-                <div className="text-4xl font-bold mb-2 font-serif">500+</div>
-                <div className="text-slate-400 text-sm uppercase tracking-wider">Published Articles</div>
+                <div className="text-4xl font-bold mb-2">2025</div>
+                <div className="text-sm uppercase tracking-wider" style={{color: '#87d4e0'}}>Established</div>
               </div>
               <div className="pt-4 md:pt-0">
-                <div className="text-4xl font-bold mb-2 font-serif">50+</div>
-                <div className="text-slate-400 text-sm uppercase tracking-wider">Countries Represented</div>
+                <div className="text-4xl font-bold mb-2">50+</div>
+                <div className="text-sm uppercase tracking-wider" style={{color: '#87d4e0'}}>Countries Represented</div>
               </div>
               <div className="pt-4 md:pt-0">
-                <div className="text-4xl font-bold mb-2 font-serif">95%</div>
-                <div className="text-slate-400 text-sm uppercase tracking-wider">Author Satisfaction</div>
+                <div className="text-4xl font-bold mb-2">4–6</div>
+                <div className="text-sm uppercase tracking-wider" style={{color: '#87d4e0'}}>Weeks Review Timeline</div>
               </div>
               <div className="pt-4 md:pt-0">
-                <div className="text-4xl font-bold mb-2 font-serif">2.8</div>
-                <div className="text-slate-400 text-sm uppercase tracking-wider">Impact Factor</div>
+                <div className="text-4xl font-bold mb-2">Monthly</div>
+                <div className="text-sm uppercase tracking-wider" style={{color: '#87d4e0'}}>Publication Frequency</div>
               </div>
             </div>
           </div>
@@ -164,18 +164,20 @@ export default function AboutPage() {
           <div className="text-center bg-white p-12 rounded-lg border border-slate-200 shadow-sm">
             <h2 className="text-2xl font-serif font-bold text-slate-900 mb-4">Join Our Academic Community</h2>
             <p className="text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Whether you&apos;re a researcher looking to publish your work or an academic seeking cutting-edge insights, IJARCM welcomes you to be part of our global community.
+              Whether you&apos;re a researcher looking to publish your work or an academic seeking cutting-edge insights, WJIIS welcomes you to be part of our global interdisciplinary community.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/submit"
-                className="inline-flex items-center justify-center px-8 py-3 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors font-medium"
+                className="inline-flex items-center justify-center px-8 py-3 text-white rounded-md transition-colors font-medium"
+                style={{background: '#e8622a'}}
               >
                 Submit Your Research
               </a>
               <a
                 href="/contact"
-                className="inline-flex items-center justify-center px-8 py-3 border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 transition-colors font-medium"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-md transition-colors font-medium"
+                style={{border: '1px solid #1a6b7a', color: '#1a6b7a'}}
               >
                 Contact Us
               </a>

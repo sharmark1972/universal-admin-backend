@@ -38,9 +38,9 @@ export default function ContactPage() {
   return (
     <>
       <DynamicSEO
-        title="Contact Us - IJARCM"
-        description="Get in touch with IJARCM editorial team. Contact us for manuscript submissions, technical support, or general inquiries."
-        keywords={['contact IJARCM', 'editorial contact', 'academic journal support']}
+        title="Contact Us - WJIIS"
+        description="Get in touch with WJIIS editorial team. Contact us for manuscript submissions, technical support, or general inquiries."
+        keywords={['contact WJIIS', 'editorial contact', 'academic journal support']}
         canonicalUrl="/contact"
       />
       <WebsiteSchema />
@@ -62,7 +62,7 @@ export default function ContactPage() {
           <div className="text-center mb-16">
             <h1 className="text-4xl font-serif font-bold text-slate-900 mb-6">Contact Us</h1>
             <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              We&apos;re here to help! Whether you have questions about submissions, need technical support, or want to learn more about IJARCM, we&apos;d love to hear from you.
+              We&apos;re here to help! Whether you have questions about submissions, need technical support, or want to learn more about WJIIS, our editorial team typically responds within 24–48 hours.
             </p>
           </div>
 
@@ -74,49 +74,50 @@ export default function ContactPage() {
                 
                 <div className="space-y-6">
                   <div className="flex items-start">
-                    <div className="flex items-center justify-center w-10 h-10 bg-slate-100 rounded-lg mr-4 flex-shrink-0">
-                      <Mail className="h-5 w-5 text-slate-700" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg mr-4 flex-shrink-0" style={{background: '#e8f6f8'}}>
+                      <Mail className="h-5 w-5" style={{color: '#1a6b7a'}} />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide">Email</h3>
-                      <a href="mailto:info@ijarcm.com" className="block text-slate-600 hover:text-blue-700">info@ijarcm.com</a>
-                      <a href="mailto:editor@ijarcm.com" className="block text-slate-600 hover:text-blue-700">editor@ijarcm.com</a>
+                      <a href="mailto:info@wjiis.com" className="block text-slate-600 hover:text-[#1a6b7a]">info@wjiis.com</a>
+                      <a href="mailto:editor@wjiis.com" className="block text-slate-600 hover:text-[#1a6b7a]">editor@wjiis.com</a>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
-                    <div className="flex items-center justify-center w-10 h-10 bg-slate-100 rounded-lg mr-4 flex-shrink-0">
-                      <Phone className="h-5 w-5 text-slate-700" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg mr-4 flex-shrink-0" style={{background: '#e8f6f8'}}>
+                      <Phone className="h-5 w-5" style={{color: '#1a6b7a'}} />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide">Phone</h3>
-                      <p className="text-slate-600">+91 8562985629</p>
+                      <p className="text-slate-600">+91 85629 85629</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
-                    <div className="flex items-center justify-center w-10 h-10 bg-slate-100 rounded-lg mr-4 flex-shrink-0">
-                      <MapPin className="h-5 w-5 text-slate-700" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg mr-4 flex-shrink-0" style={{background: '#e8f6f8'}}>
+                      <MapPin className="h-5 w-5" style={{color: '#1a6b7a'}} />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide">Address</h3>
                       <p className="text-slate-600 text-sm leading-relaxed">
-                        Sharma Tower, 24, Dhawan Complex<br />
-                        Street No. 4, Vijay Nagar<br />
-                        Amritsar, Punjab - 143001
+                        F11/434 Paris Town St No 7<br />
+                        Near Park with Tubewell, Vijay Nagar<br />
+                        Batala Road, Amritsar - 143001<br />
+                        Punjab, India
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start">
-                    <div className="flex items-center justify-center w-10 h-10 bg-slate-100 rounded-lg mr-4 flex-shrink-0">
-                      <Clock className="h-5 w-5 text-slate-700" />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg mr-4 flex-shrink-0" style={{background: '#e8f6f8'}}>
+                      <Clock className="h-5 w-5" style={{color: '#1a6b7a'}} />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 mb-1 uppercase tracking-wide">Office Hours</h3>
                       <p className="text-slate-600 text-sm">
-                        Mon - Fri: 9:00 AM - 6:00 PM<br />
-                        Sat: 10:00 AM - 4:00 PM
+                        Mon – Fri: 9:00 AM – 6:00 PM (IST)<br />
+                        Sat: 10:00 AM – 2:00 PM (IST)
                       </p>
                     </div>
                   </div>
@@ -127,13 +128,13 @@ export default function ContactPage() {
               <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
                 <h3 className="text-lg font-serif font-bold text-slate-900 mb-4">Quick Support</h3>
                 <div className="space-y-3">
-                  <button className="w-full flex items-center p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-left">
-                    <MessageSquare className="h-5 w-5 text-slate-500 mr-3" />
-                    <span className="text-slate-700 font-medium text-sm">Live Chat</span>
+                  <button className="w-full flex items-center p-3 rounded-lg transition-colors text-left" style={{background: '#f0f9fb'}}>
+                    <MessageSquare className="h-5 w-5 mr-3" style={{color: '#1a6b7a'}} />
+                    <span className="font-medium text-sm" style={{color: '#1a3a4a'}}>Live Chat</span>
                   </button>
-                  <button className="w-full flex items-center p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-left">
-                    <HelpCircle className="h-5 w-5 text-slate-500 mr-3" />
-                    <span className="text-slate-700 font-medium text-sm">FAQ Center</span>
+                  <button className="w-full flex items-center p-3 rounded-lg transition-colors text-left" style={{background: '#f0f9fb'}}>
+                    <HelpCircle className="h-5 w-5 mr-3" style={{color: '#1a6b7a'}} />
+                    <span className="font-medium text-sm" style={{color: '#1a3a4a'}}>FAQ Center</span>
                   </button>
                 </div>
               </div>
@@ -258,7 +259,8 @@ export default function ContactPage() {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        className="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-medium rounded-md text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        style={{background: '#e8622a'}}
                       >
                         {isSubmitting ? (
                           <>
