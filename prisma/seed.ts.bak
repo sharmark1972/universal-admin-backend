@@ -9,22 +9,21 @@ async function main() {
   // Create default admin user
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@wjiis.com' },
+    where: { email: 'admin@ijarcm.com' },
     update: {},
     create: {
       id: 'admin-001',
-      email: 'admin@wjiis.com',
+      email: 'admin@ijarcm.com',
       passwordHash: adminPasswordHash,
       firstName: 'System',
       lastName: 'Administrator',
       role: UserRole.ADMIN,
-      institution: 'WJIIS',
+      institution: 'IJARCM',
       isVerified: true,
     },
   });
 
   console.log('✅ Created admin user:', admin.email);
-
 
   // Create sample student user
   const studentPasswordHash = await bcrypt.hash('student123', 10);

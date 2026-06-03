@@ -81,26 +81,26 @@ export default function HomePage() {
 
   return (
     <>
-      <DynamicSEO
-        title="WJIIS - World Journal of Interdisciplinary Innovation Sciences"
-        description="Publishing rigorous, peer-reviewed research that bridges disciplinary boundaries and advances scientific knowledge for a global audience."
-        keywords={['interdisciplinary', 'innovation sciences', 'research journal', 'academic publishing', 'WJIIS', 'peer review']}
-        ogImage="https://wjiis.com/og-image.jpg"
-        canonicalUrl="https://wjiis.com"
+      <DynamicSEO 
+        title="IJARCM - International Journal of Academic Research in Commerce and Management"
+        description="Premier academic journal publishing rigorous peer-reviewed research in commerce, management, and technology."
+        keywords={['commerce', 'management', 'research journal', 'academic publishing', 'IJARCM', 'peer review']}
+        ogImage="https://ijrcam.com/og-image.jpg"
+        canonicalUrl="https://ijrcam.com"
       />
-      <WebsiteSchema
-        name="WJIIS"
-        url="https://wjiis.com"
-        description="Publishing rigorous, peer-reviewed research that bridges disciplinary boundaries and advances scientific knowledge for a global audience."
-        publisher="WJIIS"
+      <WebsiteSchema 
+        name="IJARCM"
+        url="https://ijrcam.com"
+        description="Premier academic journal publishing rigorous peer-reviewed research in commerce, management, and technology."
+        publisher="IJARCM"
       />
-      <OrganizationSchema
-        name="WJIIS"
-        url="https://wjiis.com"
-        logo="https://wjiis.com/wjiis-logo.svg"
-        description="WJIIS - World Journal of Interdisciplinary Innovation Sciences"
+      <OrganizationSchema 
+        name="IJARCM"
+        url="https://ijrcam.com"
+        logo="https://ijrcam.com/ijarcm-logo.svg"
+        description="IJARCM - International Journal of Academic Research in Commerce and Management"
         contactPoint={{
-          email: "editor@wjiis.com",
+          email: "editor@ijrcam.com",
           contactType: "Editorial Office"
         }}
       />
@@ -113,16 +113,16 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-8 space-y-6">
                 <div className="inline-flex items-center px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-semibold tracking-wide uppercase">
-                  ISSN: 3108-2211
+                  ISSN: 2455-0116 (Print) | 2395-6410 (Online)
                 </div>
-
+                
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
-                  World Journal of <br className="hidden md:block" />
-                  <span className="text-slate-700">Interdisciplinary Innovation Sciences</span>
+                  International Journal of <br className="hidden md:block" />
+                  <span className="text-slate-700">Academic Research in Commerce & Management</span>
                 </h1>
-
+                
                 <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
-                  Publishing rigorous, peer-reviewed research that bridges disciplinary boundaries and advances scientific knowledge for a global audience.
+                  A premier international journal dedicated to publishing rigorous, peer-reviewed research that shapes the future of business and technology.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
