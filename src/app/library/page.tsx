@@ -305,7 +305,7 @@ export default function LibraryPage() {
                       variant="ghost"
                       size="sm"
                       onClick={clearFilters}
-                      className="h-8 text-xs text-blue-600 hover:text-blue-800 px-2"
+                      className="h-8 text-xs text-[#1a6b7a] hover:text-[#1a3a4a] px-2"
                     >
                       Reset
                     </Button>
@@ -528,7 +528,7 @@ export default function LibraryPage() {
                             </span>
                           </div>
 
-                          <Link href={`/papers/${paper.id}`} className="group-hover:text-blue-700 transition-colors">
+                          <Link href={`/papers/${paper.id}`} className="group-hover:text-[#155a68] transition-colors">
                             <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">
                               {paper.title}
                             </h3>
@@ -578,7 +578,7 @@ export default function LibraryPage() {
                                 PDF
                               </Button>
                               <Link href={`/papers/${paper.id}`}>
-                                <Button size="sm" className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                                <Button size="sm" className="h-8 text-xs bg-[#1a6b7a] hover:bg-[#155a68] text-white">
                                   View Paper
                                 </Button>
                               </Link>
@@ -620,7 +620,7 @@ export default function LibraryPage() {
                               onClick={() => setCurrentPage(pageNum)}
                               className={`w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors ${
                                 currentPage === pageNum
-                                  ? 'bg-slate-900 text-white'
+                                  ? 'text-white bg-[#1a3a4a]'
                                   : 'text-slate-600 hover:bg-slate-100'
                               }`}
                             >
