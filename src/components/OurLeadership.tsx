@@ -42,25 +42,25 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
 
   return (
     <div className="flex items-center gap-3 py-3 group">
-      <Avatar className="h-10 w-10 border border-slate-200 bg-white">
+      <Avatar className="h-10 w-10 border bg-white" style={{borderColor: 'rgba(255,255,255,0.3)'}}>
         <AvatarImage src={member.imageUrl} alt={member.name} />
-        <AvatarFallback className="bg-slate-50 text-slate-600 text-xs font-serif">
+        <AvatarFallback className="text-xs font-bold" style={{background: 'rgba(255,255,255,0.15)', color: 'white'}}>
           {initials}
         </AvatarFallback>
       </Avatar>
-      
+
       <div className="flex-1">
-        <h4 className="text-sm font-serif font-bold text-slate-900 leading-tight group-hover:text-blue-800 transition-colors">
+        <h4 className="text-sm font-bold text-white leading-tight transition-colors">
           {member.name}
         </h4>
-        
+
         <div className="flex flex-col">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mt-0.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wider mt-0.5" style={{color: '#87d4e0'}}>
             {roleLabel}
           </span>
-          
+
           {(member.title || member.institution) && (
-            <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+            <p className="text-[10px] mt-0.5 line-clamp-1" style={{color: 'rgba(255,255,255,0.6)'}}>
               {member.title || member.institution}
             </p>
           )}
@@ -140,16 +140,15 @@ export default function OurLeadership({ className = '' }: OurLeadershipProps) {
   const sortedMembers = [...members].sort((a, b) => a.displayOrder - b.displayOrder);
 
   return (
-    <div className={`flex flex-col divide-y divide-slate-100 ${className}`}>
-      {sortedMembers.map((member) => (
-        <MemberCard
-          key={member.id}
-          member={member}
-        />
+    <div className={`flex flex-col ${className}`} style={{divideColor: 'rgba(255,255,255,0.1)'}}>
+      {sortedMembers.map((member, idx) => (
+        <div key={member.id} style={idx > 0 ? {borderTop: '1px solid rgba(255,255,255,0.1)'} : {}}>
+          <MemberCard member={member} />
+        </div>
       ))}
-      
-      <div className="pt-4 text-center">
-        <a href="/editorial-board" className="text-xs font-semibold text-blue-700 hover:text-blue-900 uppercase tracking-wide">
+
+      <div className="pt-4 text-center" style={{borderTop: '1px solid rgba(255,255,255,0.1)'}}>
+        <a href="/editorial-board" className="text-xs font-semibold uppercase tracking-wide" style={{color: '#87d4e0'}}>
           View Full Board
         </a>
       </div>
