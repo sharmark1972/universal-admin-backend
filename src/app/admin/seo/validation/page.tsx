@@ -39,7 +39,7 @@ export default function GoogleScholarValidationPage() {
 
   const loadPapers = async () => {
     try {
-      const response = await fetch('/api/admin/papers');
+      const response = await fetch('/api/admin/papers', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         const formattedPapers = data.papers.map((paper) => ({
@@ -71,7 +71,7 @@ export default function GoogleScholarValidationPage() {
 
   const loadValidationHistory = async () => {
     try {
-      const response = await fetch('/api/admin/seo/validation-history');
+      const response = await fetch('/api/admin/seo/validation-history', { cache: 'no-store' });
       if (response.ok) {
         const history = await response.json();
         setValidationHistory(history);

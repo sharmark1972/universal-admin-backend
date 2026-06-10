@@ -21,7 +21,7 @@ const MainContent = ({ children }: MainContentProps) => {
           </div>
         )}
         <div>
-          <BreadcrumbContainer className="mb-4 px-4 lg:px-6" />
+          <BreadcrumbContainer className="pt-4 mb-4 px-4 lg:px-6" />
           {children}
         </div>
       </main>

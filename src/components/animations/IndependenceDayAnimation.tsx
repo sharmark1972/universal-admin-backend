@@ -78,7 +78,7 @@ export default function IndependenceDayAnimation({ customMessage }: { customMess
           <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-orange-500 via-white to-green-500 bg-clip-text text-transparent drop-shadow-2xl">
             Happy Independence Day!
           </h1>
-          <p className="mt-4 text-2xl text-white drop-shadow-lg">🇮🇳 जय हिंद! 🇮🇳</p>
+          <p className="mt-4 text-2xl text-white drop-shadow-lg">🇮🇳 Jai Hind! 🇮🇳</p>
           {customMessage && (
             <p className="mt-4 text-xl text-white drop-shadow-lg">
               {customMessage}

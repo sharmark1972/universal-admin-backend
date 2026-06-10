@@ -74,7 +74,7 @@ export default function ChiefPatronsManagement() {
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
       });
       
-      const response = await fetch(`/api/admin/chief-patrons?${params}`);
+      const response = await fetch(`/api/admin/chief-patrons?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setPatrons(data.chiefPatrons || []);

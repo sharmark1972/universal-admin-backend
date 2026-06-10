@@ -27,7 +27,7 @@ export default function EditJournalPage() {
   useEffect(() => {
     const fetch_ = async () => {
       try {
-        const res = await fetch(`/api/admin/journals/${id}`);
+        const res = await fetch(`/api/admin/journals/${id}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           const j = data.journal;

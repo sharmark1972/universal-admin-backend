@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -56,8 +57,9 @@ interface EbooksData {
 
 export default function AdminEbooksPage() {
   const { isAdmin } = useAuth();
-  const [ebooksData, setEbooksData] = useState<EbooksData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { ebooksData: cachedEbooks, ebooksLoaded, setEbooksData: saveEbooks, invalidateEbooks } = useAdminStore();
+  const [ebooksData, setEbooksData] = useState<EbooksData | null>(cachedEbooks);
+  const [loading, setLoading] = useState(!ebooksLoaded);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [accessTypeFilter, setAccessTypeFilter] = useState<string>('ALL');
@@ -71,9 +73,14 @@ export default function AdminEbooksPage() {
   }, [isAdmin]);
 
   const fetchEbooks = useCallback(async () => {
+    if (ebooksLoaded && cachedEbooks && searchTerm === '' && categoryFilter === 'ALL' && accessTypeFilter === 'ALL' && currentPage === 1) {
+      setEbooksData(cachedEbooks);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      
+
       const params = new URLSearchParams({
         search: searchTerm,
         category: categoryFilter,
@@ -82,10 +89,13 @@ export default function AdminEbooksPage() {
         limit: '10'
       });
 
-      const response = await fetch(`/api/admin/ebooks?${params}`);
+      const response = await fetch(`/api/admin/ebooks?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setEbooksData(data);
+        if (searchTerm === '' && categoryFilter === 'ALL' && accessTypeFilter === 'ALL' && currentPage === 1) {
+          saveEbooks(data);
+        }
       } else {
         throw new Error('Failed to fetch ebooks');
       }
@@ -164,6 +174,7 @@ export default function AdminEbooksPage() {
 
       if (response.ok) {
         alert('Ebook deleted successfully');
+        invalidateEbooks();
         fetchEbooks();
       } else {
         const error = await response.json();

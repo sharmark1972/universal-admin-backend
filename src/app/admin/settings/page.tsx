@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import {
@@ -59,8 +60,9 @@ interface SystemSettings {
 
 export default function AdminSettings() {
   const { isAdmin } = useAuth();
-  const [settings, setSettings] = useState<SystemSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { settings: cachedSettings, settingsLoaded, setSettings: saveSettings, invalidateSettings } = useAdminStore();
+  const [settings, setSettings] = useState<SystemSettings | null>(cachedSettings);
+  const [loading, setLoading] = useState(!settingsLoaded);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [showPasswords, setShowPasswords] = useState(false);
@@ -73,16 +75,23 @@ export default function AdminSettings() {
   }, [isAdmin]);
 
   useEffect(() => {
+    if (settingsLoaded && cachedSettings) {
+      setSettings(cachedSettings);
+      setLoading(false);
+      return;
+    }
+
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/admin/settings');
-        
+        const response = await fetch('/api/admin/settings', { cache: 'no-store' });
+
         if (!response.ok) {
           throw new Error('Failed to fetch settings');
         }
         
         const data = await response.json();
         setSettings(data);
+        saveSettings(data);
       } catch (error) {
         console.error('Failed to fetch settings:', error);
       } finally {
@@ -111,6 +120,7 @@ export default function AdminSettings() {
       }
       
       setSaveMessage('Settings saved successfully!');
+      if (settings) saveSettings(settings);
       setTimeout(() => setSaveMessage(''), 3000);
     } catch (error) {
       console.error('Failed to save settings:', error);

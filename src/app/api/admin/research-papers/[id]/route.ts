@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import {
-  deleteResearchPaperDraft,
-  getResearchPaperDraft,
-  updateResearchPaperDraft,
-} from '@/lib/research-papers/research-paper-service';
-import type { ResearchPaperDraftUpdateInput } from '@/lib/research-papers/types';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'ADMIN') {
-    return null;
-  }
+  if (!session?.user || session.user.role !== 'ADMIN') return null;
   return session;
 }
 
@@ -24,22 +17,26 @@ export async function GET(
 ) {
   try {
     const session = await requireAdmin();
-    if (!session) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
+    if (!session) return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
 
-    const draft = await getResearchPaperDraft(params.id);
-    if (!draft) {
-      return NextResponse.json({ error: 'Research paper draft not found' }, { status: 404 });
-    }
+    const paper = await prisma.paper.findUnique({
+      where: { id: params.id },
+      include: {
+        paperAuthors: {
+          include: { user: { select: { firstName: true, lastName: true, email: true, institution: true } } },
+          orderBy: { authorOrder: 'asc' },
+        },
+        sections: { orderBy: { sectionOrder: 'asc' } },
+        issue: { select: { id: true, title: true, volume: true, issueNumber: true, year: true } },
+      },
+    });
 
-    return NextResponse.json({ draft });
+    if (!paper) return NextResponse.json({ error: 'Paper not found' }, { status: 404 });
+
+    return NextResponse.json({ paper });
   } catch (error) {
-    console.error('Error fetching research paper:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 },
-    );
+    console.error('Error fetching paper:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -49,20 +46,28 @@ export async function PATCH(
 ) {
   try {
     const session = await requireAdmin();
-    if (!session) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
+    if (!session) return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
 
-    const body = (await request.json()) as ResearchPaperDraftUpdateInput;
-    const draft = await updateResearchPaperDraft(params.id, body);
+    const body = await request.json();
+    const { title, abstract, keywords, doi, issueId, status, bodyColumnMode } = body;
 
-    return NextResponse.json({ draft });
+    const paper = await prisma.paper.update({
+      where: { id: params.id },
+      data: {
+        ...(title !== undefined ? { title } : {}),
+        ...(abstract !== undefined ? { abstract } : {}),
+        ...(keywords !== undefined ? { keywords: Array.isArray(keywords) ? keywords.join(', ') : keywords } : {}),
+        ...(doi !== undefined ? { doi } : {}),
+        ...(issueId !== undefined ? { issueId: issueId || null } : {}),
+        ...(status !== undefined ? { status } : {}),
+        ...(bodyColumnMode !== undefined ? { bodyColumnMode } : {}),
+      },
+    });
+
+    return NextResponse.json({ paper });
   } catch (error) {
-    console.error('Error updating research paper:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: error instanceof Error && error.message.includes('not found') ? 404 : 400 },
-    );
+    console.error('Error updating paper:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 400 });
   }
 }
 
@@ -72,17 +77,12 @@ export async function DELETE(
 ) {
   try {
     const session = await requireAdmin();
-    if (!session) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
+    if (!session) return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
 
-    await deleteResearchPaperDraft(params.id);
-    return NextResponse.json({ message: 'Research paper draft deleted successfully' });
+    await prisma.paper.delete({ where: { id: params.id } });
+    return NextResponse.json({ message: 'Paper deleted successfully' });
   } catch (error) {
-    console.error('Error deleting research paper:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: error instanceof Error && error.message.includes('not found') ? 404 : 500 },
-    );
+    console.error('Error deleting paper:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

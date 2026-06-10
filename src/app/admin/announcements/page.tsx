@@ -96,7 +96,7 @@ export default function AnnouncementsManagement() {
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
       });
       
-      const response = await fetch(`/api/admin/announcements?${params}`);
+      const response = await fetch(`/api/admin/announcements?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setAnnouncements(data.announcements);
@@ -118,7 +118,7 @@ export default function AnnouncementsManagement() {
 
   const fetchConferences = async () => {
     try {
-      const response = await fetch('/api/conferences');
+      const response = await fetch('/api/conferences', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setConferences(data.conferences || []);

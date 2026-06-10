@@ -25,7 +25,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { signOut } from 'next-auth/react';
-import Navbar from '@/components/layout/Navbar';
 
 export default function AdminLayout({
   children,
@@ -100,12 +99,6 @@ export default function AdminLayout({
       current: false,
     },
     {
-      name: 'Research Papers',
-      href: '/admin/research-papers',
-      icon: FileText,
-      current: false,
-    },
-    {
       name: 'Ebooks',
       href: '/admin/ebooks',
       icon: Book,
@@ -161,13 +154,10 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <Navbar />
-      
       {/* Admin Content */}
       <div className="flex">
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+        <div className={`fixed top-20 bottom-0 left-0 z-40 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Admin Panel</h2>
             <Button

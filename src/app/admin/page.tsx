@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -82,8 +83,9 @@ interface AdminStats {
 
 export default function AdminDashboard() {
   const { user, isAdmin } = useAuth();
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { stats: cachedStats, statsLoaded, setStats: saveStats, invalidateStats } = useAdminStore();
+  const [stats, setStats] = useState<AdminStats | null>(cachedStats);
+  const [loading, setLoading] = useState(!statsLoaded);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -95,14 +97,21 @@ export default function AdminDashboard() {
   }, [isAdmin]);
 
   useEffect(() => {
+    if (statsLoaded && cachedStats) {
+      setStats(cachedStats);
+      setLoading(false);
+      return;
+    }
+
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/admin/stats');
+        const response = await fetch('/api/admin/stats', { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Failed to fetch admin stats');
         }
         const data = await response.json();
         setStats(data);
+        saveStats(data);
       } catch (error) {
         console.error('Failed to fetch admin stats:', error);
       } finally {
@@ -111,7 +120,7 @@ export default function AdminDashboard() {
     };
 
     fetchStats();
-  }, []);
+  }, [statsLoaded]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -156,7 +165,7 @@ export default function AdminDashboard() {
   const getSearchResultLink = (result: SearchResult) => {
     switch (result.type) {
       case 'Paper':
-        return `/admin/papers/${result.id}/edit`;
+        return `/admin/papers/${result.id}`;
       case 'User':
         return `/admin/users`;
       case 'Conference':

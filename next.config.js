@@ -14,7 +14,7 @@ const nextConfig = {
   
   // Image optimization for Core Web Vitals
   images: {
-    domains: ['localhost', 'ijarcm.com', 'www.ijarcm.com'],
+    domains: ['localhost', 'wjiis.com', 'www.wjiis.com'],
     remotePatterns: [
       {
         protocol: 'https',

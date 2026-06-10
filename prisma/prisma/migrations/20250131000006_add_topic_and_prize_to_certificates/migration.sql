@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `certificates` ADD COLUMN `topic` VARCHAR(500) NULL,
+    ADD COLUMN `prize` VARCHAR(500) NULL;

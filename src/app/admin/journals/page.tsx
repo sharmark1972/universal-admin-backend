@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import Link from 'next/link';
 import { Globe, Plus, Pencil, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
@@ -18,16 +19,23 @@ interface Journal {
 }
 
 export default function JournalsPage() {
-  const [journals, setJournals] = useState<Journal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { journals: cachedJournals, journalsLoaded, setJournals: saveJournals, invalidateJournals } = useAdminStore();
+  const [journals, setJournals] = useState<Journal[]>(cachedJournals);
+  const [loading, setLoading] = useState(!journalsLoaded);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchJournals = async () => {
+    if (journalsLoaded && cachedJournals.length > 0) {
+      setJournals(cachedJournals);
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/admin/journals');
+      const res = await fetch('/api/admin/journals', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setJournals(data.journals || []);
+        saveJournals(data.journals || []);
       }
     } catch (error) {
       console.error('Failed to fetch journals:', error);
@@ -44,6 +52,7 @@ export default function JournalsPage() {
     try {
       const res = await fetch(`/api/admin/journals/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        invalidateJournals();
         fetchJournals();
       } else {
         const err = await res.json();

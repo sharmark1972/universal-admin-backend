@@ -353,16 +353,16 @@ export default function SubmitPaper() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Publication Fees Info Box */}
-        <div className="mb-8 p-4 bg-[#f0f9fb] border border-[#b2dde6] rounded-lg flex gap-4">
-          <Info className="w-5 h-5 text-[#1a6b7a] flex-shrink-0 mt-0.5" />
+        <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg flex gap-4">
+          <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h3 className="font-semibold text-[#1a3a4a] mb-1">Publication Fees</h3>
-            <p className="text-sm text-[#1a3a4a] mb-2">
+            <h3 className="font-semibold text-blue-900 mb-1">Publication Fees</h3>
+            <p className="text-sm text-blue-800 mb-2">
               Submission is FREE. Publication charges apply only after your paper is accepted.
             </p>
             <Link 
               href="/fees" 
-              className="text-sm font-semibold text-[#1a6b7a] hover:text-[#155a68] inline-flex items-center gap-1"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
             >
               View Publication Fees & APC Calculator
               <span>→</span>
@@ -378,16 +378,16 @@ export default function SubmitPaper() {
                 <li key={step.id} className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''}`}>
                   {stepIdx !== steps.length - 1 && (
                     <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                      <div className={`h-0.5 w-full ${currentStep > step.id ? 'bg-[#1a6b7a]' : 'bg-gray-200'}`} />
+                      <div className={`h-0.5 w-full ${currentStep > step.id ? 'bg-blue-600' : 'bg-gray-200'}`} />
                     </div>
                   )}
                   <div className="relative flex items-center justify-center">
                     <div
                       className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${
                         currentStep > step.id
-                          ? 'bg-[#1a6b7a] text-white'
+                          ? 'bg-blue-600 text-white'
                           : currentStep === step.id
-                          ? 'bg-[#e8f6f8] text-[#1a6b7a] border-2 border-[#1a6b7a]'
+                          ? 'bg-blue-100 text-blue-600 border-2 border-blue-600'
                           : 'bg-gray-200 text-gray-500'
                       }`}
                     >
@@ -426,7 +426,7 @@ export default function SubmitPaper() {
                     type="text"
                     value={submission.title}
                     onChange={(e) => setSubmission(prev => ({ ...prev, title: e.target.value }))}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a] ${
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                       errors.title ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="Enter your paper title"
@@ -441,7 +441,7 @@ export default function SubmitPaper() {
                   <select
                     value={submission.category}
                     onChange={(e) => setSubmission(prev => ({ ...prev, category: e.target.value }))}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a] ${
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                       errors.category ? 'border-red-300' : 'border-gray-300'
                     }`}
                   >
@@ -461,7 +461,7 @@ export default function SubmitPaper() {
                     value={submission.abstract}
                     onChange={(e) => setSubmission(prev => ({ ...prev, abstract: e.target.value }))}
                     rows={6}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a] ${
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                       errors.abstract ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="Enter your paper abstract (maximum 300 words)"
@@ -482,13 +482,13 @@ export default function SubmitPaper() {
                       value={newKeyword}
                       onChange={(e) => setNewKeyword(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Add a keyword"
                     />
                     <button
                       type="button"
                       onClick={addKeyword}
-                      className="px-4 py-2 bg-[#1a6b7a] text-white rounded-md hover:bg-[#155a68] focus:outline-none focus:ring-2 focus:ring-[#1a6b7a]"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <Plus className="h-4 w-4" />
                     </button>
@@ -497,13 +497,13 @@ export default function SubmitPaper() {
                     {submission.keywords.map((keyword, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-[#e8f6f8] text-[#1a3a4a]"
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
                       >
                         {keyword}
                         <button
                           type="button"
                           onClick={() => removeKeyword(keyword)}
-                          className="ml-2 text-[#1a6b7a] hover:text-[#1a3a4a]"
+                          className="ml-2 text-blue-600 hover:text-blue-800"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -547,7 +547,7 @@ export default function SubmitPaper() {
                             type="text"
                             value={author.firstName}
                             onChange={(e) => updateAuthor(author.id, 'firstName', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
                         <div>
@@ -558,7 +558,7 @@ export default function SubmitPaper() {
                             type="text"
                             value={author.lastName}
                             onChange={(e) => updateAuthor(author.id, 'lastName', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
                         <div>
@@ -569,7 +569,7 @@ export default function SubmitPaper() {
                             type="email"
                             value={author.email}
                             onChange={(e) => updateAuthor(author.id, 'email', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
                         <div>
@@ -580,7 +580,7 @@ export default function SubmitPaper() {
                             type="text"
                             value={author.institution}
                             onChange={(e) => updateAuthor(author.id, 'institution', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
                       </div>
@@ -590,7 +590,7 @@ export default function SubmitPaper() {
                             type="checkbox"
                             checked={author.isCorresponding}
                             onChange={(e) => updateAuthor(author.id, 'isCorresponding', e.target.checked)}
-                            className="h-4 w-4 text-[#1a6b7a] focus:ring-[#1a6b7a] border-gray-300 rounded"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <span className="ml-2 text-sm text-gray-900">Corresponding Author</span>
                         </label>
@@ -608,7 +608,7 @@ export default function SubmitPaper() {
                         type="text"
                         value={newAuthor.firstName}
                         onChange={(e) => setNewAuthor(prev => ({ ...prev, firstName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         placeholder="First Name"
                       />
                     </div>
@@ -617,7 +617,7 @@ export default function SubmitPaper() {
                         type="text"
                         value={newAuthor.lastName}
                         onChange={(e) => setNewAuthor(prev => ({ ...prev, lastName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Last Name"
                       />
                     </div>
@@ -626,7 +626,7 @@ export default function SubmitPaper() {
                         type="email"
                         value={newAuthor.email}
                         onChange={(e) => setNewAuthor(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Email"
                       />
                     </div>
@@ -635,7 +635,7 @@ export default function SubmitPaper() {
                         type="text"
                         value={newAuthor.institution}
                         onChange={(e) => setNewAuthor(prev => ({ ...prev, institution: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Institution"
                       />
                     </div>
@@ -646,7 +646,7 @@ export default function SubmitPaper() {
                         type="checkbox"
                         checked={newAuthor.isCorresponding}
                         onChange={(e) => setNewAuthor(prev => ({ ...prev, isCorresponding: e.target.checked }))}
-                        className="h-4 w-4 text-[#1a6b7a] focus:ring-[#1a6b7a] border-gray-300 rounded"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-900">Corresponding Author</span>
                     </label>
@@ -654,7 +654,7 @@ export default function SubmitPaper() {
                       type="button"
                       onClick={addAuthor}
                       disabled={!newAuthor.firstName || !newAuthor.lastName || !newAuthor.email}
-                      className="px-4 py-2 bg-[#1a6b7a] text-white rounded-md hover:bg-[#155a68] focus:outline-none focus:ring-2 focus:ring-[#1a6b7a] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Add Author
                     </button>
@@ -673,7 +673,7 @@ export default function SubmitPaper() {
                 <div
                   className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                     dragActive
-                      ? 'border-[#5bc4d4] bg-[#f0f9fb]'
+                      ? 'border-blue-400 bg-blue-50'
                       : errors.file
                       ? 'border-red-300 bg-red-50'
                       : 'border-gray-300 hover:border-gray-400'
@@ -702,7 +702,7 @@ export default function SubmitPaper() {
                         >
                           Remove File
                         </button>
-                        <label className="px-4 py-2 text-sm font-medium text-[#1a6b7a] bg-[#e8f6f8] rounded-md hover:bg-[#d0eef3] focus:outline-none focus:ring-2 focus:ring-[#1a6b7a] cursor-pointer">
+                        <label className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
                           Replace File
                           <input
                             type="file"
@@ -727,7 +727,7 @@ export default function SubmitPaper() {
                           Supported formats: PDF, DOC, DOCX (max 10MB)
                         </p>
                       </div>
-                      <label className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#1a6b7a] hover:bg-[#155a68] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1a6b7a] cursor-pointer">
+                      <label className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
                         <Upload className="h-5 w-5 mr-2" />
                         Choose File
                         <input
@@ -743,12 +743,12 @@ export default function SubmitPaper() {
                 
                 {errors.file && <p className="text-sm text-red-600">{errors.file}</p>}
                 
-                <div className="bg-[#f0f9fb] border border-[#b2dde6] rounded-md p-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
                   <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-[#5bc4d4] mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5" />
                     <div className="ml-3">
-                      <h4 className="text-sm font-medium text-[#1a3a4a]">File Requirements</h4>
-                      <div className="mt-2 text-sm text-[#1a6b7a]">
+                      <h4 className="text-sm font-medium text-blue-800">File Requirements</h4>
+                      <div className="mt-2 text-sm text-blue-700">
                         <ul className="list-disc list-inside space-y-1">
                           <li>File must be in PDF, DOC, or DOCX format</li>
                           <li>Maximum file size is 10MB</li>
@@ -775,7 +775,7 @@ export default function SubmitPaper() {
                     value={submission.coverLetter}
                     onChange={(e) => setSubmission(prev => ({ ...prev, coverLetter: e.target.value }))}
                     rows={6}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a] ${
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                       errors.coverLetter ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="Explain the significance of your work and why it should be published in this journal..."
@@ -791,7 +791,7 @@ export default function SubmitPaper() {
                     value={submission.suggestedReviewers}
                     onChange={(e) => setSubmission(prev => ({ ...prev, suggestedReviewers: e.target.value }))}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Suggest potential reviewers with their names, institutions, and email addresses..."
                   />
                   <p className="mt-1 text-sm text-gray-500">
@@ -807,7 +807,7 @@ export default function SubmitPaper() {
                     value={submission.conflictOfInterest}
                     onChange={(e) => setSubmission(prev => ({ ...prev, conflictOfInterest: e.target.value }))}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Declare any potential conflicts of interest or state 'None'..."
                   />
                 </div>
@@ -820,7 +820,7 @@ export default function SubmitPaper() {
                     value={submission.ethicsStatement}
                     onChange={(e) => setSubmission(prev => ({ ...prev, ethicsStatement: e.target.value }))}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Describe ethical considerations, IRB approval, consent procedures, etc..."
                   />
                 </div>
@@ -833,7 +833,7 @@ export default function SubmitPaper() {
                     value={submission.fundingInformation}
                     onChange={(e) => setSubmission(prev => ({ ...prev, fundingInformation: e.target.value }))}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#1a6b7a] focus:border-[#1a6b7a]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="List funding sources, grant numbers, and acknowledgments..."
                   />
                 </div>
@@ -923,7 +923,7 @@ export default function SubmitPaper() {
                 <button
                   type="button"
                   onClick={handlePrevious}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#1a6b7a]"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   Previous
                 </button>
@@ -937,7 +937,7 @@ export default function SubmitPaper() {
                     type="button"
                     onClick={() => handleSubmit(true)}
                     disabled={submitting}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#1a6b7a] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saveAsDraft ? (
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -950,7 +950,7 @@ export default function SubmitPaper() {
                     type="button"
                     onClick={() => handleSubmit(false)}
                     disabled={submitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#1a6b7a] border border-transparent rounded-md shadow-sm hover:bg-[#155a68] focus:outline-none focus:ring-2 focus:ring-[#1a6b7a] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting && !saveAsDraft ? (
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -964,7 +964,7 @@ export default function SubmitPaper() {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#1a6b7a] border border-transparent rounded-md shadow-sm hover:bg-[#155a68] focus:outline-none focus:ring-2 focus:ring-[#1a6b7a]"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   Next
                 </button>

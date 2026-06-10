@@ -80,7 +80,7 @@ export default function EditConferencePage() {
   useEffect(() => {
     const fetchConference = async () => {
       try {
-        const response = await fetch(`/api/admin/conferences/${conferenceId}`);
+        const response = await fetch(`/api/admin/conferences/${conferenceId}`, { cache: 'no-store' });
         const result = await response.json();
 
         if (response.ok) {

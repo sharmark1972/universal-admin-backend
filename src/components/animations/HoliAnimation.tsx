@@ -79,7 +79,7 @@ export default function HoliAnimation({ customMessage }: { customMessage?: strin
           <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent drop-shadow-2xl">
             Happy Holi!
           </h1>
-          <p className="mt-4 text-2xl text-white drop-shadow-lg">🎨 रंगों का त्योहार 🎨</p>
+          <p className="mt-4 text-2xl text-white drop-shadow-lg">🎨 Festival of Colors 🎨</p>
           {customMessage && (
             <p className="mt-4 text-xl text-white drop-shadow-lg">
               {customMessage}

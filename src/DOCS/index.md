@@ -2,7 +2,7 @@
 
 > This index is for AI agents. Read this file first to find relevant files without scanning the entire codebase.
 > Each section lists what the file does and which source files are involved.
-> Last updated: 2026-05-31
+> Last updated: 2026-06-09
 
 ---
 
@@ -15,49 +15,44 @@
 
 ---
 
-## Research Paper Studio
+## Research Paper System
 
 **Full details:** [Research Paper audit.md](./Research%20Paper%20audit.md)
+
+> **Updated 2026-06-09:** Draft system removed. Papers now save directly to `papers` table.
 
 ### Files Map
 
 | What you need | File |
 |---------------|------|
-| Types / interfaces | `src/lib/research-papers/types.ts` |
-| File validation + R2 upload | `src/lib/research-papers/storage.ts` |
-| Text parser (basic fallback) | `src/lib/research-papers/parser.ts` |
 | DOCX → HTML extraction | `src/lib/research-papers/docx-extractor.ts` |
-| AI metadata + layout (Gemini/ZAI) | `src/lib/research-papers/gemini-extractor.ts` |
-| Rule-based layout fallback | `src/lib/research-papers/layout-analyzer.ts` |
-| Table column counter | `src/lib/research-papers/table-analyzer.ts` |
-| Input validation (title/DOI/publish) | `src/lib/research-papers/validation.ts` |
-| Main service (all DB ops) | `src/lib/research-papers/research-paper-service.ts` |
+| AI metadata (Gemini/ZAI) | `src/lib/research-papers/gemini-extractor.ts` |
+| File validation + R2 upload | `src/lib/research-papers/storage.ts` |
 | PDF generation (Playwright) | `src/lib/research-papers/pdf-service.ts` |
 | PDF CSS | `src/components/admin/research-papers/pdf/research-paper-pdf.css` |
 | TipTap section editor | `src/components/admin/research-papers/SectionEditor.tsx` |
-| Admin editor page (UI) | `src/app/admin/research-papers/new/page.tsx` |
-| Admin list page | `src/app/admin/research-papers/page.tsx` |
-| Upload API (SSE streaming) | `src/app/api/admin/research-papers/upload/route.ts` |
-| Fetch / update / delete draft | `src/app/api/admin/research-papers/[id]/route.ts` |
-| Generate preview PDF | `src/app/api/admin/research-papers/[id]/generate-preview-pdf/route.ts` |
-| Publish paper | `src/app/api/admin/research-papers/[id]/publish/route.ts` |
-| Serve published PDF | `src/app/api/admin/research-papers/[id]/pdf/route.ts` |
+| Admin add/edit page | `src/app/admin/research-papers/new/page.tsx` |
+| Admin papers list | `src/app/admin/papers/page.tsx` |
+| Submit paper API | `src/app/api/admin/research-papers/submit/route.ts` |
+| Publish paper API | `src/app/api/admin/research-papers/[id]/publish/route.ts` |
+| AI extract API | `src/app/api/admin/research-papers/ai-extract/route.ts` |
+| Preview PDF API | `src/app/api/admin/research-papers/preview-pdf/route.ts` |
+| Fetch / update / delete paper | `src/app/api/admin/research-papers/[id]/route.ts` |
+| Old bulk actions (status change) | `src/app/api/admin/papers/bulk/route.ts` |
 
 ### Quick Facts
 
-- **Workflow:** DOCX upload → SSE stream → AI extract → admin edit → preview PDF → publish
-- **DB models:** `ResearchPaperDraft`, `ResearchPaperAuthor`, `ResearchPaperSection`
+- **Workflow:** DOCX upload (local) → AI extract (local) → admin edit (local) → submit → `papers` table
+- **DB models:** `Paper`, `PaperSection`, `PaperAuthor` → `User`
+- **Status flow:** SUBMITTED → UNDER_REVIEW → ACCEPTED → PUBLISHED (all manual admin actions)
+- **Authors:** Email required → find-or-create User (role: AUTHOR, no password/login)
 - **Packages:** `mammoth` (DOCX), `playwright` (PDF), `@google/generative-ai` (Gemini), `aws-sdk` (R2)
-- **Extraction chain:** mammoth (HTML) → Gemini metadata → ZAI fallback → basic regex fallback
-- **Layout chain:** Gemini AI layout → ZAI fallback → `layout-analyzer.ts` rule-based
-- **AI models:** `gemini-2.5-flash-lite` (Gemini), `GLM-4.7-Flash` (ZAI via OpenAI-compatible API)
-- **SSE:** Upload streams real-time step status (gemini/zai/basic) to frontend
-- **Abstract:** 148 words max — enforced in UI counter + AI prompt
+- **Extraction chain:** Gemini metadata → ZAI fallback → basic regex fallback
+- **AI models:** `gemini-2.5-flash-lite` (Gemini), `GLM-4.7-Flash` (ZAI)
+- **Abstract:** 148 words max
 - **PDF page 1:** Float layout — `.pdf-article-info` 38% left + `.pdf-abstract-panel` 62% right
-- **PDF body:** Per-section column control via `isFullWidth` — `pdf-section-full` or `pdf-section-two-col`
-- **Layout rules:** Table/image → full-width; plain text → 2-col; odd last 2-col → full-width; Abstract/References/Conclusion → always full-width
-- **Storage:** Source DOCX files in Cloudflare R2 under `research-papers/sources/{uuid}/`
-- **Known issues:** TipTap underline warning, Gemini quota, PDF blank page (CSS), abstract double-render
+- **Storage:** DOCX + PDF in Cloudflare R2 under `research-papers/`
+- **Legacy:** `ResearchPaperDraft` table still in DB but no longer used by new flow
 
 ---
 

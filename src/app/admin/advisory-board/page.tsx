@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -525,8 +526,9 @@ function MemberSkeleton() {
 }
 
 export default function AdminAdvisoryBoardPage() {
-  const [members, setMembers] = useState<AdvisoryBoardMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { advisoryMembers: cachedAdvisory, advisoryLoaded, setAdvisoryMembers: saveAdvisory, invalidateAdvisory } = useAdminStore();
+  const [members, setMembers] = useState<AdvisoryBoardMember[]>(cachedAdvisory);
+  const [loading, setLoading] = useState(!advisoryLoaded);
   const [submitting, setSubmitting] = useState(false);
   const [editingMember, setEditingMember] = useState<AdvisoryBoardMember | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -536,14 +538,21 @@ export default function AdminAdvisoryBoardPage() {
   }, []);
 
   const fetchMembers = async () => {
+    const { advisoryLoaded: loaded, advisoryMembers: cached } = useAdminStore.getState();
+    if (loaded && cached.length > 0) {
+      setMembers(cached);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/advisory-board');
+      const response = await fetch('/api/admin/advisory-board', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch members');
       }
       const data = await response.json();
       setMembers(data);
+      saveAdvisory(data);
     } catch {
       toast.error('Failed to fetch advisory board members');
     } finally {
@@ -581,6 +590,7 @@ export default function AdminAdvisoryBoardPage() {
 
       toast.success('Advisory board member created successfully');
       setShowCreateDialog(false);
+      invalidateAdvisory();
       fetchMembers();
     } catch {
       toast.error('Failed to create advisory board member');
@@ -622,6 +632,7 @@ export default function AdminAdvisoryBoardPage() {
 
       toast.success('Advisory board member updated successfully');
       setEditingMember(null);
+      invalidateAdvisory();
       fetchMembers();
     } catch {
       toast.error('Failed to update advisory board member');
@@ -641,6 +652,7 @@ export default function AdminAdvisoryBoardPage() {
       }
 
       toast.success('Advisory board member deleted successfully');
+      invalidateAdvisory();
       fetchMembers();
     } catch {
       toast.error('Failed to delete advisory board member');

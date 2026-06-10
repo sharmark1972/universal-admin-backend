@@ -74,7 +74,7 @@ export default function AdminCitationsPage() {
 
   const fetchCitations = async () => {
     try {
-      const response = await fetch('/api/citations');
+      const response = await fetch('/api/citations', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setCitations(data);

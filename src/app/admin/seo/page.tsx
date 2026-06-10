@@ -130,7 +130,7 @@ export default function SEOManagement() {
         ...(search && { search })
       });
       
-      const response = await fetch(`/api/seo?${params}`);
+      const response = await fetch(`/api/seo?${params}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch SEO configs');
       
       const data = await response.json();

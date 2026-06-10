@@ -298,7 +298,7 @@ export default function AdminSubmissionGuidelinesPage() {
   const fetchGuidelines = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/submission-guidelines');
+      const response = await fetch('/api/submission-guidelines', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch guidelines');
       }

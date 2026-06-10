@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -525,8 +526,9 @@ function MemberSkeleton() {
 }
 
 export default function AdminReviewerBoardPage() {
-  const [members, setMembers] = useState<ReviewerBoardMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { reviewerMembers: cachedReviewer, reviewerLoaded, setReviewerMembers: saveReviewer, invalidateReviewer } = useAdminStore();
+  const [members, setMembers] = useState<ReviewerBoardMember[]>(cachedReviewer);
+  const [loading, setLoading] = useState(!reviewerLoaded);
   const [submitting, setSubmitting] = useState(false);
   const [editingMember, setEditingMember] = useState<ReviewerBoardMember | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -536,14 +538,21 @@ export default function AdminReviewerBoardPage() {
   }, []);
 
   const fetchMembers = async () => {
+    const { reviewerLoaded: loaded, reviewerMembers: cached } = useAdminStore.getState();
+    if (loaded && cached.length > 0) {
+      setMembers(cached);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/reviewer-board');
+      const response = await fetch('/api/admin/reviewer-board', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch members');
       }
       const data = await response.json();
       setMembers(data);
+      saveReviewer(data);
     } catch {
       toast.error('Failed to fetch reviewer board members');
     } finally {
@@ -581,6 +590,7 @@ export default function AdminReviewerBoardPage() {
 
       toast.success('Reviewer board member created successfully');
       setShowCreateDialog(false);
+      invalidateReviewer();
       fetchMembers();
     } catch {
       toast.error('Failed to create reviewer board member');
@@ -622,6 +632,7 @@ export default function AdminReviewerBoardPage() {
 
       toast.success('Reviewer board member updated successfully');
       setEditingMember(null);
+      invalidateReviewer();
       fetchMembers();
     } catch {
       toast.error('Failed to update reviewer board member');
@@ -641,6 +652,7 @@ export default function AdminReviewerBoardPage() {
       }
 
       toast.success('Reviewer board member deleted successfully');
+      invalidateReviewer();
       fetchMembers();
     } catch {
       toast.error('Failed to delete reviewer board member');

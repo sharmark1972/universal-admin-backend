@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -51,8 +52,9 @@ interface UsersData {
 
 export default function AdminUsersPage() {
   const { user, isAdmin } = useAuth();
-  const [usersData, setUsersData] = useState<UsersData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { usersData: cachedUsers, usersLoaded, setUsersData: saveUsers, invalidateUsers } = useAdminStore();
+  const [usersData, setUsersData] = useState<UsersData | null>(cachedUsers);
+  const [loading, setLoading] = useState(!usersLoaded);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -65,37 +67,42 @@ export default function AdminUsersPage() {
     }
   }, [isAdmin]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        // Build query parameters
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: '10'
-        });
-        
-        if (searchTerm) params.append('search', searchTerm);
-        if (roleFilter !== 'ALL') params.append('role', roleFilter);
-        if (statusFilter !== 'ALL') params.append('status', statusFilter);
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '10'
+      });
 
-        const response = await fetch(`/api/admin/users?${params}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        
-        const data = await response.json();
-        setUsersData(data);
-      } catch (error) {
-        console.error('Failed to fetch users:', error);
-      } finally {
-        setLoading(false);
+      if (searchTerm) params.append('search', searchTerm);
+      if (roleFilter !== 'ALL') params.append('role', roleFilter);
+      if (statusFilter !== 'ALL') params.append('status', statusFilter);
+
+      const response = await fetch(`/api/admin/users?${params}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
       }
-    };
 
-    fetchUsers();
+      const data = await response.json();
+      setUsersData(data);
+      saveUsers(data);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [searchTerm, roleFilter, statusFilter, currentPage]);
+
+  useEffect(() => {
+    if (usersLoaded && cachedUsers && searchTerm === '' && roleFilter === 'ALL' && statusFilter === 'ALL' && currentPage === 1) {
+      setUsersData(cachedUsers);
+      setLoading(false);
+      return;
+    }
+    fetchUsers();
+  }, [fetchUsers]);
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -154,12 +161,10 @@ export default function AdminUsersPage() {
       const result = await response.json();
 
       if (response.ok) {
-        // Show success message
         alert(result.message);
-        // Refresh the users list
-        window.location.reload();
-        // Clear selection
         setSelectedUsers([]);
+        invalidateUsers();
+        fetchUsers();
       } else {
         alert(result.error || 'Failed to perform bulk action');
       }
@@ -182,8 +187,8 @@ export default function AdminUsersPage() {
       const result = await response.json();
       if (response.ok) {
         alert('User banned successfully');
-        // Refresh users list
-        window.location.reload();
+        invalidateUsers();
+        fetchUsers();
       } else {
         alert(result.error || 'Failed to ban user');
       }
@@ -202,8 +207,8 @@ export default function AdminUsersPage() {
       const result = await response.json();
       if (response.ok) {
         alert('User unbanned successfully');
-        // Refresh users list
-        window.location.reload();
+        invalidateUsers();
+        fetchUsers();
       } else {
         alert(result.error || 'Failed to unban user');
       }
@@ -226,8 +231,8 @@ export default function AdminUsersPage() {
       const result = await response.json();
       if (response.ok) {
         alert('Warning sent to user');
-        // Refresh users list
-        window.location.reload();
+        invalidateUsers();
+        fetchUsers();
       } else {
         alert(result.error || 'Failed to warn user');
       }

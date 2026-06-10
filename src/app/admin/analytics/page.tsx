@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import {
@@ -90,9 +91,10 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function AdminAnalyticsPage() {
   const { user, isAdmin } = useAuth();
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('30');
+  const { analyticsData: cachedAnalytics, analyticsLoaded, analyticsRange, setAnalyticsData: saveAnalytics } = useAdminStore();
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(cachedAnalytics);
+  const [loading, setLoading] = useState(!analyticsLoaded);
+  const [timeRange, setTimeRange] = useState(analyticsRange || '30');
 
   useEffect(() => {
     if (!isAdmin) {
@@ -101,17 +103,24 @@ export default function AdminAnalyticsPage() {
   }, [isAdmin]);
 
   useEffect(() => {
+    if (analyticsLoaded && cachedAnalytics && analyticsRange === timeRange) {
+      setAnalyticsData(cachedAnalytics);
+      setLoading(false);
+      return;
+    }
+
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/admin/analytics?range=${timeRange}`);
-        
+        const response = await fetch(`/api/admin/analytics?range=${timeRange}`, { cache: 'no-store' });
+
         if (!response.ok) {
           throw new Error('Failed to fetch analytics');
         }
-        
+
         const data = await response.json();
         setAnalyticsData(data);
+        saveAnalytics(data, timeRange);
       } catch (error) {
         console.error('Failed to fetch analytics:', error);
       } finally {

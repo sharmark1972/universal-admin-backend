@@ -3,15 +3,14 @@ import { prisma } from '@/lib/prisma';
 import {
   extractStructuredDataFromDocx,
 } from './docx-extractor';
-import { tryGeminiOnly, tryZaiOnly, getLayoutDecisions } from './gemini-extractor';
+import type { ExtractedStructuredData } from './docx-extractor';
+import { tryGeminiOnly, tryZaiOnly } from './gemini-extractor';
 import {
   removeStoredResearchPaperFile,
   validateResearchPaperFile,
 } from './storage';
 import { validateDraftUpdate, validatePublishReady } from './validation';
 import type { ResearchPaperDraftUpdateInput } from './types';
-import { generateResearchPaperPdf } from './pdf-service';
-import { analyzeSectionLayout } from './layout-analyzer';
 
 const includeDraftRelations = {
   authors: { orderBy: { authorOrder: 'asc' as const } },
@@ -45,43 +44,7 @@ export async function createResearchPaperDraftFromUpload(
     ? structured.rawHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
     : '';
 
-  type AiResult = Awaited<ReturnType<typeof tryGeminiOnly>>;
-  let aiResult: AiResult = null;
-  let usedStep: ExtractionStep = 'basic';
-
-  if (extractionMode === 'basic') {
-    // Without AI — sirf basic extraction
-    onStep('basic');
-    usedStep = 'basic';
-  } else if (extractionMode === 'gemini') {
-    // Sirf Gemini
-    onStep('gemini');
-    aiResult = await tryGeminiOnly(plainText);
-    usedStep = aiResult ? 'gemini' : 'basic';
-    if (!aiResult) onStep('basic');
-  } else if (extractionMode === 'zai') {
-    // Sirf ZAI
-    onStep('zai');
-    aiResult = await tryZaiOnly(plainText);
-    usedStep = aiResult ? 'zai' : 'basic';
-    if (!aiResult) onStep('basic');
-  } else {
-    // Auto — Gemini → ZAI → basic
-    onStep('gemini');
-    aiResult = await tryGeminiOnly(plainText);
-
-    if (!aiResult) {
-      onStep('zai');
-      aiResult = await tryZaiOnly(plainText);
-    }
-
-    if (!aiResult) {
-      onStep('basic');
-      usedStep = 'basic';
-    } else {
-      usedStep = aiResult ? 'gemini' : 'zai';
-    }
-  }
+  const { aiResult, usedStep } = await runAiExtraction(plainText, onStep, extractionMode);
 
   const title = aiResult?.title || structured.title;
   const abstract = aiResult?.abstract || structured.abstract;
@@ -97,7 +60,12 @@ export async function createResearchPaperDraftFromUpload(
     : structured.authors;
 
   const sanitizedKeywords = keywords.filter((k) => typeof k === 'string');
-  const sectionsWithLayout = await buildSectionsWithLayout(structured.sections);
+  const sectionsForDraft = structured.sections.map((section, index) => ({
+    heading: section.heading ? section.heading.trim() : 'Untitled Section',
+    content: section.content ? section.content.trim() : '',
+    sectionOrder: index,
+    isFullWidth: true,
+  }));
 
   return {
     extractedData: {
@@ -111,12 +79,111 @@ export async function createResearchPaperDraftFromUpload(
         isCorresponding: Boolean(author.isCorresponding),
         authorOrder: index,
       })),
-      sections: sectionsWithLayout,
+      sections: sectionsForDraft,
       sourceFileName: file.name,
       sourceFileSize: file.size,
     },
     extractionMethod: usedStep,
   };
+}
+
+export async function enhanceExtractedResearchPaperData(
+  structured: ExtractedStructuredData,
+  sourceFileName: string,
+  sourceFileSize: number,
+  onStep: (step: ExtractionStep) => void,
+  extractionMode: ExtractionMode = 'auto',
+) {
+  const plainText = structured.rawHtml
+    ? structured.rawHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    : '';
+
+  const { aiResult, usedStep } = await runAiExtraction(plainText, onStep, extractionMode);
+
+  const title = aiResult?.title || structured.title;
+  const abstract = aiResult?.abstract || structured.abstract;
+  const keywords = aiResult?.keywords?.length ? aiResult.keywords : structured.keywords;
+  const affiliation = aiResult?.affiliation || structured.affiliation;
+  const authors = aiResult?.authors?.length
+    ? aiResult.authors.map((a) => ({
+        name: a.name,
+        email: aiResult?.email || undefined,
+        affiliation: affiliation || undefined,
+        isCorresponding: a.isCorresponding,
+      }))
+    : structured.authors;
+
+  const sanitizedKeywords = keywords.filter((k) => typeof k === 'string');
+
+  const sectionsForDraft = structured.sections.map((section, index) => ({
+    heading: section.heading ? section.heading.trim() : 'Untitled Section',
+    content: section.content ? section.content.trim() : '',
+    sectionOrder: index,
+    isFullWidth: true,
+  }));
+
+  return {
+    extractedData: {
+      title: title ? title.trim() : '',
+      abstract: abstract ? abstract.trim() : '',
+      keywords: sanitizedKeywords,
+      authors: authors.map((author, index) => ({
+        name: author.name.trim(),
+        email: author.email ? author.email.trim() : '',
+        affiliation: author.affiliation ? author.affiliation.trim() : '',
+        isCorresponding: Boolean(author.isCorresponding),
+        authorOrder: index,
+      })),
+      sections: sectionsForDraft,
+      sourceFileName,
+      sourceFileSize,
+    },
+    extractionMethod: usedStep,
+  };
+}
+
+async function runAiExtraction(
+  plainText: string,
+  onStep: (step: ExtractionStep) => void,
+  extractionMode: ExtractionMode,
+) {
+  type AiResult = Awaited<ReturnType<typeof tryGeminiOnly>>;
+  let aiResult: AiResult = null;
+  let usedStep: ExtractionStep = 'basic';
+
+  if (extractionMode === 'basic') {
+    onStep('basic');
+    return { aiResult, usedStep };
+  }
+
+  if (extractionMode === 'gemini') {
+    onStep('gemini');
+    aiResult = await tryGeminiOnly(plainText);
+    usedStep = aiResult ? 'gemini' : 'basic';
+    if (!aiResult) onStep('basic');
+    return { aiResult, usedStep };
+  }
+
+  if (extractionMode === 'zai') {
+    onStep('zai');
+    aiResult = await tryZaiOnly(plainText);
+    usedStep = aiResult ? 'zai' : 'basic';
+    if (!aiResult) onStep('basic');
+    return { aiResult, usedStep };
+  }
+
+  onStep('gemini');
+  aiResult = await tryGeminiOnly(plainText);
+  usedStep = aiResult ? 'gemini' : 'basic';
+
+  if (!aiResult) {
+    onStep('zai');
+    aiResult = await tryZaiOnly(plainText);
+    usedStep = aiResult ? 'zai' : 'basic';
+  }
+
+  if (!aiResult) onStep('basic');
+  return { aiResult, usedStep };
 }
 
 
@@ -177,6 +244,8 @@ export async function updateResearchPaperDraft(id: string, input: ResearchPaperD
   const existing = await prisma.researchPaperDraft.findUnique({ where: { id } });
   if (!existing) throw new Error('Research paper draft not found.');
 
+  const bodyColumnMode = normalizeBodyColumnMode(input.bodyColumnMode);
+
   await prisma.researchPaperDraft.update({
     where: { id },
     data: {
@@ -186,8 +255,9 @@ export async function updateResearchPaperDraft(id: string, input: ResearchPaperD
       keywords: input.keywords === undefined ? undefined : input.keywords,
       doi: input.doi === undefined ? undefined : input.doi || null,
       issueId: input.issueId === undefined ? undefined : input.issueId || null,
+      bodyColumnMode: input.bodyColumnMode === undefined ? undefined : bodyColumnMode,
       status: input.status || ResearchPaperStatus.EDITING,
-    },
+    } as any,
   });
 
   if (input.authors) {
@@ -239,10 +309,33 @@ export async function deleteResearchPaperDraft(id: string) {
   const existing = await prisma.researchPaperDraft.findUnique({ where: { id } });
   if (!existing) throw new Error('Research paper draft not found.');
 
+  // Delete linked Paper record first (cascade does not remove PaperAuthor, must delete manually)
+  const linkedPaper = await prisma.paper.findUnique({ where: { researchPaperDraftId: id } });
+  if (linkedPaper) {
+    console.log('[DELETE] Removing linked Paper record —', linkedPaper.id);
+    await prisma.paperAuthor.deleteMany({ where: { paperId: linkedPaper.id } });
+    await prisma.paper.delete({ where: { id: linkedPaper.id } });
+    console.log('[DELETE] Linked Paper deleted ✅');
+  }
+
+  console.log('[DELETE] Deleting ResearchPaperDraft from DB —', { id, title: existing.title });
   await prisma.researchPaperDraft.delete({ where: { id } });
-  await removeStoredResearchPaperFile(existing.sourceFilePath);
-  await removeStoredResearchPaperFile(existing.pdfPath);
-  await removeStoredResearchPaperFile(existing.previewPdfPath);
+  console.log('[DELETE] DB record deleted ✅');
+
+  if (existing.sourceFilePath) {
+    console.log('[DELETE] Removing DOCX from R2 —', existing.sourceFilePath);
+    await removeStoredResearchPaperFile(existing.sourceFilePath);
+    console.log('[DELETE] DOCX removed from R2 ✅');
+  }
+  if (existing.pdfPath) {
+    console.log('[DELETE] Removing PDF from R2 —', existing.pdfPath);
+    await removeStoredResearchPaperFile(existing.pdfPath);
+  }
+  if (existing.previewPdfPath) {
+    console.log('[DELETE] Removing preview PDF from R2 —', existing.previewPdfPath);
+    await removeStoredResearchPaperFile(existing.previewPdfPath);
+  }
+  console.log('[DELETE] Complete ✅ — id:', id);
 }
 
 export async function publishResearchPaperDraft(id: string) {
@@ -256,9 +349,8 @@ export async function publishResearchPaperDraft(id: string) {
 
   if (!draft) throw new Error('Research paper draft not found.');
   validatePublishReady(draft);
-  await generateResearchPaperPdf(id, 'final');
 
-  return prisma.researchPaperDraft.update({
+  const updated = await prisma.researchPaperDraft.update({
     where: { id },
     data: {
       status: ResearchPaperStatus.PUBLISHED,
@@ -266,6 +358,81 @@ export async function publishResearchPaperDraft(id: string) {
     },
     include: includeDraftRelations,
   });
+
+  // Create Paper record only if it does not already exist
+  const existingPaper = await prisma.paper.findUnique({
+    where: { researchPaperDraftId: id },
+  });
+
+  if (!existingPaper && draft.pdfPath) {
+    try {
+      const keywordsString = Array.isArray(draft.keywords)
+        ? (draft.keywords as string[]).join(', ')
+        : '';
+
+      const paper = await prisma.paper.create({
+        data: {
+          title: draft.title || '',
+          abstract: draft.abstract || '',
+          keywords: keywordsString || null,
+          filePath: draft.pdfPath,
+          status: 'PUBLISHED',
+          submitterId: draft.createdBy,
+          issueId: draft.issueId || null,
+          doi: draft.doi || null,
+          publishedAt: new Date(),
+          sourceFilePath: draft.sourceFilePath,
+          sourceFileName: draft.sourceFileName,
+          sourceFileSize: draft.sourceFileSize,
+          researchPaperDraftId: draft.id,
+        },
+      });
+
+      for (let i = 0; i < draft.authors.length; i++) {
+        const a = draft.authors[i];
+        let user;
+        if (a.email?.trim()) {
+          const email = a.email.trim().toLowerCase();
+          user = await prisma.user.findUnique({ where: { email } });
+          if (!user) {
+            user = await prisma.user.create({
+              data: {
+                email,
+                firstName: a.name.split(' ')[0] || a.name,
+                lastName: a.name.split(' ').slice(1).join(' ') || 'Author',
+                passwordHash: '',
+                role: 'AUTHOR',
+                isVerified: false,
+              },
+            });
+          }
+        } else {
+          const nameParts = a.name.trim().split(' ');
+          user = await prisma.user.create({
+            data: {
+              firstName: nameParts[0] || a.name,
+              lastName: nameParts.slice(1).join(' ') || 'Author',
+              passwordHash: '',
+              role: 'AUTHOR',
+              isVerified: false,
+            },
+          } as any);
+        }
+        await prisma.paperAuthor.create({
+          data: {
+            paperId: paper.id,
+            userId: user.id,
+            authorOrder: i + 1,
+            isCorresponding: a.isCorresponding,
+          },
+        });
+      }
+    } catch (err) {
+      console.error('[publishResearchPaperDraft] Paper creation failed (non-fatal):', err);
+    }
+  }
+
+  return updated;
 }
 
 function styleUrlsInHtml(html: string): string {
@@ -348,35 +515,6 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
-async function buildSectionsWithLayout(
-  sections: Array<{ heading: string; content: string }>
-) {
-  // Try AI layout decisions first
-  const aiLayouts = await getLayoutDecisions(sections);
-
-  return sections.map((section, index) => {
-    const heading = section.heading ? section.heading.trim() : 'Untitled Section';
-    const content = section.content ? section.content.trim() : '';
-
-    let isFullWidth: boolean;
-
-    if (aiLayouts) {
-      // Match AI decision by heading
-      const aiDecision = aiLayouts.find(
-        (l) => l.heading.toLowerCase().trim() === heading.toLowerCase().trim()
-      ) || aiLayouts[index];
-
-      isFullWidth = aiDecision ? aiDecision.layout === 'full-width' : analyzeSectionLayout(heading, content);
-    } else {
-      // Fallback to rule-based
-      isFullWidth = analyzeSectionLayout(heading, content);
-    }
-
-    return {
-      heading,
-      content,
-      sectionOrder: index,
-      isFullWidth,
-    };
-  });
+function normalizeBodyColumnMode(value: unknown) {
+  return value === 'single-column' ? 'single-column' : 'two-column';
 }

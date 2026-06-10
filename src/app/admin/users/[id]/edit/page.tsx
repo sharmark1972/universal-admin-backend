@@ -71,7 +71,7 @@ export default function UserEditPage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`/api/admin/users/${userId}`);
+        const response = await fetch(`/api/admin/users/${userId}`, { cache: 'no-store' });
         if (!response.ok) {
           if (response.status === 404) {
             setError('User not found');

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -29,20 +30,22 @@ interface ApiResponse {
 export default function AdminFeesPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [loading, setLoading] = useState(true);
+  const { fees: cachedFees, feesLoaded, setFees: saveFees } = useAdminStore();
+  const [loading, setLoading] = useState(!feesLoaded);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const [fees, setFees] = useState<FeeConfig>({
+  const defaultFees: FeeConfig = {
     baseFee: 15000,
     perPageFee: 1000,
     plagiarismFee: 1000,
     rewritingFee: 2000,
     rapidPublicationFee: 30000,
     discountPercentage: 50
-  });
+  };
 
-  const [originalFees, setOriginalFees] = useState<FeeConfig>(fees);
+  const [fees, setFees] = useState<FeeConfig>(cachedFees || defaultFees);
+  const [originalFees, setOriginalFees] = useState<FeeConfig>(cachedFees || defaultFees);
 
   // Check authorization
   useEffect(() => {
@@ -59,7 +62,12 @@ export default function AdminFeesPage() {
       return;
     }
 
-    // Fetch current fees configuration
+    if (feesLoaded && cachedFees) {
+      setFees(cachedFees);
+      setOriginalFees(cachedFees);
+      setLoading(false);
+      return;
+    }
     fetchFeeConfig();
   }, [status, session, router]);
 
@@ -81,6 +89,7 @@ export default function AdminFeesPage() {
       if (data.success && data.data) {
         setFees(data.data);
         setOriginalFees(data.data);
+        saveFees(data.data);
       }
     } catch (error) {
       console.error('Error fetching fees:', error);
@@ -130,6 +139,7 @@ export default function AdminFeesPage() {
       }
 
       setOriginalFees(fees);
+      saveFees(fees);
       setMessage({
         type: 'success',
         text: 'Fee configuration updated successfully'

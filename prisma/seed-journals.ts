@@ -11,7 +11,7 @@ const journals = [
     issnOnline: '2395-6410',
     origin: 'Indian',
     doiAllotted: true,
-    isDefault: true,
+    isDefault: false,
   },
   {
     name: 'American Journal of Advanced Medical and Surgical Sciences',
@@ -61,7 +61,7 @@ const journals = [
     issnOnline: '3108-2211',
     origin: 'Indian',
     doiAllotted: true,
-    isDefault: false,
+    isDefault: true,
   },
   {
     name: 'International Journal of Pedagogy and Learning',

@@ -276,7 +276,7 @@ export default function AdminPeerReviewProcessPage() {
   const fetchProcesses = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/peer-review-process');
+      const response = await fetch('/api/peer-review-process', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch processes');
       }

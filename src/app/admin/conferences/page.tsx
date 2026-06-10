@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -45,8 +46,9 @@ interface ConferencesData {
 
 export default function AdminConferencesPage() {
   const { user, isAdmin } = useAuth();
-  const [conferencesData, setConferencesData] = useState<ConferencesData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { conferencesData: cachedConferences, conferencesLoaded, setConferencesData: saveConferences, invalidateConferences } = useAdminStore();
+  const [conferencesData, setConferencesData] = useState<ConferencesData | null>(cachedConferences);
+  const [loading, setLoading] = useState(!conferencesLoaded);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,35 +60,43 @@ export default function AdminConferencesPage() {
     }
   }, [isAdmin]);
 
-  useEffect(() => {
-    const fetchConferences = async () => {
-      try {
-        setLoading(true);
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: '10'
-        });
-        
-        if (searchTerm) params.append('search', searchTerm);
-        if (statusFilter !== 'ALL') params.append('status', statusFilter);
+  const fetchConferences = useCallback(async () => {
+    if (conferencesLoaded && cachedConferences && searchTerm === '' && statusFilter === 'ALL' && currentPage === 1) {
+      setConferencesData(cachedConferences);
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '10'
+      });
 
-        const response = await fetch(`/api/admin/conferences?${params}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch conferences');
-        }
-        
-        const data = await response.json();
-        setConferencesData(data);
-      } catch (error) {
-        console.error('Failed to fetch conferences:', error);
-      } finally {
-        setLoading(false);
+      if (searchTerm) params.append('search', searchTerm);
+      if (statusFilter !== 'ALL') params.append('status', statusFilter);
+
+      const response = await fetch(`/api/admin/conferences?${params}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch conferences');
       }
-    };
 
-    fetchConferences();
+      const data = await response.json();
+      setConferencesData(data);
+      if (searchTerm === '' && statusFilter === 'ALL' && currentPage === 1) {
+        saveConferences(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch conferences:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [searchTerm, statusFilter, currentPage]);
+
+  useEffect(() => {
+    fetchConferences();
+  }, [fetchConferences]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -140,7 +150,8 @@ export default function AdminConferencesPage() {
       const result = await response.json();
       if (response.ok) {
         alert('Conference deleted successfully');
-        window.location.reload();
+        invalidateConferences();
+        fetchConferences();
       } else {
         alert(result.error || 'Failed to delete conference');
       }

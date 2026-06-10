@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -322,8 +323,9 @@ function ArchiveSkeleton() {
 }
 
 export default function AdminArchivesPage() {
-  const [archives, setArchives] = useState<Archive[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { archives: cachedArchives, archivesLoaded, setArchives: saveArchives, invalidateArchives } = useAdminStore();
+  const [archives, setArchives] = useState<Archive[]>(cachedArchives);
+  const [loading, setLoading] = useState(!archivesLoaded);
   const [submitting, setSubmitting] = useState(false);
   const [editingArchive, setEditingArchive] = useState<Archive | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -333,14 +335,21 @@ export default function AdminArchivesPage() {
   }, []);
 
   const fetchArchives = async () => {
+    const { archivesLoaded: loaded, archives: cached } = useAdminStore.getState();
+    if (loaded && cached.length > 0) {
+      setArchives(cached);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const response = await fetch('/api/archives');
+      const response = await fetch('/api/archives', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch archives');
       }
       const data = await response.json();
       setArchives(data);
+      saveArchives(data);
     } catch (err) {
       toast.error('Failed to fetch archives');
       console.error(err);
@@ -376,6 +385,7 @@ export default function AdminArchivesPage() {
 
       toast.success('Archive created successfully');
       setShowCreateDialog(false);
+      invalidateArchives();
       fetchArchives();
     } catch (err: unknown) {
       const error = err as { message?: string };
@@ -414,6 +424,7 @@ export default function AdminArchivesPage() {
 
       toast.success('Archive updated successfully');
       setEditingArchive(null);
+      invalidateArchives();
       fetchArchives();
     } catch (err: unknown) {
       const error = err as { message?: string };
@@ -435,6 +446,7 @@ export default function AdminArchivesPage() {
       }
 
       toast.success('Archive deleted successfully');
+      invalidateArchives();
       fetchArchives();
     } catch (err: unknown) {
       const error = err as { message?: string };

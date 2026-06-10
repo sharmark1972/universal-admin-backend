@@ -64,7 +64,7 @@ interface PaperData {
   publishedAt?: string;
   paperAuthors: AuthorData[];
   reviews: ReviewData[];
-  downloads: number;
+  downloads: number | Array<{ id: string; paperId: string; userId: string; downloadedAt: string; ipAddress: string; user: object }>;
 }
 
 export default function AdminPaperViewPage() {
@@ -80,7 +80,7 @@ export default function AdminPaperViewPage() {
   useEffect(() => {
     const fetchPaper = async () => {
       try {
-        const response = await fetch(`/api/papers/${paperId}`);
+        const response = await fetch(`/api/papers/${paperId}`, { cache: 'no-store' });
         const result = await response.json();
 
         if (response.ok) {
@@ -209,15 +209,6 @@ export default function AdminPaperViewPage() {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                {isAdmin() && (
-                  <Link
-                    href={`/admin/papers/${paperId}/edit`}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Link>
-                )}
                 {paper.status === 'PUBLISHED' && (
                   <button
                     onClick={handleDownloadCertificate}
@@ -275,7 +266,7 @@ export default function AdminPaperViewPage() {
                 {/* Abstract */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Abstract</h4>
-                  <p className="text-gray-600 leading-relaxed">{paper.abstract}</p>
+                  <p className="text-gray-600 leading-relaxed">{paper.abstract.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}</p>
                 </div>
 
                 {/* Keywords */}
@@ -304,7 +295,7 @@ export default function AdminPaperViewPage() {
                     <h4 className="text-sm font-medium text-gray-700 mb-1">Downloads</h4>
                     <p className="text-gray-900 flex items-center">
                       <Download className="h-4 w-4 mr-1 text-gray-400" />
-                      {paper.downloads}
+                      {Array.isArray(paper.downloads) ? paper.downloads.length : paper.downloads}
                     </p>
                   </div>
                 </div>
@@ -482,16 +473,6 @@ export default function AdminPaperViewPage() {
                   <Eye className="h-5 w-5 text-blue-600 mr-3" />
                   <span className="text-sm font-medium text-gray-900">View Public Page</span>
                 </Link>
-
-                {isAdmin() && (
-                  <Link
-                    href={`/admin/papers/${paperId}/edit`}
-                    className="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-                  >
-                    <Edit className="h-5 w-5 text-green-600 mr-3" />
-                    <span className="text-sm font-medium text-gray-900">Edit Paper</span>
-                  </Link>
-                )}
 
                 <Link
                   href={paper.filePath}

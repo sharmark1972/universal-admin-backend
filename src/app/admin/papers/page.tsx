@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -24,7 +25,6 @@ import {
   Shield,
   AlertTriangle,
   BookOpen,
-  Upload,
   X
 } from 'lucide-react';
 
@@ -82,10 +82,17 @@ interface PapersData {
   currentPage: number;
 }
 
+
 export default function AdminPapersPage() {
   const { isAdmin } = useAuth();
-  const [papersData, setPapersData] = useState<PapersData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    papersData: cachedPapers, papersLoaded,
+    issues: cachedIssues, issuesLoaded,
+    setPapersData: savePapers, setIssues: saveIssues,
+    invalidatePapers
+  } = useAdminStore();
+  const [papersData, setPapersData] = useState<PapersData | null>(cachedPapers);
+  const [loading, setLoading] = useState(!papersLoaded);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
@@ -93,8 +100,8 @@ export default function AdminPapersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPapers, setSelectedPapers] = useState<string[]>([]);
   const [plagiarismCheckLoading, setPlagiarismCheckLoading] = useState<Set<string>>(new Set());
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [issuesLoading, setIssuesLoading] = useState(true);
+  const [issues, setIssues] = useState<Issue[]>(cachedIssues);
+  const [issuesLoading, setIssuesLoading] = useState(!issuesLoaded);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assigningPaperId, setAssigningPaperId] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string>('');
@@ -107,24 +114,35 @@ export default function AdminPapersPage() {
   }, [isAdmin]);
 
   const fetchIssues = useCallback(async () => {
+    if (issuesLoaded && cachedIssues.length > 0) {
+      setIssues(cachedIssues);
+      setIssuesLoading(false);
+      return;
+    }
     try {
       setIssuesLoading(true);
-      const response = await fetch('/api/admin/issues?published=true');
+      const response = await fetch('/api/admin/issues?published=true', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setIssues(data.issues || []);
+        saveIssues(data.issues || []);
       }
     } catch (error) {
       console.error('Failed to fetch issues:', error);
     } finally {
       setIssuesLoading(false);
     }
-  }, []);
+  }, [issuesLoaded]);
 
   const fetchPapers = useCallback(async () => {
+    if (papersLoaded && cachedPapers && searchTerm === '' && statusFilter === 'ALL' && categoryFilter === 'ALL' && issueFilter === '' && currentPage === 1) {
+      setPapersData(cachedPapers);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      
+
       const params = new URLSearchParams({
         search: searchTerm,
         status: statusFilter,
@@ -134,10 +152,13 @@ export default function AdminPapersPage() {
         limit: '10'
       });
 
-      const response = await fetch(`/api/admin/papers?${params}`);
-      if (response.ok) {
-        const data = await response.json();
+      const res = await fetch(`/api/admin/papers?${params}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
         setPapersData(data);
+        if (searchTerm === '' && statusFilter === 'ALL' && categoryFilter === 'ALL' && issueFilter === '' && currentPage === 1) {
+          savePapers(data);
+        }
       } else {
         throw new Error('Failed to fetch papers');
       }
@@ -170,6 +191,19 @@ export default function AdminPapersPage() {
         return 'bg-red-100 text-red-800';
       case 'REVISION_REQUIRED':
         return 'bg-orange-100 text-orange-800';
+      // New system statuses
+      case 'DRAFT':
+        return 'bg-gray-100 text-gray-800';
+      case 'UPLOADED':
+        return 'bg-blue-100 text-blue-800';
+      case 'EXTRACTED':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'EDITING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'READY':
+        return 'bg-teal-100 text-teal-800';
+      case 'PDF_GENERATED':
+        return 'bg-cyan-100 text-cyan-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -189,6 +223,10 @@ export default function AdminPapersPage() {
         return <XCircle className="h-4 w-4" />;
       case 'REVISION_REQUIRED':
         return <Edit className="h-4 w-4" />;
+      case 'READY':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'EDITING':
+        return <Edit className="h-4 w-4" />;
       default:
         return <FileText className="h-4 w-4" />;
     }
@@ -203,8 +241,8 @@ export default function AdminPapersPage() {
   };
 
   const handleSelectPaper = (paperId: string) => {
-    setSelectedPapers(prev => 
-      prev.includes(paperId) 
+    setSelectedPapers(prev =>
+      prev.includes(paperId)
         ? prev.filter(id => id !== paperId)
         : [...prev, paperId]
     );
@@ -213,12 +251,10 @@ export default function AdminPapersPage() {
   const handlePlagiarismCheck = async (paperId: string) => {
     try {
       setPlagiarismCheckLoading(prev => new Set(prev).add(paperId));
-      
+
       const response = await fetch(`/api/papers/${paperId}/plagiarism`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.ok) {
@@ -240,12 +276,8 @@ export default function AdminPapersPage() {
   };
 
   const getPlagiarismStatus = (paper: Paper) => {
-    if (!paper.plagiarismChecks || paper.plagiarismChecks.length === 0) {
-      return null;
-    }
-    
-    const latestCheck = paper.plagiarismChecks[paper.plagiarismChecks.length - 1];
-    return latestCheck;
+    if (!paper.plagiarismChecks || paper.plagiarismChecks.length === 0) return null;
+    return paper.plagiarismChecks[paper.plagiarismChecks.length - 1];
   };
 
   const getPlagiarismIcon = (status: string, similarityScore?: number) => {
@@ -266,28 +298,24 @@ export default function AdminPapersPage() {
 
   const handleBulkAction = async (action: 'publish' | 'reject' | 'delete') => {
     if (selectedPapers.length === 0) return;
-    
+
     if (action === 'delete') {
       const confirmed = confirm(`Are you sure you want to delete ${selectedPapers.length} selected paper(s)? This action cannot be undone.`);
       if (!confirmed) return;
     }
-    
+
     try {
       const response = await fetch('/api/admin/papers/bulk', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action,
-          paperIds: selectedPapers
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, paperIds: selectedPapers })
       });
 
       const result = await response.json();
 
       if (response.ok) {
         alert(result.message);
+        invalidatePapers();
         fetchPapers();
         setSelectedPapers([]);
       } else {
@@ -306,13 +334,12 @@ export default function AdminPapersPage() {
     try {
       const response = await fetch(`/api/papers/${paperId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.ok) {
         alert('Paper deleted successfully');
+        invalidatePapers();
         fetchPapers();
       } else {
         const error = await response.json();
@@ -337,12 +364,8 @@ export default function AdminPapersPage() {
       setAssigning(true);
       const response = await fetch(`/api/papers/${assigningPaperId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          issueId: selectedIssueId || null
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ issueId: selectedIssueId || null })
       });
 
       if (response.ok) {
@@ -350,6 +373,7 @@ export default function AdminPapersPage() {
         setShowAssignModal(false);
         setAssigningPaperId(null);
         setSelectedIssueId('');
+        invalidatePapers();
         fetchPapers();
       } else {
         const error = await response.json();
@@ -369,16 +393,13 @@ export default function AdminPapersPage() {
     try {
       const response = await fetch(`/api/papers/${paperId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          issueId: null
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ issueId: null })
       });
 
       if (response.ok) {
         alert('Paper removed from issue successfully!');
+        invalidatePapers();
         fetchPapers();
       } else {
         const error = await response.json();
@@ -411,18 +432,11 @@ export default function AdminPapersPage() {
               </div>
               <div className="flex space-x-3">
                 <Link
-                  href="/admin/papers/new"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Add Paper
-                </Link>
-                <Link
                   href="/admin/research-papers/new"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload DOCX
+                  <FileText className="h-4 w-4 mr-2" />
+                  Add Paper
                 </Link>
                 <Link
                   href="/admin/issues"
@@ -504,7 +518,7 @@ export default function AdminPapersPage() {
               </select>
             </div>
 
-            {/* Bulk Actions */}
+            {/* Bulk Actions — only for old papers */}
             {selectedPapers.length > 0 && (
               <div className="flex space-x-2 md:col-span-4">
                 <button
@@ -538,7 +552,7 @@ export default function AdminPapersPage() {
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">
-                Papers ({papersData?.totalPapers})
+                Papers ({papersData?.totalPapers || 0})
               </h3>
               {selectedPapers.length > 0 && (
                 <span className="text-sm text-gray-600">
@@ -549,8 +563,10 @@ export default function AdminPapersPage() {
           </div>
 
           <div className="divide-y divide-gray-200">
+
+            {/* ── PAPERS ── */}
             {papersData?.papers.map((paper) => (
-              <div key={paper.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div key={`old-${paper.id}`} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4 flex-1">
                     <input
@@ -559,13 +575,15 @@ export default function AdminPapersPage() {
                       onChange={() => handleSelectPaper(paper.id)}
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    
+
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <h4 className="text-lg font-semibold text-gray-900 mb-2">{paper.title}</h4>
-                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{paper.abstract}</p>
-                          
+                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                            {paper.abstract.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}
+                          </p>
+
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                             <div className="flex items-center">
                               <User className="h-4 w-4 mr-1" />
@@ -605,7 +623,7 @@ export default function AdminPapersPage() {
                               Assign to Issue
                             </button>
                           )}
-                          
+
                           {/* Publication Information */}
                           {(paper.volumeNumber || paper.issueNumber || paper.publicationDate || paper.uniqueNumber) && (
                             <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
@@ -635,7 +653,7 @@ export default function AdminPapersPage() {
                               )}
                             </div>
                           )}
-                          
+
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                             <span>Reviews: {paper.reviewCount}</span>
                             <span>Downloads: {paper.downloadCount}</span>
@@ -647,7 +665,7 @@ export default function AdminPapersPage() {
                                   <div className="flex items-center">
                                     {getPlagiarismIcon(plagiarismStatus.status, plagiarismStatus.similarityScore)}
                                     <span className="ml-1">
-                                      Plagiarism: {plagiarismStatus.status === 'COMPLETED' 
+                                      Plagiarism: {plagiarismStatus.status === 'COMPLETED'
                                         ? `${plagiarismStatus.similarityScore}% similarity`
                                         : plagiarismStatus.status
                                       }
@@ -658,7 +676,7 @@ export default function AdminPapersPage() {
                               return null;
                             })()}
                           </div>
-                          
+
                           <div className="flex flex-wrap gap-2">
                             {paper.keywords.map((keyword, index) => (
                               <span
@@ -670,7 +688,7 @@ export default function AdminPapersPage() {
                             ))}
                           </div>
                         </div>
-                        
+
                         <div className="ml-4 flex flex-col items-end space-y-3">
                           <div className="flex items-center space-x-2">
                             {getStatusIcon(paper.status)}
@@ -678,7 +696,7 @@ export default function AdminPapersPage() {
                               {paper.status.replace('_', ' ')}
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2">
                             <Link
                               href={`/admin/papers/${paper.id}`}
@@ -686,13 +704,6 @@ export default function AdminPapersPage() {
                               title="View Details"
                             >
                               <Eye className="h-4 w-4" />
-                            </Link>
-                            <Link
-                              href={`/admin/papers/${paper.id}/edit`}
-                              className="p-2 text-green-600 hover:text-green-800 transition-colors"
-                              title="Edit Paper"
-                            >
-                              <Edit className="h-4 w-4" />
                             </Link>
                             {paper.fileUrl && (
                               <button
@@ -732,7 +743,7 @@ export default function AdminPapersPage() {
             ))}
           </div>
 
-          {/* Pagination */}
+          {/* Pagination — old papers only */}
           {papersData && papersData.totalPages > 1 && (
             <div className="px-6 py-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
@@ -764,7 +775,7 @@ export default function AdminPapersPage() {
         </div>
       </div>
 
-      {/* Assign Issue Modal */}
+      {/* Assign Issue Modal — old papers only */}
       {showAssignModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">

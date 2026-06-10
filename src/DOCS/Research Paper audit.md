@@ -1,68 +1,81 @@
 # Research Paper Studio — Code Audit
 
-> Last updated: 2026-05-31
+> Last updated: 2026-06-09
 > Scope: DOCX upload, AI extraction, admin editor, PDF generation, publish flow
+> Major change (2026-06-09): Draft system removed — papers now save directly to `papers` table
 
 ---
 
 ## System Overview
 
-Admin uploads a DOCX research paper → AI extracts metadata + decides layout → admin reviews/edits → PDF preview → publish.
+Admin uploads a DOCX research paper → AI extracts metadata + decides layout → admin reviews/edits → PDF preview → submit → paper saved directly in `papers` table.
 
-**Full flow:**
+**Full flow (updated 2026-06-09):**
 ```
-DOCX upload (POST /api/admin/research-papers/upload)
+DOCX upload (client-side, local memory only — NOT saved to DB)
     ↓
-storage.ts → validateResearchPaperFile() → storeResearchPaperFile() → R2
+docx-extractor.ts → extractStructuredDataFromDocx() [sections, authors, abstract]
     ↓
-docx-extractor.ts → extractDocumentHtmlFromBuffer() [mammoth, single HTML]
-                  → extractStructuredDataFromDocx() [sections, authors, abstract]
+POST /api/admin/research-papers/ai-extract [Gemini metadata]
+    → tryGeminiOnly() → tryZaiOnly() fallback → basic regex fallback
     ↓
-parser.ts → parseResearchPaperText() [title, authors, affiliation, abstract, keywords]
+Admin reviews, edits sections in browser (local state only, no DB write)
     ↓
-gemini-extractor.ts → tryGeminiOnly() [Gemini metadata]
-                    → tryZaiOnly()    [ZAI fallback]
-                    → basic regex    [last fallback]
+Admin clicks Submit
     ↓
-gemini-extractor.ts → getLayoutDecisions() [AI per-section layout]
+POST /api/admin/research-papers/submit
     ↓
-research-paper-service.ts → buildSectionsWithLayout() [AI layout → fallback to layout-analyzer.ts]
+DOCX → R2 upload (storeResearchPaperFile)
+PDF → R2 upload (uploadToR2)
     ↓
-DB save: ResearchPaperDraft + ResearchPaperAuthor + ResearchPaperSection
+DB save: papers table (title, abstract, keywords, filePath, status, sections via PaperSection, authors via PaperAuthor→User)
     ↓
-SSE done event → Admin editor (page.tsx)
+Redirect → /admin/papers list
     ↓
-Admin reviews, edits sections → PATCH /api/admin/research-papers/[id]
+Admin assigns issue → Bulk publish (status → PUBLISHED)
     ↓
-Preview PDF → POST /api/admin/research-papers/[id]/generate-preview-pdf
-    ↓
-Publish → POST /api/admin/research-papers/[id]/publish → final PDF → PUBLISHED status
+Paper visible in /papers/[id] and /issues/[id] (public)
 ```
+
+**Key design decisions:**
+- No draft table — all local until submit
+- Submit always creates with selected status (default: SUBMITTED)
+- Authors require email — find-or-create User by email (role: AUTHOR, no password)
+- Sections saved in `PaperSection` table (linked to `papers`, not draft)
+- `ResearchPaperDraft` table still exists in DB but no longer used by new flow
 
 ---
 
 ## Database Models
 
-**`ResearchPaperDraft`**
+**`Paper`** (primary model — all new papers go here)
 ```
-id, title, shortTitle, abstract, keywords (Json),
-doi, sourceFilePath, sourceFileName, sourceFileSize,
-extractedText (raw HTML), pdfPath, previewPdfPath,
-status (DRAFT/EXTRACTED/EDITING/PDF_GENERATED/PUBLISHED),
-issueId (FK), createdBy (FK), publishedAt
-```
-
-**`ResearchPaperAuthor`**
-```
-id, draftId (FK), name, email, affiliation,
-authorOrder, isCorresponding
+id, title, abstract, keywords (comma-separated string),
+filePath (nullable — PDF R2 URL), status (PaperStatus enum),
+submittedAt, publishedAt, submitterId (FK→User),
+issueId (FK→Issue), doi, sourceFilePath, sourceFileName, sourceFileSize,
+bodyColumnMode ('two-column'|'single-column')
 ```
 
-**`ResearchPaperSection`**
+**`PaperSection`** (new — sections for papers table)
 ```
-id, draftId (FK), heading, content (LongText HTML),
+id, paperId (FK→Paper, cascade delete), heading, content (LongText HTML),
 sectionOrder, isFullWidth (Boolean, default: true)
 ```
+
+**`PaperAuthor`** → **`User`** (authors linked via User records)
+```
+PaperAuthor: paperId, userId, authorOrder, isCorresponding
+User: email (required for authors), firstName, lastName, role=AUTHOR
+```
+
+**`ResearchPaperDraft`** (legacy — no longer used by new flow, kept in DB)
+```
+id, title, abstract, keywords (Json), doi, sourceFilePath,
+pdfPath, status (ResearchPaperStatus enum), issueId, createdBy, publishedAt
+```
+
+**`ResearchPaperAuthor`** / **`ResearchPaperSection`** (legacy — linked to draft, no longer used)
 
 ---
 
@@ -192,22 +205,39 @@ SSE streaming upload endpoint — `POST /api/admin/research-papers/upload`:
 ---
 
 ### `src/app/api/admin/research-papers/route.ts`
-- `GET` — list all drafts (admin only)
-- `POST` — not used (upload goes to `/upload`)
+- `GET` — list papers from `papers` table (admin only, with filters: status, issueId, search, pagination)
 
 ### `src/app/api/admin/research-papers/[id]/route.ts`
-- `GET` — fetch single draft by id (admin only)
-- `PATCH` — update draft (calls `updateResearchPaperDraft()`)
-- `DELETE` — delete draft + source file
+- `GET` — fetch single paper from `papers` table (includes paperAuthors, sections, issue)
+- `PATCH` — update paper (title, abstract, keywords, doi, issueId, status, bodyColumnMode)
+- `DELETE` — delete paper from `papers` table
 
-### `src/app/api/admin/research-papers/[id]/generate-preview-pdf/route.ts`
-- `POST` — generates preview PDF → `generateResearchPaperPdf(id, 'preview')` → returns previewPdfPath
+### `src/app/api/admin/research-papers/submit/route.ts`
+- `POST` — main submit endpoint (FormData):
+  - Uploads DOCX → R2
+  - Uploads PDF → R2
+  - Creates `Paper` record with selected status
+  - Creates `PaperSection` records
+  - For each author: find User by email → create if not found (role=AUTHOR) → create PaperAuthor
+  - Returns `{ paperId, message }`
 
 ### `src/app/api/admin/research-papers/[id]/publish/route.ts`
-- `POST` — calls `publishResearchPaperDraft(id)` → final PDF → status PUBLISHED
+- `POST` — updates paper status to PUBLISHED + sets publishedAt + optionally sets issueId
+- Body: `{ issueId? }` (optional)
+- Revalidates: /library, /archives, /, /issues/[id]
 
-### `src/app/api/admin/research-papers/[id]/pdf/route.ts`
-- `GET` — serves/redirects to the published PDF
+### `src/app/api/admin/research-papers/ai-extract/route.ts`
+- `POST` — AI metadata extraction (Gemini → ZAI fallback)
+- Called from browser with plain text (no DB write)
+
+### `src/app/api/admin/research-papers/preview-pdf/route.ts`
+- `POST` — generates PDF blob (no DB write, returns binary)
+
+### Legacy routes (still exist, may need cleanup):
+- `upload/route.ts` — old SSE upload (saves to draft table — no longer used)
+- `[id]/pdf/route.ts` — serves draft PDF
+- `[id]/download/route.ts` — downloads draft PDF
+- `[id]/generate-preview-pdf/route.ts` — generates draft preview PDF
 
 ---
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -542,8 +543,9 @@ function MemberSkeleton() {
 }
 
 export default function AdminEditorialBoardPage() {
-  const [members, setMembers] = useState<EditorialBoardMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { editorialMembers: cachedEditorial, editorialLoaded, setEditorialMembers: saveEditorial, invalidateEditorial } = useAdminStore();
+  const [members, setMembers] = useState<EditorialBoardMember[]>(cachedEditorial);
+  const [loading, setLoading] = useState(!editorialLoaded);
   const [submitting, setSubmitting] = useState(false);
   const [editingMember, setEditingMember] = useState<EditorialBoardMember | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -554,14 +556,21 @@ export default function AdminEditorialBoardPage() {
   }, []);
 
   const fetchMembers = async () => {
+    const { editorialLoaded: loaded, editorialMembers: cached } = useAdminStore.getState();
+    if (loaded && cached.length > 0) {
+      setMembers(cached);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const response = await fetch('/api/editorial-board');
+      const response = await fetch('/api/editorial-board', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch members');
       }
       const data = await response.json();
       setMembers(data);
+      saveEditorial(data);
     } catch {
       toast.error('Failed to fetch editorial board members');
     } finally {
@@ -597,6 +606,7 @@ export default function AdminEditorialBoardPage() {
 
       toast.success('Editorial board member created successfully');
       setShowCreateDialog(false);
+      invalidateEditorial();
       fetchMembers();
     } catch {
       toast.error('Failed to create editorial board member');
@@ -636,6 +646,7 @@ export default function AdminEditorialBoardPage() {
 
       toast.success('Editorial board member updated successfully');
       setEditingMember(null);
+      invalidateEditorial();
       fetchMembers();
     } catch {
       toast.error('Failed to update editorial board member');
@@ -655,6 +666,7 @@ export default function AdminEditorialBoardPage() {
       if (!response.ok) throw new Error('Failed to update visibility');
 
       toast.success(currentIsActive ? 'Member hidden from website' : 'Member visible on website');
+      invalidateEditorial();
       fetchMembers();
     } catch {
       toast.error('Failed to update member visibility');
@@ -672,6 +684,7 @@ export default function AdminEditorialBoardPage() {
       }
 
       toast.success('Editorial board member deleted successfully');
+      invalidateEditorial();
       fetchMembers();
     } catch {
       toast.error('Failed to delete editorial board member');

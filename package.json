@@ -1,5 +1,5 @@
 {
-  "name": "ijarcm",
+  "name": "wjiis",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -7,8 +7,9 @@
   },
   "scripts": {
     "dev": "next dev -p 3004",
+    "prebuild": "prisma generate",
     "build": "next build",
-    "start": "next start -p 3003",
+    "start": "next start -p 3004",
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -94,7 +95,8 @@
     "typescript": "^5.5.4",
     "uuid": "^10.0.0",
     "web-vitals": "^5.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

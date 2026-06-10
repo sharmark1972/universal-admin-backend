@@ -46,7 +46,7 @@ export default function ImpactFactorsAdminPage() {
 
   const fetchImpactFactors = async () => {
     try {
-      const response = await fetch('/api/admin/impact-factors');
+      const response = await fetch('/api/admin/impact-factors', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch impact factors');
       }

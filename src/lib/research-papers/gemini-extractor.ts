@@ -13,12 +13,6 @@ export interface GeminiExtractedData {
   extractionMethod: 'gemini' | 'zai' | 'basic';
 }
 
-export interface SectionLayout {
-  heading: string;
-  layout: 'two-column' | 'full-width';
-  reason: string;
-}
-
 // ─── Metadata Extraction Prompt ───────────────────────────────────────────────
 
 const METADATA_PROMPT = `You are a research paper metadata extractor.
@@ -30,13 +24,13 @@ Fields to extract:
 - authors: Array of author objects with "name" (string) and "isCorresponding" (boolean, first author is corresponding)
 - affiliation: Full institutional affiliation (department, university, location)
 - email: Corresponding author email if found, else empty string
-- abstract: Rewritten abstract, maximum 148 words (see rewriting rules below)
+- abstract: Rewritten abstract (see rewriting rules below)
 - keywords: Array of keywords
 
 Abstract rewriting rules:
 - Rewrite the abstract completely in your own words — do NOT copy sentences verbatim from the paper
 - Preserve the original meaning, research findings, methodology, and conclusions fully
-- Keep it concise: maximum 148 words, no filler phrases
+- Maximum 148 words, no filler phrases
 - Write in clear, formal, academic English that sounds naturally human
 - Avoid robotic, repetitive, or overly passive phrasing
 - Paraphrase naturally so the result is plagiarism-free
@@ -62,26 +56,24 @@ Return ONLY this JSON structure:
 Research paper text:
 `;
 
-// ─── Layout Decision Prompt ────────────────────────────────────────────────────
+// ─── Document Rewrite Prompt ───────────────────────────────────────────────────
 
-const LAYOUT_PROMPT = `You are a PDF layout manager for a research journal.
+const DOCUMENT_REWRITE_PROMPT = `You are a research paper editor. Rewrite the following research paper section text according to these rules:
 
-Analyze the sections below and decide the layout for each section in the PDF.
+1. Rewrite the entire text in human-like, natural academic English — avoid robotic, repetitive, or overly passive phrasing
+2. Remove all plagiarism — do not copy sentences verbatim
+3. Preserve the original meaning, context, findings, methodology, and conclusions completely
+4. Keep the same word count — do not add or remove content
+5. Do not modify any table content — return tables exactly as received
+6. Do not change section headings — use them exactly as-is, do not shorten, rephrase, or alter them in any way
+7. Do not add new information, examples, or explanations
+8. Do not remove any information
+9. Maintain the same structure and flow as the original
+10. If the section is a References or Bibliography section — return it completely unchanged, word for word, exactly as received
 
-Layout Rules:
-1. If a section contains a table or image → use "full-width"
-2. All other sections → use "two-column"
-3. References, Bibliography, Works Cited → always "full-width"
+Return ONLY the rewritten text. No explanation, no comments, no markdown formatting.
 
-Return ONLY a valid JSON array. No explanation, no markdown.
-
-Format:
-[
-  { "heading": "Section heading", "layout": "two-column", "reason": "plain text only" },
-  { "heading": "Section heading", "layout": "full-width", "reason": "contains table" }
-]
-
-Sections to analyze:
+Section text:
 `;
 
 // ─── Public Functions ──────────────────────────────────────────────────────────
@@ -89,43 +81,26 @@ Sections to analyze:
 export async function tryGeminiOnly(plainText: string): Promise<Omit<GeminiExtractedData, 'extractionMethod'> | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
-  return tryGemini(apiKey, plainText.slice(0, 3000));
+  return tryGemini(apiKey, plainText);
 }
 
 export async function tryZaiOnly(plainText: string): Promise<Omit<GeminiExtractedData, 'extractionMethod'> | null> {
   const apiKey = process.env.ZAI_API_KEY;
   if (!apiKey) return null;
-  return tryZai(apiKey, plainText.slice(0, 3000));
+  return tryZai(apiKey, plainText);
 }
 
-export async function getLayoutDecisions(
-  sections: Array<{ heading: string; content: string }>
-): Promise<SectionLayout[] | null> {
-  // Build section summary for AI — heading + first 200 chars of content
-  const sectionSummary = sections.map((s, i) => {
-    const hasTable = /<table/i.test(s.content);
-    const hasImage = /<img/i.test(s.content);
-    const preview = s.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
-    return `Section ${i + 1}: "${s.heading}"
-Content preview: ${preview}
-Has table: ${hasTable}
-Has image: ${hasImage}`;
-  }).join('\n\n');
-
-  // Try Gemini first
+export async function rewriteSectionContent(content: string): Promise<string | null> {
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey) {
-    const result = await tryLayoutGemini(geminiKey, sectionSummary);
+    const result = await rewriteWithGemini(geminiKey, content);
     if (result) return result;
   }
-
-  // Fallback to ZAI
   const zaiKey = process.env.ZAI_API_KEY;
   if (zaiKey) {
-    const result = await tryLayoutZai(zaiKey, sectionSummary);
+    const result = await rewriteWithZai(zaiKey, content);
     if (result) return result;
   }
-
   return null;
 }
 
@@ -171,19 +146,22 @@ async function tryZai(apiKey: string, textSample: string): Promise<Omit<GeminiEx
   }
 }
 
-async function tryLayoutGemini(apiKey: string, sectionSummary: string): Promise<SectionLayout[] | null> {
+// ─── Document Rewrite Internal Functions ──────────────────────────────────────
+
+async function rewriteWithGemini(apiKey: string, content: string): Promise<string | null> {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-    const result = await model.generateContent(LAYOUT_PROMPT + sectionSummary);
-    return parseLayoutResponse(result.response.text());
+    const result = await model.generateContent(DOCUMENT_REWRITE_PROMPT + content);
+    const text = result.response.text().trim();
+    return text || null;
   } catch (error) {
-    console.warn('Gemini layout failed:', (error as Error).message);
+    console.warn('Gemini rewrite failed:', (error as Error).message);
     return null;
   }
 }
 
-async function tryLayoutZai(apiKey: string, sectionSummary: string): Promise<SectionLayout[] | null> {
+async function rewriteWithZai(apiKey: string, content: string): Promise<string | null> {
   try {
     const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
       method: 'POST',
@@ -193,20 +171,20 @@ async function tryLayoutZai(apiKey: string, sectionSummary: string): Promise<Sec
       },
       body: JSON.stringify({
         model: 'GLM-4.7-Flash',
-        messages: [{ role: 'user', content: LAYOUT_PROMPT + sectionSummary }],
+        messages: [{ role: 'user', content: DOCUMENT_REWRITE_PROMPT + content }],
       }),
     });
 
     if (!response.ok) {
-      console.warn('ZAI layout failed:', response.status);
+      console.warn('ZAI rewrite failed:', response.status);
       return null;
     }
 
     const data = await response.json() as any;
-    const text = data?.choices?.[0]?.message?.content || '';
-    return parseLayoutResponse(text);
+    const text = (data?.choices?.[0]?.message?.content || '').trim();
+    return text || null;
   } catch (error) {
-    console.warn('ZAI layout failed:', (error as Error).message);
+    console.warn('ZAI rewrite failed:', (error as Error).message);
     return null;
   }
 }
@@ -235,26 +213,6 @@ function parseMetadataResponse(raw: string): Omit<GeminiExtractedData, 'extracti
     }
 
     return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function parseLayoutResponse(raw: string): SectionLayout[] | null {
-  try {
-    // Extract JSON array from response (handles thinking blocks, extra text etc.)
-    const jsonMatch = raw.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) return null;
-
-    const parsed = JSON.parse(jsonMatch[0]);
-
-    if (!Array.isArray(parsed)) return null;
-
-    return parsed.map((item: any) => ({
-      heading: item.heading || '',
-      layout: item.layout === 'two-column' ? 'two-column' : 'full-width',
-      reason: item.reason || '',
-    }));
   } catch {
     return null;
   }

@@ -1,45 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { ResearchPaperStatus } from '@prisma/client';
 import { authOptions } from '@/lib/auth';
-import { listResearchPaperDrafts } from '@/lib/research-papers/research-paper-service';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'ADMIN') {
-    return null;
-  }
-  return session;
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAdmin();
-    if (!session) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') as ResearchPaperStatus | 'ALL' | null;
+    const status = searchParams.get('status') || 'ALL';
     const page = Number(searchParams.get('page') || 1);
     const limit = Number(searchParams.get('limit') || 10);
-    const search = searchParams.get('search') || undefined;
+    const search = searchParams.get('search') || '';
+    const issueId = searchParams.get('issueId') || '';
 
-    const result = await listResearchPaperDrafts({
-      page,
-      limit,
-      search,
-      status: status || 'ALL',
-    });
+    const where: any = {};
+    if (status !== 'ALL') where.status = status;
+    if (issueId) where.issueId = issueId;
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { abstract: { contains: search } },
+      ];
+    }
 
-    return NextResponse.json(result);
+    const skip = (page - 1) * limit;
+    const [papers, total] = await Promise.all([
+      prisma.paper.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { submittedAt: 'desc' },
+        include: {
+          paperAuthors: {
+            include: { user: { select: { firstName: true, lastName: true, email: true } } },
+            orderBy: { authorOrder: 'asc' },
+          },
+          sections: { orderBy: { sectionOrder: 'asc' } },
+          issue: { select: { id: true, title: true, volume: true, issueNumber: true, year: true } },
+          _count: { select: { downloads: true, reviews: true } },
+        },
+      }),
+      prisma.paper.count({ where }),
+    ]);
+
+    return NextResponse.json({ papers, total, page, limit });
   } catch (error) {
-    console.error('Error listing research papers:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 },
-    );
+    console.error('Error listing papers:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

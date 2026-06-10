@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
@@ -61,8 +62,9 @@ const ROLE_OPTIONS = [
 
 export default function TeamMembersManagement() {
   const { user, loading } = useAuth();
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { teamMembers: cachedTeam, teamMembersLoaded, setTeamMembers: saveTeam, invalidateTeamMembers } = useAdminStore();
+  const [members, setMembers] = useState<TeamMember[]>(cachedTeam);
+  const [isLoading, setIsLoading] = useState(!teamMembersLoaded);
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [formData, setFormData] = useState<TeamMemberFormData>({
@@ -90,18 +92,24 @@ export default function TeamMembersManagement() {
   }, [user, loading]);
 
   const fetchMembers = useCallback(async () => {
+    const noFilters = !filters.isActive && !filters.search && !filters.role;
+    if (teamMembersLoaded && cachedTeam.length > 0 && noFilters) {
+      setMembers(cachedTeam);
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
       const params = new URLSearchParams({
         admin: 'true',
         ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
       });
-      
-      const response = await fetch(`/api/admin/team-members?${params}`);
+
+      const response = await fetch(`/api/admin/team-members?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
-        console.log('Fetched team members:', data);
         setMembers(data.teamMembers || []);
+        if (noFilters) saveTeam(data.teamMembers || []);
       } else {
         console.error('Failed to fetch team members:', response.status, await response.text());
       }
@@ -137,6 +145,7 @@ export default function TeamMembersManagement() {
         setShowForm(false);
         setEditingMember(null);
         resetForm();
+        invalidateTeamMembers();
         fetchMembers();
       } else {
         const error = await response.json();
@@ -159,6 +168,7 @@ export default function TeamMembersManagement() {
       });
 
       if (response.ok) {
+        invalidateTeamMembers();
         fetchMembers();
       } else {
         const error = await response.json();
@@ -205,6 +215,7 @@ export default function TeamMembersManagement() {
       });
 
       if (response.ok) {
+        invalidateTeamMembers();
         fetchMembers();
       }
     } catch (error) {

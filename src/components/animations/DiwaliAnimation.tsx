@@ -94,7 +94,7 @@ export default function DiwaliAnimation({ customMessage }: { customMessage?: str
           <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent drop-shadow-2xl">
             Happy Diwali!
           </h1>
-          <p className="mt-4 text-2xl text-yellow-300 drop-shadow-lg">✨ शुभ दीपावली ✨</p>
+          <p className="mt-4 text-2xl text-yellow-300 drop-shadow-lg">✨ Festival of Lights ✨</p>
           {customMessage && (
             <p className="mt-4 text-xl text-white drop-shadow-lg">
               {customMessage}

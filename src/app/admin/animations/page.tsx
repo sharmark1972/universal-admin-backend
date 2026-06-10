@@ -88,7 +88,7 @@ export default function AdminAnimations() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/animations');
+      const response = await fetch('/api/admin/animations', { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch settings');
       const data = await response.json();
       setSettings(data);

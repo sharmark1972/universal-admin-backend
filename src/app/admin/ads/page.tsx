@@ -83,7 +83,7 @@ export default function AdsManagement() {
   const fetchAds = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/admin/ads?admin=true&page=${currentPage}&limit=10`);
+      const response = await fetch(`/api/admin/ads?admin=true&page=${currentPage}&limit=10`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setAds(data.ads);

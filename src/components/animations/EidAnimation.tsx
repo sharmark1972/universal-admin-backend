@@ -77,7 +77,7 @@ export default function EidAnimation({ customMessage }: { customMessage?: string
           <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-yellow-400 via-amber-500 to-teal-400 bg-clip-text text-transparent drop-shadow-2xl">
             Eid Mubarak!
           </h1>
-          <p className="mt-4 text-2xl text-white drop-shadow-lg">✨ عيد مبارك ✨</p>
+          <p className="mt-4 text-2xl text-white drop-shadow-lg">✨ Eid Mubarak ✨</p>
           {customMessage && (
             <p className="mt-4 text-xl text-white drop-shadow-lg">
               {customMessage}
