@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   Book,
@@ -56,7 +54,6 @@ interface EbooksData {
 }
 
 export default function AdminEbooksPage() {
-  const { isAdmin } = useAuth();
   const { ebooksData: cachedEbooks, ebooksLoaded, setEbooksData: saveEbooks, invalidateEbooks } = useAdminStore();
   const [ebooksData, setEbooksData] = useState<EbooksData | null>(cachedEbooks);
   const [loading, setLoading] = useState(!ebooksLoaded);
@@ -65,12 +62,6 @@ export default function AdminEbooksPage() {
   const [accessTypeFilter, setAccessTypeFilter] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEbooks, setSelectedEbooks] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   const fetchEbooks = useCallback(async () => {
     if (ebooksLoaded && cachedEbooks && searchTerm === '' && categoryFilter === 'ALL' && accessTypeFilter === 'ALL' && currentPage === 1) {

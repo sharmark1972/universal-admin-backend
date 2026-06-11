@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, Download, Award, TrendingUp, FileText, ExternalLink, CheckCircle, AlertTriangle, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
 import DynamicSEO from '@/components/DynamicSEO';
 import { WebsiteSchema, OrganizationSchema } from '@/components/SchemaMarkup';
 
@@ -24,7 +22,6 @@ interface ImpactFactor {
 }
 
 export default function ImpactFactorsAdminPage() {
-  const { data: session } = useSession();
   const [impactFactors, setImpactFactors] = useState<ImpactFactor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,12 +34,8 @@ export default function ImpactFactorsAdminPage() {
   });
 
   useEffect(() => {
-    if (session?.user?.role !== 'ADMIN') {
-      redirect('/admin');
-    }
-
     fetchImpactFactors();
-  }, [session]);
+  }, []);
 
   const fetchImpactFactors = async () => {
     try {

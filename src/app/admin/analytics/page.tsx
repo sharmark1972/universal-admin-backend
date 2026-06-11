@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import {
   TrendingUp,
   Users,
@@ -90,17 +88,10 @@ interface AnalyticsData {
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function AdminAnalyticsPage() {
-  const { user, isAdmin } = useAuth();
   const { analyticsData: cachedAnalytics, analyticsLoaded, analyticsRange, setAnalyticsData: saveAnalytics } = useAdminStore();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(cachedAnalytics);
   const [loading, setLoading] = useState(!analyticsLoaded);
   const [timeRange, setTimeRange] = useState(analyticsRange || '30');
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   useEffect(() => {
     if (analyticsLoaded && cachedAnalytics && analyticsRange === timeRange) {

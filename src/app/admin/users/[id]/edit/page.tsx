@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect, useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   User,
@@ -43,7 +42,6 @@ interface FormErrors {
 }
 
 export default function UserEditPage() {
-  const { user, isAdmin } = useAuth();
   const params = useParams();
   const router = useRouter();
   const userId = params.id as string;
@@ -61,12 +59,6 @@ export default function UserEditPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   useEffect(() => {
     const fetchUserData = async () => {

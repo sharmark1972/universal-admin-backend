@@ -96,9 +96,9 @@ model Paper {
   doi               String?                @db.VarChar(200)
   doiStatus         DOIRegistrationStatus? @default(PENDING) @map("doi_status")
   doiRegisteredAt   DateTime?              @map("doi_registered_at")
-  crossrefMetadata  Json?                  @map("crossref_metadata")
-  sourceFilePath    String?                @map("source_file_path") @db.VarChar(500)
+  crossrefMetadata  String?                @map("crossref_metadata") @db.LongText
   sourceFileName    String?                @map("source_file_name") @db.VarChar(255)
+  sourceFilePath    String?                @map("source_file_path") @db.VarChar(500)
   sourceFileSize    Int?                   @map("source_file_size")
   bodyColumnMode    String                 @default("two-column") @map("body_column_mode") @db.VarChar(20)
   archivePapers     ArchivePaper[]
@@ -134,13 +134,12 @@ model ResearchPaperDraft {
   title          String?                @db.Text
   shortTitle     String?                @map("short_title") @db.Text
   abstract       String?                @db.LongText
-  keywords       Json?
+  keywords       String?                @db.LongText
   doi            String?                @db.VarChar(200)
   sourceFilePath String?                @map("source_file_path") @db.VarChar(500)
   sourceFileName String?                @map("source_file_name") @db.VarChar(255)
   sourceFileSize Int?                   @map("source_file_size")
   extractedText  String?                @map("extracted_text") @db.LongText
-  bodyColumnMode String                 @default("two-column") @map("body_column_mode") @db.VarChar(20)
   pdfPath        String?                @map("pdf_path") @db.VarChar(500)
   previewPdfPath String?                @map("preview_pdf_path") @db.VarChar(500)
   status         ResearchPaperStatus    @default(DRAFT)
@@ -149,6 +148,7 @@ model ResearchPaperDraft {
   publishedAt    DateTime?              @map("published_at")
   createdAt      DateTime               @default(now()) @map("created_at")
   updatedAt      DateTime               @default(now()) @updatedAt @map("updated_at")
+  bodyColumnMode String                 @default("two-column") @map("body_column_mode") @db.VarChar(20)
   authors        ResearchPaperAuthor[]
   creator        User                   @relation("ResearchPaperCreator", fields: [createdBy], references: [id])
   issue          Issue?                 @relation(fields: [issueId], references: [id])
@@ -337,7 +337,7 @@ model PaperContent {
   discussion       String?  @db.LongText
   conclusion       String?  @db.LongText
   references       String?  @db.LongText
-  images           Json?
+  images           String?  @db.LongText
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
   paper            Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade)
@@ -393,9 +393,9 @@ model Journal {
 model PlagiarismCheck {
   id          String           @id @default(uuid())
   paperId     String           @map("paper_id")
-  checkResult Json
+  checkResult String           @db.LongText
   similarity  Float
-  sources     Json?
+  sources     String?          @db.LongText
   status      PlagiarismStatus @default(PENDING)
   checkedAt   DateTime         @default(now()) @map("checked_at")
   checkedBy   String?          @map("checked_by")
@@ -489,19 +489,19 @@ model Certificate {
   title                         String          @db.VarChar(500)
   authorName                    String          @map("author_name") @db.VarChar(200)
   institution                   String?         @db.VarChar(300)
+  topic                         String?         @db.VarChar(500)
+  prize                         String?         @db.VarChar(500)
   issuedAt                      DateTime        @default(now()) @map("issued_at")
+  customDate                    DateTime?       @map("custom_date")
   pdfPath                       String?         @map("pdf_path") @db.VarChar(500)
   isValid                       Boolean         @default(true) @map("is_valid")
   revokedAt                     DateTime?       @map("revoked_at")
   revokedBy                     String?         @map("revoked_by")
-  prize                         String?         @db.VarChar(500)
-  topic                         String?         @db.VarChar(500)
-  customDate                    DateTime?       @map("custom_date")
+  journalId                     String?         @map("journal_id")
   conference_dates              String?         @db.VarChar(200)
   conference_location           String?         @db.VarChar(300)
   conference_participation_type String?         @db.VarChar(50)
   template                      String?         @default("classic") @db.VarChar(20)
-  journalId                     String?         @map("journal_id")
   paper                         Paper?          @relation(fields: [paperId], references: [id])
   revoker                       User?           @relation("CertificateRevoker", fields: [revokedBy], references: [id])
   user                          User?           @relation("UserCertificates", fields: [userId], references: [id])
@@ -742,7 +742,7 @@ model DeploymentLog {
   type      String   @db.VarChar(50)
   status    String   @db.VarChar(50)
   message   String   @db.Text
-  details   Json?
+  details   String?  @db.LongText
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([type])

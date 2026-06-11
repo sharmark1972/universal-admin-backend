@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -29,7 +27,6 @@ interface ConferenceFormData {
 }
 
 export default function NewConferencePage() {
-  const { user, isAdmin } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<ConferenceFormData>({
@@ -44,9 +41,6 @@ export default function NewConferencePage() {
   });
   const [errors, setErrors] = useState<Partial<ConferenceFormData>>({});
 
-  if (!isAdmin) {
-    redirect('/dashboard');
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

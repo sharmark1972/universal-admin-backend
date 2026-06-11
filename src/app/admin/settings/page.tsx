@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import {
   Settings,
   Mail,
@@ -59,7 +57,6 @@ interface SystemSettings {
 }
 
 export default function AdminSettings() {
-  const { isAdmin } = useAuth();
   const { settings: cachedSettings, settingsLoaded, setSettings: saveSettings, invalidateSettings } = useAdminStore();
   const [settings, setSettings] = useState<SystemSettings | null>(cachedSettings);
   const [loading, setLoading] = useState(!settingsLoaded);
@@ -67,12 +64,6 @@ export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('general');
   const [showPasswords, setShowPasswords] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   useEffect(() => {
     if (settingsLoaded && cachedSettings) {

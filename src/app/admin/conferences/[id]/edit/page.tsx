@@ -14,8 +14,6 @@ import {
   X,
   Loader2
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-
 interface ConferenceFormData {
   name: string;
   description: string;
@@ -49,7 +47,6 @@ interface ConferenceData {
 export default function EditConferencePage() {
   const router = useRouter();
   const params = useParams();
-  const { isAdmin } = useAuth();
   const conferenceId = params.id as string;
 
   const [loading, setLoading] = useState(true);
@@ -69,12 +66,6 @@ export default function EditConferencePage() {
     isPublic: true
   });
   const [errors, setErrors] = useState<Partial<ConferenceFormData>>({});
-
-  useEffect(() => {
-    if (!isAdmin) {
-      router.push('/dashboard');
-    }
-  }, [isAdmin, router]);
 
   // Fetch conference data on component mount
   useEffect(() => {

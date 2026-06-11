@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import {
   Plus,
@@ -42,7 +40,6 @@ interface ChiefPatronFormData {
 }
 
 export default function ChiefPatronsManagement() {
-  const { user, loading } = useAuth();
   const [patrons, setPatrons] = useState<ChiefPatron[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -60,12 +57,6 @@ export default function ChiefPatronsManagement() {
     isActive: '',
     search: ''
   });
-
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'ADMIN')) {
-      redirect('/login');
-    }
-  }, [user, loading]);
 
   const fetchPatrons = useCallback(async () => {
     try {
@@ -87,10 +78,8 @@ export default function ChiefPatronsManagement() {
   }, [filters]);
 
   useEffect(() => {
-    if (user?.role === 'ADMIN') {
-      fetchPatrons();
-    }
-  }, [user, filters, fetchPatrons]);
+    fetchPatrons();
+  }, [filters, fetchPatrons]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,7 +184,7 @@ export default function ChiefPatronsManagement() {
     });
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

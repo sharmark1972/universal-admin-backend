@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   User,
@@ -49,18 +48,11 @@ interface UserDetail {
 }
 
 export default function UserDetailPage() {
-  const { user, isAdmin } = useAuth();
   const params = useParams();
   const userId = params.id as string;
   const [userDetail, setUserDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   useEffect(() => {
     const fetchUserDetail = async () => {

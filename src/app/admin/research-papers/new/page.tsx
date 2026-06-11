@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { redirect, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   Download,
@@ -14,7 +14,6 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -86,7 +85,6 @@ function blankDraft(): ResearchPaperDraft {
 }
 
 export default function NewResearchPaperPage() {
-  const { isAdmin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit') || '';
@@ -115,9 +113,6 @@ export default function NewResearchPaperPage() {
   const [uploadedPdfFile, setUploadedPdfFile] = useState<File | null>(null);
   const [pdfChoice, setPdfChoice] = useState<'generated' | 'uploaded' | null>(null);
 
-  if (!isAdmin()) {
-    redirect('/dashboard');
-  }
 
   if (isDraftLoading) {
     return (

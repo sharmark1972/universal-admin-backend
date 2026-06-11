@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import {
   Sparkles,
   Save,
@@ -69,18 +67,11 @@ const ANIMATION_INFO = {
 };
 
 export default function AdminAnimations() {
-  const { isAdmin } = useAuth();
   const [settings, setSettings] = useState<AnimationSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [editingMessage, setEditingMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   useEffect(() => {
     fetchSettings();

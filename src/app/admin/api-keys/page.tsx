@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 
 interface ApiKey {
   id: string;
@@ -17,8 +15,6 @@ interface ApiKey {
 }
 
 export default function ApiKeysPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -33,14 +29,8 @@ export default function ApiKeysPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login');
-    } else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
-      router.push('/dashboard');
-    } else if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
-      fetchApiKeys();
-    }
-  }, [status, session, router]);
+    fetchApiKeys();
+  }, []);
 
   const fetchApiKeys = async () => {
     try {
@@ -146,7 +136,7 @@ export default function ApiKeysPage() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -28,7 +27,6 @@ interface NewUserForm {
 }
 
 export default function NewUserPage() {
-  const { user, isAdmin } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -46,9 +44,6 @@ export default function NewUserPage() {
     bio: ''
   });
 
-  if (!isAdmin) {
-    redirect('/dashboard');
-  }
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};

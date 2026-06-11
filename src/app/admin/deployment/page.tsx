@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { 
   Upload, 
   Server, 
@@ -37,8 +35,6 @@ interface DeploymentLog {
 }
 
 export default function DeploymentPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
   const [ftpConfig, setFtpConfig] = useState<FTPConfig>({
     host: '',
     username: '',
@@ -54,14 +50,9 @@ export default function DeploymentPage() {
   const [currentStep, setCurrentStep] = useState('');
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session || session.user?.role !== 'ADMIN') {
-      router.push('/admin/login');
-      return;
-    }
     loadFTPConfig();
     loadDeploymentLogs();
-  }, [session, status, router]);
+  }, []);
 
   const loadFTPConfig = async () => {
     try {
@@ -238,13 +229,6 @@ export default function DeploymentPage() {
     }
   };
 
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <RefreshCw className="h-8 w-8 animate-spin text-pink-600" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

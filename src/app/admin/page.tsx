@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   Users,
@@ -82,19 +81,13 @@ interface AdminStats {
 }
 
 export default function AdminDashboard() {
-  const { user, isAdmin } = useAuth();
+  const { data: session } = useSession();
   const { stats: cachedStats, statsLoaded, setStats: saveStats, invalidateStats } = useAdminStore();
   const [stats, setStats] = useState<AdminStats | null>(cachedStats);
   const [loading, setLoading] = useState(!statsLoaded);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   useEffect(() => {
     if (statsLoaded && cachedStats) {
@@ -250,7 +243,7 @@ export default function AdminDashboard() {
                   Admin Dashboard
                 </h1>
                 <p className="mt-3 text-lg text-gray-600">
-                  Welcome back, <span className="font-semibold text-blue-600">{user?.firstName}</span>! 
+                  Welcome back, <span className="font-semibold text-blue-600">{session?.user?.name}</span>!
                   Here&apos;s what&apos;s happening in your system.
                 </p>
               </div>

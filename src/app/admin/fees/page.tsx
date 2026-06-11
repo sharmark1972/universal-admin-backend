@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import {
   AlertCircle,
   CheckCircle,
@@ -28,8 +26,6 @@ interface ApiResponse {
 }
 
 export default function AdminFeesPage() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
   const { fees: cachedFees, feesLoaded, setFees: saveFees } = useAdminStore();
   const [loading, setLoading] = useState(!feesLoaded);
   const [saving, setSaving] = useState(false);
@@ -47,21 +43,7 @@ export default function AdminFeesPage() {
   const [fees, setFees] = useState<FeeConfig>(cachedFees || defaultFees);
   const [originalFees, setOriginalFees] = useState<FeeConfig>(cachedFees || defaultFees);
 
-  // Check authorization
   useEffect(() => {
-    if (status === 'loading') return;
-
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin?callbackUrl=/admin/fees');
-      return;
-    }
-
-    // Check if user is admin (you may need to adjust this based on your session structure)
-    if (!session?.user) {
-      router.push('/auth/signin?callbackUrl=/admin/fees');
-      return;
-    }
-
     if (feesLoaded && cachedFees) {
       setFees(cachedFees);
       setOriginalFees(cachedFees);
@@ -69,7 +51,7 @@ export default function AdminFeesPage() {
       return;
     }
     fetchFeeConfig();
-  }, [status, session, router]);
+  }, []);
 
   const fetchFeeConfig = async () => {
     try {
@@ -165,7 +147,7 @@ export default function AdminFeesPage() {
 
   const hasChanges = JSON.stringify(fees) !== JSON.stringify(originalFees);
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">

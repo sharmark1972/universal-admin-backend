@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   Users,
@@ -51,7 +49,6 @@ interface UsersData {
 }
 
 export default function AdminUsersPage() {
-  const { user, isAdmin } = useAuth();
   const { usersData: cachedUsers, usersLoaded, setUsersData: saveUsers, invalidateUsers } = useAdminStore();
   const [usersData, setUsersData] = useState<UsersData | null>(cachedUsers);
   const [loading, setLoading] = useState(!usersLoaded);
@@ -60,12 +57,6 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   const fetchUsers = useCallback(async () => {
     try {

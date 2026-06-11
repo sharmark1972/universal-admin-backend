@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   Calendar,
@@ -45,7 +43,6 @@ interface ConferencesData {
 }
 
 export default function AdminConferencesPage() {
-  const { user, isAdmin } = useAuth();
   const { conferencesData: cachedConferences, conferencesLoaded, setConferencesData: saveConferences, invalidateConferences } = useAdminStore();
   const [conferencesData, setConferencesData] = useState<ConferencesData | null>(cachedConferences);
   const [loading, setLoading] = useState(!conferencesLoaded);
@@ -53,12 +50,6 @@ export default function AdminConferencesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedConferences, setSelectedConferences] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   const fetchConferences = useCallback(async () => {
     if (conferencesLoaded && cachedConferences && searchTerm === '' && statusFilter === 'ALL' && currentPage === 1) {

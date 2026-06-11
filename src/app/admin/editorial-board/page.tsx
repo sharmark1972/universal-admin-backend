@@ -14,7 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Users, Award, Mail, FileText, Upload, User, EyeOff, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface EditorialBoardMember {
   id: string;
@@ -503,45 +502,6 @@ function MemberCard({ member, onEdit, onDelete, onToggleVisibility }: {
   );
 }
 
-function MemberSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-4">
-            <Skeleton className="w-16 h-16 rounded-full" />
-            <div className="flex-1">
-              <Skeleton className="h-6 w-48 mb-2" />
-              <Skeleton className="h-5 w-32 mb-2" />
-              <Skeleton className="h-4 w-40" />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-6 w-20" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2 mb-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Skeleton className="h-4 w-4" />
-            <Skeleton className="h-4 w-4" />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-20" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function AdminEditorialBoardPage() {
   const { editorialMembers: cachedEditorial, editorialLoaded, setEditorialMembers: saveEditorial, invalidateEditorial } = useAdminStore();
   const [members, setMembers] = useState<EditorialBoardMember[]>(cachedEditorial);
@@ -732,8 +692,7 @@ export default function AdminEditorialBoardPage() {
       </div>
 
       {/* Statistics */}
-      {!loading && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -785,7 +744,6 @@ export default function AdminEditorialBoardPage() {
             </CardContent>
           </Card>
         </div>
-      )}
 
       {/* Filter Tabs */}
       <div className="flex gap-2 border-b border-gray-200">
@@ -812,31 +770,23 @@ export default function AdminEditorialBoardPage() {
       </div>
 
       {/* Members Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <MemberSkeleton key={i} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {members
+          .filter(m => activeTab === 'active' ? m.isActive : !m.isActive)
+          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .map((member) => (
+            <MemberCard
+              key={member.id}
+              member={member}
+              onEdit={setEditingMember}
+              onDelete={handleDeleteMember}
+              onToggleVisibility={handleToggleVisibility}
+            />
           ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {members
-            .filter(m => activeTab === 'active' ? m.isActive : !m.isActive)
-            .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map((member) => (
-              <MemberCard
-                key={member.id}
-                member={member}
-                onEdit={setEditingMember}
-                onDelete={handleDeleteMember}
-                onToggleVisibility={handleToggleVisibility}
-              />
-            ))}
-        </div>
-      )}
+      </div>
 
       {/* Empty State */}
-      {!loading && members.filter(m => activeTab === 'active' ? m.isActive : !m.isActive).length === 0 && (
+      {members.filter(m => activeTab === 'active' ? m.isActive : !m.isActive).length === 0 && (
         <div className="text-center py-12">
           <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">

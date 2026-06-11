@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import {
   Plus,
@@ -61,7 +59,6 @@ const ROLE_OPTIONS = [
 ];
 
 export default function TeamMembersManagement() {
-  const { user, loading } = useAuth();
   const { teamMembers: cachedTeam, teamMembersLoaded, setTeamMembers: saveTeam, invalidateTeamMembers } = useAdminStore();
   const [members, setMembers] = useState<TeamMember[]>(cachedTeam);
   const [isLoading, setIsLoading] = useState(!teamMembersLoaded);
@@ -84,12 +81,6 @@ export default function TeamMembersManagement() {
     search: '',
     role: ''
   });
-
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'ADMIN')) {
-      redirect('/login');
-    }
-  }, [user, loading]);
 
   const fetchMembers = useCallback(async () => {
     const noFilters = !filters.isActive && !filters.search && !filters.role;
@@ -121,10 +112,8 @@ export default function TeamMembersManagement() {
   }, [filters]);
 
   useEffect(() => {
-    if (user?.role === 'ADMIN') {
-      fetchMembers();
-    }
-  }, [user, filters, fetchMembers]);
+    fetchMembers();
+  }, [filters, fetchMembers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,14 +226,6 @@ export default function TeamMembersManagement() {
       isActive: true
     });
   };
-
-  if (loading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">

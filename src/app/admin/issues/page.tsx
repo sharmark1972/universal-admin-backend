@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { redirect } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
 import {
   BookOpen,
   Plus,
@@ -46,7 +44,6 @@ interface IssueFormData {
 }
 
 export default function AdminIssuesPage() {
-  const { isAdmin } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,12 +62,6 @@ export default function AdminIssuesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [generatingCovers, setGeneratingCovers] = useState(false);
   const [generatingCover, setGeneratingCover] = useState(false);
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   const fetchIssues = useCallback(async () => {
     try {
@@ -276,10 +267,6 @@ export default function AdminIssuesPage() {
     setEditingIssue(null);
     resetForm();
   };
-
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -64,19 +64,14 @@ interface ResearchPaperDraft {
 export default function ResearchPaperViewPage() {
   const router = useRouter();
   const params = useParams();
-  const { isAdmin } = useAuth();
   const paperId = params.id as string;
+  const { isAdmin } = useAuth();
 
   const [draft, setDraft] = useState<ResearchPaperDraft | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin()) {
-      router.push('/dashboard');
-      return;
-    }
-
     fetch(`/api/admin/research-papers/${paperId}`)
       .then((r) => r.json())
       .then((data) => {

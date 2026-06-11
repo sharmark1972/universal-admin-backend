@@ -19,8 +19,6 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-
 interface AuthorData {
   user: {
     id: string;
@@ -70,7 +68,6 @@ interface PaperData {
 export default function AdminPaperViewPage() {
   const router = useRouter();
   const params = useParams();
-  const { isAdmin } = useAuth();
   const paperId = params.id as string;
 
   const [loading, setLoading] = useState(true);

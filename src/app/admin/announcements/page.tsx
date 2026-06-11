@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import {
   Plus,
   Edit,
@@ -55,7 +53,6 @@ interface AnnouncementFormData {
 }
 
 export default function AnnouncementsManagement() {
-  const { user, loading } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,12 +76,6 @@ export default function AnnouncementsManagement() {
     isPublished: '',
     search: ''
   });
-
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'ADMIN')) {
-      redirect('/login');
-    }
-  }, [user, loading]);
 
   const fetchAnnouncements = useCallback(async () => {
     try {
@@ -110,11 +101,9 @@ export default function AnnouncementsManagement() {
   }, [currentPage, filters]);
 
   useEffect(() => {
-    if (user?.role === 'ADMIN') {
-      fetchAnnouncements();
-      fetchConferences();
-    }
-  }, [user, currentPage, filters, fetchAnnouncements]);
+    fetchAnnouncements();
+    fetchConferences();
+  }, [currentPage, filters, fetchAnnouncements]);
 
   const fetchConferences = async () => {
     try {
@@ -272,7 +261,7 @@ export default function AnnouncementsManagement() {
     return <CheckCircle className="h-4 w-4 text-green-500" />;
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

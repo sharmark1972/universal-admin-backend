@@ -4,8 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import {
   Save,
   DollarSign,
@@ -15,7 +13,6 @@ import {
 } from 'lucide-react';
 
 export default function NewEbookPage() {
-  const { isAdmin } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -38,12 +35,6 @@ export default function NewEbookPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [pdfPreview, setPdfPreview] = useState<string>('');
   const [coverPreview, setCoverPreview] = useState<string>('');
-
-  useEffect(() => {
-    if (!isAdmin) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

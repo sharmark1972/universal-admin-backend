@@ -2,8 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   FileText,
@@ -84,7 +82,6 @@ interface PapersData {
 
 
 export default function AdminPapersPage() {
-  const { isAdmin } = useAuth();
   const {
     papersData: cachedPapers, papersLoaded,
     issues: cachedIssues, issuesLoaded,
@@ -106,12 +103,6 @@ export default function AdminPapersPage() {
   const [assigningPaperId, setAssigningPaperId] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string>('');
   const [assigning, setAssigning] = useState(false);
-
-  useEffect(() => {
-    if (!isAdmin()) {
-      redirect('/dashboard');
-    }
-  }, [isAdmin]);
 
   const fetchIssues = useCallback(async () => {
     if (issuesLoaded && cachedIssues.length > 0) {

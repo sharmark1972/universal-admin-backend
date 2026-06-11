@@ -1,8 +1,6 @@
 'use client';
 // try
 import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import {
   Plus,
   Edit,
@@ -54,7 +52,6 @@ interface AdFormData {
 }
 
 export default function AdsManagement() {
-  const { user, loading } = useAuth();
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -74,12 +71,6 @@ export default function AdsManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'ADMIN')) {
-      redirect('/login');
-    }
-  }, [user, loading]);
-
   const fetchAds = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -97,10 +88,8 @@ export default function AdsManagement() {
   }, [currentPage]);
 
   useEffect(() => {
-    if (user?.role === 'ADMIN') {
-      fetchAds();
-    }
-  }, [user, currentPage, fetchAds]);
+    fetchAds();
+  }, [currentPage, fetchAds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -255,7 +244,7 @@ export default function AdsManagement() {
     return <CheckCircle className="h-4 w-4 text-green-500" />;
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
-import { useAuth } from '@/hooks/useAuth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Award, FileText, AlertCircle, Check } from 'lucide-react';
 import Certificate from '@/components/Certificate';
@@ -13,7 +11,6 @@ import PublicationFields from './type-fields/PublicationFields';
 import type { Journal, User, CertificateTypeValue, TypeFieldsData } from './types';
 
 export default function GenerateCertificatePage() {
-  const { isAdmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [journals, setJournals] = useState<Journal[]>([]);
   const [selectedJournalId, setSelectedJournalId] = useState('');
@@ -83,10 +80,6 @@ export default function GenerateCertificatePage() {
       setDownloading(false);
     }
   };
-
-  useEffect(() => {
-    if (!isAdmin) redirect('/dashboard');
-  }, [isAdmin]);
 
   useEffect(() => {
     const fetchData = async () => {

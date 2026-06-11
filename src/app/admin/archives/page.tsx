@@ -14,7 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Calendar, Archive, BookOpen, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface Archive {
   id: string;
@@ -282,46 +281,6 @@ function ArchiveCard({ archive, onEdit, onDelete }: {
   );
 }
 
-function ArchiveSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <Skeleton className="h-6 w-3/4 mb-2" />
-            <div className="flex items-center space-x-2 mb-2">
-              <Skeleton className="h-5 w-16" />
-              <Skeleton className="h-5 w-20" />
-              <Skeleton className="h-5 w-16" />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Skeleton className="h-5 w-24" />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Skeleton className="h-6 w-20" />
-            <Skeleton className="h-6 w-20" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="w-full h-32 mb-4 rounded-lg" />
-        <div className="space-y-2 mb-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-4 w-32" />
-          <div className="flex items-center space-x-2">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-20" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function AdminArchivesPage() {
   const { archives: cachedArchives, archivesLoaded, setArchives: saveArchives, invalidateArchives } = useAdminStore();
   const [archives, setArchives] = useState<Archive[]>(cachedArchives);
@@ -484,8 +443,7 @@ export default function AdminArchivesPage() {
         </div>
 
         {/* Statistics */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center">
@@ -537,30 +495,21 @@ export default function AdminArchivesPage() {
               </CardContent>
             </Card>
           </div>
-        )}
 
         {/* Archives Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <ArchiveSkeleton key={i} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {archives.map((archive) => (
-              <ArchiveCard
-                key={archive.id}
-                archive={archive}
-                onEdit={setEditingArchive}
-                onDelete={handleDeleteArchive}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {archives.map((archive) => (
+            <ArchiveCard
+              key={archive.id}
+              archive={archive}
+              onEdit={setEditingArchive}
+              onDelete={handleDeleteArchive}
+            />
+          ))}
+        </div>
 
         {/* Empty State */}
-        {!loading && archives.length === 0 && (
+        {archives.length === 0 && (
           <div className="text-center py-12">
             <Archive className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
