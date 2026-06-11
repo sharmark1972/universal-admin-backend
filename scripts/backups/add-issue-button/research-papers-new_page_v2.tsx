@@ -116,9 +116,6 @@ export default function NewResearchPaperPage() {
   const [addIssueForm, setAddIssueForm] = useState({ title: '', description: '', volume: '', issueNumber: '', year: new Date().getFullYear().toString(), publishDate: new Date().toISOString().split('T')[0], coverImage: '', isPublished: false });
   const [addIssueSubmitting, setAddIssueSubmitting] = useState(false);
   const [generatingIssueCover, setGeneratingIssueCover] = useState(false);
-  const [showAddJournalModal, setShowAddJournalModal] = useState(false);
-  const [addJournalForm, setAddJournalForm] = useState({ name: '', abbreviation: '', website: '', issnPrint: '', issnOnline: '', origin: '', doiAllotted: false });
-  const [addJournalSubmitting, setAddJournalSubmitting] = useState(false);
 
   if (isDraftLoading) {
     return (
@@ -216,41 +213,6 @@ export default function NewResearchPaperPage() {
       alert('Failed to generate cover');
     } finally {
       setGeneratingIssueCover(false);
-    }
-  };
-
-  const handleAddJournalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addJournalForm.name.trim() || !addJournalForm.abbreviation.trim()) {
-      alert('Name and abbreviation are required');
-      return;
-    }
-    setAddJournalSubmitting(true);
-    try {
-      const res = await fetch('/api/admin/journals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addJournalForm),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setShowAddJournalModal(false);
-        setAddJournalForm({ name: '', abbreviation: '', website: '', issnPrint: '', issnOnline: '', origin: '', doiAllotted: false });
-        const fresh = await fetch('/api/admin/journals', { cache: 'no-store' });
-        if (fresh.ok) {
-          const freshData = await fresh.json();
-          const active = (freshData.journals || []).filter((j: any) => j.isActive);
-          setJournals(active);
-          if (data.journal?.id) setJournalId(data.journal.id);
-        }
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to create journal');
-      }
-    } catch {
-      alert('Failed to create journal');
-    } finally {
-      setAddJournalSubmitting(false);
     }
   };
 
@@ -1057,13 +1019,7 @@ export default function NewResearchPaperPage() {
               <h2 className="text-lg font-semibold text-slate-950">Publishing Details</h2>
               <div className="mt-4 space-y-4">
                 <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="block text-sm font-medium text-slate-700">Journal</label>
-                    <Button type="button" variant="outline" size="sm" onClick={() => setShowAddJournalModal(true)}>
-                      <Plus className="h-4 w-4" />
-                      Add
-                    </Button>
-                  </div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Journal</label>
                   <Select value={journalId || 'none'} onValueChange={(value) => setJournalId(value === 'none' ? '' : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select journal" />
@@ -1498,70 +1454,6 @@ export default function NewResearchPaperPage() {
                     {addIssueSubmitting ? 'Creating...' : 'Create Issue'}
                   </button>
                   <button type="button" onClick={() => setShowAddIssueModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showAddJournalModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Add New Journal</h2>
-                <button onClick={() => setShowAddJournalModal(false)} className="text-gray-400 hover:text-gray-600">
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              <form onSubmit={handleAddJournalSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Journal Full Name <span className="text-red-500">*</span></label>
-                  <input type="text" required value={addJournalForm.name} onChange={(e) => setAddJournalForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. American Journal of Advanced Medical and Surgical Sciences" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Abbreviation <span className="text-red-500">*</span></label>
-                    <input type="text" required value={addJournalForm.abbreviation} onChange={(e) => setAddJournalForm(p => ({ ...p, abbreviation: e.target.value.toUpperCase() }))} placeholder="e.g. AJOAMS" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Origin</label>
-                    <select value={addJournalForm.origin} onChange={(e) => setAddJournalForm(p => ({ ...p, origin: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                      <option value="">Select origin</option>
-                      <option value="Indian">Indian</option>
-                      <option value="American">American</option>
-                      <option value="Netherland">Netherland</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-                  <input type="url" value={addJournalForm.website} onChange={(e) => setAddJournalForm(p => ({ ...p, website: e.target.value }))} placeholder="https://example.com" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ISSN (Print)</label>
-                    <input type="text" value={addJournalForm.issnPrint} onChange={(e) => setAddJournalForm(p => ({ ...p, issnPrint: e.target.value }))} placeholder="e.g. 2455-0116" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                    <p className="text-xs text-gray-500 mt-1">Leave blank if not applicable (e.g. American journals)</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ISSN (Online)</label>
-                    <input type="text" value={addJournalForm.issnOnline} onChange={(e) => setAddJournalForm(p => ({ ...p, issnOnline: e.target.value }))} placeholder="e.g. 2395-6410" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="rpDoiAllotted" checked={addJournalForm.doiAllotted} onChange={(e) => setAddJournalForm(p => ({ ...p, doiAllotted: e.target.checked }))} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  <label htmlFor="rpDoiAllotted" className="text-sm font-medium text-gray-700">DOI Allotted</label>
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="submit" disabled={addJournalSubmitting} className="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
-                    {addJournalSubmitting ? 'Saving...' : 'Save Journal'}
-                  </button>
-                  <button type="button" onClick={() => setShowAddJournalModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Cancel
                   </button>
                 </div>

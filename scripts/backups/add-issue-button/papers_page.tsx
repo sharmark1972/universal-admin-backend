@@ -103,9 +103,6 @@ export default function AdminPapersPage() {
   const [assigningPaperId, setAssigningPaperId] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string>('');
   const [assigning, setAssigning] = useState(false);
-  const [showAddIssueModal, setShowAddIssueModal] = useState(false);
-  const [addIssueForm, setAddIssueForm] = useState({ title: '', description: '', volume: '', issueNumber: '', year: new Date().getFullYear().toString(), publishDate: new Date().toISOString().split('T')[0], coverImage: '', isPublished: false });
-  const [addIssueSubmitting, setAddIssueSubmitting] = useState(false);
 
   const fetchIssues = useCallback(async () => {
     if (issuesLoaded && cachedIssues.length > 0) {
@@ -127,36 +124,6 @@ export default function AdminPapersPage() {
       setIssuesLoading(false);
     }
   }, [issuesLoaded]);
-
-  const handleAddIssueSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAddIssueSubmitting(true);
-    try {
-      const response = await fetch('/api/admin/issues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...addIssueForm, year: parseInt(addIssueForm.year), coverImage: addIssueForm.coverImage || undefined }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setShowAddIssueModal(false);
-        setAddIssueForm({ title: '', description: '', volume: '', issueNumber: '', year: new Date().getFullYear().toString(), publishDate: new Date().toISOString().split('T')[0], coverImage: '', isPublished: false });
-        saveIssues([]);
-        const fresh = await fetch('/api/admin/issues?published=true', { cache: 'no-store' });
-        if (fresh.ok) {
-          const freshData = await fresh.json();
-          setIssues(freshData.issues || []);
-          saveIssues(freshData.issues || []);
-        }
-      } else {
-        alert(data.error || 'Failed to create issue');
-      }
-    } catch {
-      alert('Failed to create issue');
-    } finally {
-      setAddIssueSubmitting(false);
-    }
-  };
 
   const fetchPapers = useCallback(async () => {
     if (papersLoaded && cachedPapers && searchTerm === '' && statusFilter === 'ALL' && categoryFilter === 'ALL' && issueFilter === '' && currentPage === 1) {
@@ -820,19 +787,9 @@ export default function AdminPapersPage() {
 
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Select Issue
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddIssueModal(true)}
-                      className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 border border-blue-300 rounded hover:bg-blue-50"
-                    >
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      + Add Issue
-                    </button>
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Issue
+                  </label>
                   <select
                     value={selectedIssueId}
                     onChange={(e) => setSelectedIssueId(e.target.value)}
@@ -867,64 +824,6 @@ export default function AdminPapersPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add Issue Modal */}
-      {showAddIssueModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Create New Issue</h2>
-                <button onClick={() => setShowAddIssueModal(false)} className="text-gray-400 hover:text-gray-600">
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              <form onSubmit={handleAddIssueSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                  <input type="text" required value={addIssueForm.title} onChange={(e) => setAddIssueForm({ ...addIssueForm, title: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., January - March 2025" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea value={addIssueForm.description} onChange={(e) => setAddIssueForm({ ...addIssueForm, description: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Brief description of this issue" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Volume *</label>
-                    <input type="text" required value={addIssueForm.volume} onChange={(e) => setAddIssueForm({ ...addIssueForm, volume: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 1" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Issue Number *</label>
-                    <input type="text" required value={addIssueForm.issueNumber} onChange={(e) => setAddIssueForm({ ...addIssueForm, issueNumber: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 1" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Year *</label>
-                    <input type="number" required min="1900" max="2100" value={addIssueForm.year} onChange={(e) => setAddIssueForm({ ...addIssueForm, year: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Publish Date *</label>
-                    <input type="date" required value={addIssueForm.publishDate} onChange={(e) => setAddIssueForm({ ...addIssueForm, publishDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <input type="checkbox" id="addIssuePublished" checked={addIssueForm.isPublished} onChange={(e) => setAddIssueForm({ ...addIssueForm, isPublished: e.target.checked })} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                  <label htmlFor="addIssuePublished" className="ml-2 block text-sm text-gray-700">Publish this issue (make it available for paper assignment)</label>
-                </div>
-                <div className="flex space-x-3">
-                  <button type="submit" disabled={addIssueSubmitting} className="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
-                    {addIssueSubmitting ? 'Creating...' : 'Create Issue'}
-                  </button>
-                  <button type="button" onClick={() => setShowAddIssueModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Cancel
-                  </button>
-                </div>
-              </form>
             </div>
           </div>
         </div>

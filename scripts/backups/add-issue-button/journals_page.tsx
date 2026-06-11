@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import Link from 'next/link';
-import { Globe, Plus, Pencil, Trash2, CheckCircle, XCircle, X } from 'lucide-react';
+import { Globe, Plus, Pencil, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
 interface Journal {
   id: string;
@@ -23,9 +23,6 @@ export default function JournalsPage() {
   const [journals, setJournals] = useState<Journal[]>(cachedJournals);
   const [loading, setLoading] = useState(!journalsLoaded);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', abbreviation: '', website: '', issnPrint: '', issnOnline: '', origin: '', doiAllotted: false });
-  const [addSubmitting, setAddSubmitting] = useState(false);
 
   const fetchJournals = async () => {
     if (journalsLoaded && cachedJournals.length > 0) {
@@ -68,35 +65,6 @@ export default function JournalsPage() {
     }
   };
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addForm.name.trim() || !addForm.abbreviation.trim()) {
-      alert('Name and abbreviation are required');
-      return;
-    }
-    setAddSubmitting(true);
-    try {
-      const res = await fetch('/api/admin/journals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addForm),
-      });
-      if (res.ok) {
-        setShowAddModal(false);
-        setAddForm({ name: '', abbreviation: '', website: '', issnPrint: '', issnOnline: '', origin: '', doiAllotted: false });
-        invalidateJournals();
-        fetchJournals();
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to create journal');
-      }
-    } catch {
-      alert('Failed to create journal');
-    } finally {
-      setAddSubmitting(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -115,13 +83,13 @@ export default function JournalsPage() {
               <h1 className="text-3xl font-bold text-gray-900">Sites / Journals</h1>
               <p className="mt-1 text-gray-600">Manage all journals for certificate generation</p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
+            <Link
+              href="/admin/journals/new"
               className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md shadow-sm"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add New Journal
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -211,75 +179,11 @@ export default function JournalsPage() {
 
           {journals.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              No journals found. <button onClick={() => setShowAddModal(true)} className="text-blue-600 hover:underline">Add one</button>.
+              No journals found. <Link href="/admin/journals/new" className="text-blue-600 hover:underline">Add one</Link>.
             </div>
           )}
         </div>
       </div>
-
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Add New Journal</h2>
-                <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              <form onSubmit={handleAddSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Journal Full Name <span className="text-red-500">*</span></label>
-                  <input type="text" required value={addForm.name} onChange={(e) => setAddForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. American Journal of Advanced Medical and Surgical Sciences" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Abbreviation <span className="text-red-500">*</span></label>
-                    <input type="text" required value={addForm.abbreviation} onChange={(e) => setAddForm(p => ({ ...p, abbreviation: e.target.value.toUpperCase() }))} placeholder="e.g. AJOAMS" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Origin</label>
-                    <select value={addForm.origin} onChange={(e) => setAddForm(p => ({ ...p, origin: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                      <option value="">Select origin</option>
-                      <option value="Indian">Indian</option>
-                      <option value="American">American</option>
-                      <option value="Netherland">Netherland</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-                  <input type="url" value={addForm.website} onChange={(e) => setAddForm(p => ({ ...p, website: e.target.value }))} placeholder="https://example.com" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ISSN (Print)</label>
-                    <input type="text" value={addForm.issnPrint} onChange={(e) => setAddForm(p => ({ ...p, issnPrint: e.target.value }))} placeholder="e.g. 2455-0116" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                    <p className="text-xs text-gray-500 mt-1">Leave blank if not applicable (e.g. American journals)</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ISSN (Online)</label>
-                    <input type="text" value={addForm.issnOnline} onChange={(e) => setAddForm(p => ({ ...p, issnOnline: e.target.value }))} placeholder="e.g. 2395-6410" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="doiAllotted" checked={addForm.doiAllotted} onChange={(e) => setAddForm(p => ({ ...p, doiAllotted: e.target.checked }))} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  <label htmlFor="doiAllotted" className="text-sm font-medium text-gray-700">DOI Allotted</label>
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="submit" disabled={addSubmitting} className="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
-                    {addSubmitting ? 'Saving...' : 'Save Journal'}
-                  </button>
-                  <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
