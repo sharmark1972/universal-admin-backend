@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSiteConfigByDomain } from '@/config/sites';
 
 const ALLOWED_PATHS = [
-  '/maintenance',
   '/api/maintenance',
   '/api/auth',
   '/_next',
@@ -41,6 +40,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
+  // Rewrite public site pages to the per-site folder, URL stays unchanged
+  const siteUrl = request.nextUrl.clone();
+  siteUrl.pathname = `/sites/${siteConfig.slug}${pathname}`;
+
   // Maintenance mode check
   const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
   const maintenanceCode = process.env.MAINTENANCE_CODE ?? '';
@@ -50,23 +53,24 @@ export async function middleware(request: NextRequest) {
     const queryCode = request.nextUrl.searchParams.get('code');
 
     if (bypassCookie?.value === maintenanceCode || queryCode === maintenanceCode) {
+      const response = NextResponse.rewrite(siteUrl, { request: { headers: requestHeaders } });
       if (queryCode === maintenanceCode) {
-        const response = NextResponse.next({ request: { headers: requestHeaders } });
         response.cookies.set('maintenance-bypass', maintenanceCode, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           maxAge: 60 * 60 * 24,
         });
-        return response;
       }
-      return NextResponse.next({ request: { headers: requestHeaders } });
+      return response;
     }
 
-    return NextResponse.redirect(new URL('/maintenance', request.url));
+    const maintenanceUrl = request.nextUrl.clone();
+    maintenanceUrl.pathname = `/sites/${siteConfig.slug}/maintenance`;
+    return NextResponse.rewrite(maintenanceUrl, { request: { headers: requestHeaders } });
   }
 
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return NextResponse.rewrite(siteUrl, { request: { headers: requestHeaders } });
 }
 
 export const config = {
