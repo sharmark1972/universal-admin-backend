@@ -55,7 +55,7 @@ export function getSiteConfig(slug: string): SiteConfig | null {
   return sites[slug] ?? null;
 }
 
-export function getSiteConfigByDomain(host: string): SiteConfig | null {
+export function getSiteConfigByDomain(host: string, activeSiteCookie?: string | null): SiteConfig | null {
   const domain = host.split(':')[0];
 
   for (const site of Object.values(sites)) {
@@ -67,6 +67,7 @@ export function getSiteConfigByDomain(host: string): SiteConfig | null {
   }
 
   if (domain === 'localhost' || domain === '127.0.0.1') {
+    if (activeSiteCookie && sites[activeSiteCookie]) return sites[activeSiteCookie];
     return sites[DEV_SITE_SLUG];
   }
 

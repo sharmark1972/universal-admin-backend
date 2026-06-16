@@ -19,7 +19,8 @@ export async function middleware(request: NextRequest) {
 
   // Resolve site from Host header
   const host = request.headers.get('host') ?? '';
-  const siteConfig = getSiteConfigByDomain(host);
+  const activeSiteCookie = request.cookies.get('active-site')?.value ?? null;
+  const siteConfig = getSiteConfigByDomain(host, activeSiteCookie);
 
   // Unknown domain → 404
   if (!siteConfig) {

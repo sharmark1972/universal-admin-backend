@@ -13,17 +13,16 @@
 
 import mysql from 'mysql2/promise';
 import { randomUUID } from 'crypto';
+import { config } from 'dotenv';
+
+config();
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
-const DB = {
-  host: '51.222.200.179',
-  port: 3306,
-  user: 'ijarcm_user',
-  password: '***REMOVED***',
-  database: 'ijarcm_db',
-  connectTimeout: 30000,
-};
+const DATABASE_URL_IJARCM = process.env.DATABASE_URL_IJARCM;
+if (!DATABASE_URL_IJARCM) {
+  throw new Error('Missing DATABASE_URL_IJARCM in .env');
+}
 
 // Map ResearchPaperStatus → PaperStatus
 function mapStatus(draftStatus) {
@@ -34,7 +33,7 @@ function mapStatus(draftStatus) {
 async function run() {
   console.log(DRY_RUN ? '\n[DRY RUN] No changes will be written.\n' : '\n[LIVE RUN] Changes will be written to DB.\n');
 
-  const conn = await mysql.createConnection(DB);
+  const conn = await mysql.createConnection(DATABASE_URL_IJARCM);
 
   // 1. Read all drafts
   const [drafts] = await conn.execute('SELECT * FROM research_paper_drafts');
