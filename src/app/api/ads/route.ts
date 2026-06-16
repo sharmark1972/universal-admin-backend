@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
 
 // GET - Get active advertisements for public display
 export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { searchParams } = new URL(request.url);
     const position = searchParams.get('position');

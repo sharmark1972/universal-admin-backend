@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://ijarcm.com';
     

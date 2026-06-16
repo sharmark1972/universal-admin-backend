@@ -1,7 +1,13 @@
-
 import NextAuth from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 
-const handler = NextAuth(authOptions);
+function handler(req: Request, context: { params: { nextauth: string[] } }) {
+  const siteSlug = headers().get('x-site-slug') ?? 'wjiis';
+  const prisma = getPrismaClient(siteSlug);
+  const authOptions = getAuthOptions(prisma, siteSlug);
+  return NextAuth(authOptions)(req as never, context);
+}
 
 export { handler as GET, handler as POST };

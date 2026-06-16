@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,9 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -103,7 +106,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

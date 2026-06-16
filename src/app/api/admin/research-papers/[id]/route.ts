@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForAdminRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
+async function requireAdmin(request: NextRequest) {
+  const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
   if (!session?.user || session.user.role !== 'ADMIN') return null;
   return session;
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } },
 ) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await requireAdmin();
+    const session = await requireAdmin(request);
     if (!session) return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
 
     const paper = await prisma.paper.findUnique({
@@ -44,8 +48,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await requireAdmin();
+    const session = await requireAdmin(request);
     if (!session) return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
 
     const body = await request.json();
@@ -72,11 +77,12 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } },
 ) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await requireAdmin();
+    const session = await requireAdmin(request);
     if (!session) return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
 
     await prisma.paper.delete({ where: { id: params.id } });

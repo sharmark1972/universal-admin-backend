@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { buildStoredFileResponse, getFileNameFromPath } from '@/lib/file-storage';
 
 // Google Scholar bot user agent
@@ -9,6 +9,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const prisma = getPrismaForRequest(request);
   try {
     const paperId = params.id;
     const { searchParams } = new URL(request.url);

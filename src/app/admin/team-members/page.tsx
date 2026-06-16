@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -96,7 +97,7 @@ export default function TeamMembersManagement() {
         ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
       });
 
-      const response = await fetch(`/api/admin/team-members?${params}`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/admin/team-members?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setMembers(data.teamMembers || []);
@@ -152,7 +153,7 @@ export default function TeamMembersManagement() {
     }
 
     try {
-      const response = await fetch(`/api/admin/team-members?id=${id}`, {
+      const response = await adminFetch(`/api/admin/team-members?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -193,7 +194,7 @@ export default function TeamMembersManagement() {
     const newOrder = direction === 'up' ? currentMember.displayOrder - 1 : currentMember.displayOrder + 1;
     
     try {
-      const response = await fetch(`/api/admin/team-members?id=${id}`, {
+      const response = await adminFetch(`/api/admin/team-members?id=${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import Certificate from '@/components/Certificate';
+import Certificate from '@/components/shared/Certificate';
 import type { CertificateProps } from '@/types/certificate';
 
 interface CertificateRecord {

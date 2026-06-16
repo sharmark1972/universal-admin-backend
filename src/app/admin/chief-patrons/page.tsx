@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
@@ -65,7 +66,7 @@ export default function ChiefPatronsManagement() {
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
       });
       
-      const response = await fetch(`/api/admin/chief-patrons?${params}`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/admin/chief-patrons?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setPatrons(data.chiefPatrons || []);
@@ -117,7 +118,7 @@ export default function ChiefPatronsManagement() {
     }
 
     try {
-      const response = await fetch(`/api/admin/chief-patrons/${id}`, {
+      const response = await adminFetch(`/api/admin/chief-patrons/${id}`, {
         method: 'DELETE',
       });
 
@@ -154,7 +155,7 @@ export default function ChiefPatronsManagement() {
     const newOrder = direction === 'up' ? currentPatron.displayOrder - 1 : currentPatron.displayOrder + 1;
     
     try {
-      const response = await fetch(`/api/admin/chief-patrons/${id}`, {
+      const response = await adminFetch(`/api/admin/chief-patrons/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

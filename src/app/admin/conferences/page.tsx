@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -67,7 +68,7 @@ export default function AdminConferencesPage() {
       if (searchTerm) params.append('search', searchTerm);
       if (statusFilter !== 'ALL') params.append('status', statusFilter);
 
-      const response = await fetch(`/api/admin/conferences?${params}`);
+      const response = await adminFetch(`/api/admin/conferences?${params}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch conferences');
@@ -134,7 +135,7 @@ export default function AdminConferencesPage() {
     if (!confirm('Are you sure you want to delete this conference?')) return;
     
     try {
-      const response = await fetch(`/api/admin/conferences/${conferenceId}`, {
+      const response = await adminFetch(`/api/admin/conferences/${conferenceId}`, {
         method: 'DELETE'
       });
 

@@ -1,11 +1,13 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaClient } from '@/lib/prisma-registry';
 
 export const dynamic = 'force-dynamic';
 
 // GET - Get team members (public)
 export async function GET(request: NextRequest) {
   try {
+    const siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const prisma = getPrismaClient(siteSlug);
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
 
@@ -29,9 +31,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching team members:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ teamMembers: [] });
   }
 }

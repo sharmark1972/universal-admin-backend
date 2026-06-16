@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 
@@ -21,6 +22,7 @@ const createArchiveSchema = z.object({
 const updateArchiveSchema = createArchiveSchema.partial();
 
 export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year');
@@ -91,8 +93,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },
@@ -142,8 +147,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },
@@ -217,8 +225,11 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },

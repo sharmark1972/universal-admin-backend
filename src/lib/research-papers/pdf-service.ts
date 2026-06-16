@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+import { prisma as defaultPrisma } from '@/lib/prisma';
 import { deleteFromR2, uploadToR2 } from '@/lib/r2-upload';
 
 async function generatePdfFromHtml(html: string, footerJournalName?: string, footerWebsite?: string): Promise<Buffer> {
@@ -72,6 +73,9 @@ export interface PreviewPdfData {
   journal?: { name: string; issnPrint?: string | null; issnOnline?: string | null; website?: string | null; abbreviation: string } | null;
 }
 
+function resolvePrismaClient(prismaClient?: PrismaClient) {
+  return prismaClient ?? defaultPrisma;
+}
 
 export async function generatePreviewPdfFromData(data: PreviewPdfData): Promise<Buffer> {
   const html = await buildPdfHtmlFromData(data);
@@ -181,7 +185,12 @@ async function buildPdfHtmlFromData(data: PreviewPdfData): Promise<string> {
 </html>`;
 }
 
-export async function generateResearchPaperPdf(draftId: string, mode: 'preview' | 'final' = 'preview') {
+export async function generateResearchPaperPdf(
+  draftId: string,
+  mode: 'preview' | 'final' = 'preview',
+  prismaClient?: PrismaClient,
+) {
+  const prisma = resolvePrismaClient(prismaClient);
   const draft = await prisma.researchPaperDraft.findUnique({
     where: { id: draftId },
     include: {
@@ -219,7 +228,9 @@ export async function generateResearchPaperPdf(draftId: string, mode: 'preview' 
   return { path };
 }
 
-async function buildPdfHtml(draft: Awaited<ReturnType<typeof prisma.researchPaperDraft.findUnique>> & Record<string, any>) {
+async function buildPdfHtml(
+  draft: Awaited<ReturnType<typeof defaultPrisma.researchPaperDraft.findUnique>> & Record<string, any>,
+) {
   const cssPath = join(process.cwd(), 'src', 'components', 'admin', 'research-papers', 'pdf', 'research-paper-pdf.css');
   const css = await readFile(cssPath, 'utf8');
   const issue = draft.issue;

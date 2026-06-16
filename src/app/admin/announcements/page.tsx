@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState, useCallback } from 'react';
 import {
@@ -87,7 +88,7 @@ export default function AnnouncementsManagement() {
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
       });
       
-      const response = await fetch(`/api/admin/announcements?${params}`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/admin/announcements?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setAnnouncements(data.announcements);
@@ -161,7 +162,7 @@ export default function AnnouncementsManagement() {
     }
 
     try {
-      const response = await fetch('/api/admin/announcements', {
+      const response = await adminFetch('/api/admin/announcements', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

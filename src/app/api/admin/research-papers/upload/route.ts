@@ -1,13 +1,16 @@
 import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 import { createResearchPaperDraftFromUpload, ExtractionMode } from '@/lib/research-papers/research-paper-service';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
   if (!session?.user || session.user.role !== 'ADMIN') {
     return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403 });
   }

@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -112,7 +113,7 @@ export default function NewConferencePage() {
         videoUrl: formData.videoUrl || null
       };
 
-      const response = await fetch('/api/admin/conferences', {
+      const response = await adminFetch('/api/admin/conferences', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

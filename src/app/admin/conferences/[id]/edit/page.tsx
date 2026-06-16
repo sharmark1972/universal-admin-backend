@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -71,7 +72,7 @@ export default function EditConferencePage() {
   useEffect(() => {
     const fetchConference = async () => {
       try {
-        const response = await fetch(`/api/admin/conferences/${conferenceId}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/admin/conferences/${conferenceId}`, { cache: 'no-store' });
         const result = await response.json();
 
         if (response.ok) {
@@ -192,7 +193,7 @@ export default function EditConferencePage() {
         isPublic: formData.isPublic
       };
 
-      const response = await fetch(`/api/admin/conferences/${conferenceId}`, {
+      const response = await adminFetch(`/api/admin/conferences/${conferenceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

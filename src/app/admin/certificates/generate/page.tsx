@@ -1,10 +1,11 @@
 'use client';
+import { adminFetch } from '@/lib/admin-fetch';
 
 import { useEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import Link from 'next/link';
 import { Award, FileText, AlertCircle, Check, Plus, X } from 'lucide-react';
-import Certificate from '@/components/Certificate';
+import Certificate from '@/components/shared/Certificate';
 import { CERTIFICATE_TEMPLATES, CertificateTemplate, JournalInfo } from '@/types/certificate';
 import ConferenceFields, { createConferenceIfNeeded } from './type-fields/ConferenceFields';
 import PublicationFields from './type-fields/PublicationFields';
@@ -88,8 +89,8 @@ export default function GenerateCertificatePage() {
     const fetchData = async () => {
       try {
         const [usersResponse, journalsResponse] = await Promise.all([
-          fetch('/api/admin/users?limit=100'),
-          fetch('/api/admin/journals'),
+          adminFetch('/api/admin/users?limit=100'),
+          adminFetch('/api/admin/journals'),
         ]);
         if (usersResponse.ok) {
           const usersData = await usersResponse.json();
@@ -119,7 +120,7 @@ export default function GenerateCertificatePage() {
     }
     setAddJournalSubmitting(true);
     try {
-      const res = await fetch('/api/admin/journals', {
+      const res = await adminFetch('/api/admin/journals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addJournalForm),
@@ -128,7 +129,7 @@ export default function GenerateCertificatePage() {
         const data = await res.json();
         setShowAddJournalModal(false);
         setAddJournalForm({ name: '', abbreviation: '', website: '', issnPrint: '', issnOnline: '', origin: '', doiAllotted: false });
-        const fresh = await fetch('/api/admin/journals', { cache: 'no-store' });
+        const fresh = await adminFetch('/api/admin/journals', { cache: 'no-store' });
         if (fresh.ok) {
           const freshData = await fresh.json();
           const active = (freshData.journals || []).filter((j: Journal) => j.isActive);

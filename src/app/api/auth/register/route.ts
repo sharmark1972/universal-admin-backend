@@ -1,6 +1,7 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/site-context';
+import { PrismaClient } from '@prisma/client';
 import { UserRole } from '@prisma/client';
 import { z } from 'zod';
 
@@ -16,7 +17,7 @@ const registerSchema = z.object({
 });
 
 // Helper function to get email verification setting
-async function getEmailVerificationSetting(): Promise<boolean> {
+async function getEmailVerificationSetting(prisma: PrismaClient): Promise<boolean> {
   try {
     // Get maintenance settings from database
     const maintenanceSettings = await prisma.maintenanceSettings.findFirst().catch(() => null);
@@ -37,6 +38,7 @@ async function getEmailVerificationSetting(): Promise<boolean> {
 }
 
 export async function POST(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const body = await request.json();
     const validatedData = registerSchema.parse(body);
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get email verification setting
-    const requireEmailVerification = await getEmailVerificationSetting();
+    const requireEmailVerification = await getEmailVerificationSetting(prisma);
 
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);

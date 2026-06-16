@@ -1,4 +1,4 @@
-﻿import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ let feeConfiguration = {
   discountPercentage: 50
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     return NextResponse.json({
       success: true,

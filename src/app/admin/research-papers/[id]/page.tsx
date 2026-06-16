@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/admin-fetch';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -72,7 +73,7 @@ export default function ResearchPaperViewPage() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/admin/research-papers/${paperId}`)
+    adminFetch(`/api/admin/research-papers/${paperId}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.draft) setDraft(data.draft);
@@ -122,7 +123,7 @@ export default function ResearchPaperViewPage() {
     if (!draft) return;
     setDownloading(true);
     try {
-      const response = await fetch(`/api/admin/research-papers/${paperId}/download`);
+      const response = await adminFetch(`/api/admin/research-papers/${paperId}/download`);
       if (!response.ok) throw new Error('Failed to generate PDF');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

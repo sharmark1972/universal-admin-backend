@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -103,7 +104,7 @@ export default function AdminAnalyticsPage() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/admin/analytics?range=${timeRange}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/admin/analytics?range=${timeRange}`, { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error('Failed to fetch analytics');

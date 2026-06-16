@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -56,7 +57,7 @@ export default function AdminFeesPage() {
   const fetchFeeConfig = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/fees', {
+      const response = await adminFetch('/api/admin/fees', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -106,7 +107,7 @@ export default function AdminFeesPage() {
 
     try {
       setSaving(true);
-      const response = await fetch('/api/admin/fees', {
+      const response = await adminFetch('/api/admin/fees', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

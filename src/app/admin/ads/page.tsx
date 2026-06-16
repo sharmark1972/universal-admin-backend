@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 // try
 import { useEffect, useState, useCallback } from 'react';
 import {
@@ -74,7 +75,7 @@ export default function AdsManagement() {
   const fetchAds = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/admin/ads?admin=true&page=${currentPage}&limit=10`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/admin/ads?admin=true&page=${currentPage}&limit=10`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setAds(data.ads);
@@ -127,7 +128,7 @@ export default function AdsManagement() {
     }
 
     try {
-      const response = await fetch('/api/admin/ads', {
+      const response = await adminFetch('/api/admin/ads', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

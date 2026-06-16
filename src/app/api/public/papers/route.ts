@@ -1,5 +1,5 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { z } from 'zod';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -25,6 +25,7 @@ const searchSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     // Get client IP for rate limiting
     const ip = request.headers.get('x-forwarded-for') ||

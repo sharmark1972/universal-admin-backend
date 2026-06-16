@@ -1,17 +1,18 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import React, { useState, useEffect } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import { Button } from '@/components/shared/ui/button';
+import { Input } from '@/components/shared/ui/input';
+import { Label } from '@/components/shared/ui/label';
+import { Textarea } from '@/components/shared/ui/textarea';
+import { Switch } from '@/components/shared/ui/switch';
+import { Badge } from '@/components/shared/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/shared/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/shared/ui/alert-dialog';
 import { Plus, Edit, Trash2, Users, Award, Mail, FileText, Upload, User } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -506,7 +507,7 @@ export default function AdminAdvisoryBoardPage() {
     }
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/advisory-board', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/advisory-board', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch members');
       }
@@ -524,7 +525,7 @@ export default function AdminAdvisoryBoardPage() {
     try {
       setSubmitting(true);
 
-      const response = await fetch('/api/admin/advisory-board', {
+      const response = await adminFetch('/api/admin/advisory-board', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -565,7 +566,7 @@ export default function AdminAdvisoryBoardPage() {
     try {
       setSubmitting(true);
 
-      const response = await fetch('/api/admin/advisory-board?id=' + editingMember.id, {
+      const response = await adminFetch('/api/admin/advisory-board?id=' + editingMember.id, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -603,7 +604,7 @@ export default function AdminAdvisoryBoardPage() {
 
   const handleDeleteMember = async (id: string) => {
     try {
-      const response = await fetch('/api/admin/advisory-board?id=' + id, {
+      const response = await adminFetch('/api/admin/advisory-board?id=' + id, {
         method: 'DELETE',
       });
 

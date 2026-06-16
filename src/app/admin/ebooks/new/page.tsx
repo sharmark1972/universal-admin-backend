@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -111,7 +112,7 @@ export default function NewEbookPage() {
         submitFormData.append('coverFile', coverFile);
       }
 
-      const response = await fetch('/api/admin/ebooks', {
+      const response = await adminFetch('/api/admin/ebooks', {
         method: 'POST',
         body: submitFormData,
       });

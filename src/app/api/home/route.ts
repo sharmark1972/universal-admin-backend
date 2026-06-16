@@ -1,10 +1,11 @@
-﻿import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     // Fetch real statistics from the database
     const [
       totalPapers,
@@ -218,9 +219,17 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching home data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch home data' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      stats: {
+        totalPapers: 0,
+        totalAuthors: 0,
+        totalDownloads: 0,
+        totalReviews: 0
+      },
+      latestPapers: [],
+      latestIssue: null,
+      upcomingIssue: null,
+      currentImpactFactor: null
+    });
   }
 }

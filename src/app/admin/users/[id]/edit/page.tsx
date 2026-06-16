@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -63,7 +64,7 @@ export default function UserEditPage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`/api/admin/users/${userId}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/admin/users/${userId}`, { cache: 'no-store' });
         if (!response.ok) {
           if (response.status === 404) {
             setError('User not found');
@@ -142,7 +143,7 @@ export default function UserEditPage() {
     setErrors({});
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await adminFetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

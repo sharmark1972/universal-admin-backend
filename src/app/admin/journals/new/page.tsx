@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/admin-fetch';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -26,7 +27,7 @@ export default function NewJournalPage() {
     }
     setSaving(true);
     try {
-      const res = await fetch('/api/admin/journals', {
+      const res = await adminFetch('/api/admin/journals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

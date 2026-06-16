@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -34,8 +35,11 @@ const updateTeamMemberSchema = z.object({
 
 // POST - Create new team member
 export async function POST(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(
@@ -81,6 +85,7 @@ export async function POST(request: NextRequest) {
 
 // GET - Get team members
 export async function GET(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
     const { searchParams } = new URL(request.url);
     const adminView = searchParams.get('admin') === 'true';
@@ -96,7 +101,9 @@ export async function GET(request: NextRequest) {
       whereClause.isActive = true;
     } else {
       // Admin view - check authentication
-      const session = await getServerSession(authOptions);
+      const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
       
       if (!session?.user || session.user.role !== 'ADMIN') {
         return NextResponse.json(
@@ -163,8 +170,11 @@ export async function GET(request: NextRequest) {
 
 // PUT - Update team member
 export async function PUT(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(
@@ -221,8 +231,11 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete team member
 export async function DELETE(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(

@@ -1,11 +1,12 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
 // GET - List all published issues
 export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year');

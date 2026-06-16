@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState } from 'react';
 import {
@@ -79,7 +80,7 @@ export default function AdminAnimations() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/animations', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/animations', { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch settings');
       const data = await response.json();
       setSettings(data);
@@ -114,7 +115,7 @@ export default function AdminAnimations() {
 
     setSaving(true);
     try {
-      const response = await fetch('/api/admin/animations', {
+      const response = await adminFetch('/api/admin/animations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -150,7 +151,7 @@ export default function AdminAnimations() {
 
     setSaving(true);
     try {
-      const response = await fetch('/api/admin/animations', {
+      const response = await adminFetch('/api/admin/animations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -24,7 +24,7 @@ const Navbar = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  
+
   const { data: session } = useSession();
   const router = useRouter();
   const navRef = useRef<HTMLElement>(null);
@@ -282,7 +282,7 @@ const Navbar = () => {
         )}
       </nav>
       {/* Spacer */}
-      <div className="h-20 sm:h-24"></div>
+      <div className="h-20 sm:h-[6.75rem]"></div>
     </>
   );
 };

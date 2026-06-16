@@ -1,6 +1,6 @@
-import { PdfTemplateToolbar } from '@/components/admin/research-papers/pdf/PdfTemplateToolbar';
-import { ResearchPaperPdfPreview } from '@/components/admin/research-papers/pdf/ResearchPaperPdfPreview';
-import { sampleResearchPaperPdfData } from '@/components/admin/research-papers/pdf/pdfTemplateData';
+import { PdfTemplateToolbar } from '@/components/shared/admin/research-papers/pdf/PdfTemplateToolbar';
+import { ResearchPaperPdfPreview } from '@/components/shared/admin/research-papers/pdf/ResearchPaperPdfPreview';
+import { sampleResearchPaperPdfData } from '@/components/shared/admin/research-papers/pdf/pdfTemplateData';
 import '@/components/admin/research-papers/pdf/research-paper-pdf.css';
 
 export default function ResearchPaperPdfTemplatePage() {

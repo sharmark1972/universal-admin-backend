@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { getAdminStoreStorageKey } from '@/lib/admin-site';
 
 // --- Types ---
 
@@ -247,7 +248,11 @@ export const useAdminStore = create<AdminStore>()(
     }),
     {
       name: 'admin-store',
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => ({
+        getItem: (name: string) => sessionStorage.getItem(getAdminStoreStorageKey(name)),
+        setItem: (name: string, value: string) => sessionStorage.setItem(getAdminStoreStorageKey(name), value),
+        removeItem: (name: string) => sessionStorage.removeItem(getAdminStoreStorageKey(name)),
+      })),
     }
   )
 );

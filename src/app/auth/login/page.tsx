@@ -5,12 +5,12 @@ import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import DynamicSEO from '@/components/DynamicSEO';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import DynamicSEO from '@/components/shared/DynamicSEO';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import { Input } from '@/components/shared/ui/input';
+import { Label } from '@/components/shared/ui/label';
+import { Button } from '@/components/shared/ui/button';
+import { Alert, AlertDescription } from '@/components/shared/ui/alert';
 import type { Session } from 'next-auth';
 
 export default function LoginPage() {
@@ -174,7 +174,7 @@ export default function LoginPage() {
                 <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   placeholder="name@institution.edu"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

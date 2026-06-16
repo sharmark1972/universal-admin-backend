@@ -1,6 +1,8 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useAdminStore } from '@/store/adminStore';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -14,18 +16,18 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/shared/ui/button';
+import { Input } from '@/components/shared/ui/input';
+import { Textarea } from '@/components/shared/ui/textarea';
+import { Badge } from '@/components/shared/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { SectionEditor } from '@/components/admin/research-papers/SectionEditor';
+} from '@/components/shared/ui/select';
+import { SectionEditor } from '@/components/shared/admin/research-papers/SectionEditor';
 import type { ResearchPaperDraft } from '@/types/research-paper-workflow';
 import { extractStructuredDataFromDocx } from '@/lib/research-papers/docx-extractor';
 
@@ -86,6 +88,7 @@ function blankDraft(): ResearchPaperDraft {
 
 export default function NewResearchPaperPage() {
   const router = useRouter();
+  const { invalidatePapers } = useAdminStore();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit') || '';
   const isEditMode = !!editId;
@@ -146,13 +149,13 @@ export default function NewResearchPaperPage() {
 
   useEffect(() => {
     const fetchIssues = async () => {
-      const response = await fetch('/api/admin/issues?limit=100', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/issues?limit=100', { cache: 'no-store' });
       const data = await response.json();
       if (response.ok) setIssues(data.issues || []);
     };
 
     const fetchJournals = async () => {
-      const response = await fetch('/api/admin/journals', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/journals', { cache: 'no-store' });
       const data = await response.json();
       if (response.ok) {
         const active = (data.journals || []).filter((j: any) => j.isActive);
@@ -170,7 +173,7 @@ export default function NewResearchPaperPage() {
     e.preventDefault();
     setAddIssueSubmitting(true);
     try {
-      const response = await fetch('/api/admin/issues', {
+      const response = await adminFetch('/api/admin/issues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...addIssueForm, year: parseInt(addIssueForm.year), coverImage: addIssueForm.coverImage || undefined }),
@@ -179,7 +182,7 @@ export default function NewResearchPaperPage() {
       if (response.ok) {
         setShowAddIssueModal(false);
         setAddIssueForm({ title: '', description: '', volume: '', issueNumber: '', year: new Date().getFullYear().toString(), publishDate: new Date().toISOString().split('T')[0], coverImage: '', isPublished: false });
-        const fresh = await fetch('/api/admin/issues?limit=100', { cache: 'no-store' });
+        const fresh = await adminFetch('/api/admin/issues?limit=100', { cache: 'no-store' });
         if (fresh.ok) {
           const freshData = await fresh.json();
           setIssues(freshData.issues || []);
@@ -201,7 +204,7 @@ export default function NewResearchPaperPage() {
     }
     setGeneratingIssueCover(true);
     try {
-      const response = await fetch('/api/admin/issues/generate-cover', {
+      const response = await adminFetch('/api/admin/issues/generate-cover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ volume: addIssueForm.volume, issueNumber: addIssueForm.issueNumber, year: addIssueForm.year, title: addIssueForm.title }),
@@ -227,7 +230,7 @@ export default function NewResearchPaperPage() {
     }
     setAddJournalSubmitting(true);
     try {
-      const res = await fetch('/api/admin/journals', {
+      const res = await adminFetch('/api/admin/journals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addJournalForm),
@@ -236,7 +239,7 @@ export default function NewResearchPaperPage() {
         const data = await res.json();
         setShowAddJournalModal(false);
         setAddJournalForm({ name: '', abbreviation: '', website: '', issnPrint: '', issnOnline: '', origin: '', doiAllotted: false });
-        const fresh = await fetch('/api/admin/journals', { cache: 'no-store' });
+        const fresh = await adminFetch('/api/admin/journals', { cache: 'no-store' });
         if (fresh.ok) {
           const freshData = await fresh.json();
           const active = (freshData.journals || []).filter((j: any) => j.isActive);
@@ -261,7 +264,7 @@ export default function NewResearchPaperPage() {
       try {
         setIsDraftLoading(true);
         setError('');
-        const response = await fetch(`/api/admin/research-papers/${draftId}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/admin/research-papers/${draftId}`, { cache: 'no-store' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Failed to load draft');
         applyExtractedData(data.draft);
@@ -281,7 +284,7 @@ export default function NewResearchPaperPage() {
     const fetchPaper = async () => {
       try {
         setError('');
-        const response = await fetch(`/api/admin/papers/${editId}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/admin/papers/${editId}`, { cache: 'no-store' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Failed to load paper');
 
@@ -371,7 +374,7 @@ export default function NewResearchPaperPage() {
       setExtractionStatus(extractionMode === 'zai' ? 'zai' : extractionMode === 'basic' ? 'basic' : 'gemini');
 
       console.log('[STEP 2] AI extract start — mode:', extractionMode, '| sending to server (no DB, no R2)');
-      const response = await fetch('/api/admin/research-papers/ai-extract', {
+      const response = await adminFetch('/api/admin/research-papers/ai-extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -615,7 +618,7 @@ export default function NewResearchPaperPage() {
     }
 
     console.log('[STEP 3] PDF generate start — sending local state to server (Playwright) | DB: NOT touched | R2: NOT touched');
-    const response = await fetch('/api/admin/research-papers/preview-pdf', {
+    const response = await adminFetch('/api/admin/research-papers/preview-pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: signature,
@@ -707,7 +710,7 @@ export default function NewResearchPaperPage() {
       submitData.append('docx', file);
       submitData.append('pdf', pdfBlob, 'paper.pdf');
 
-      const response = await fetch('/api/admin/research-papers/submit', {
+      const response = await adminFetch('/api/admin/research-papers/submit', {
         method: 'POST',
         body: submitData,
       });
@@ -716,6 +719,7 @@ export default function NewResearchPaperPage() {
       if (!response.ok) throw new Error(data.error || 'Failed to submit paper');
 
       setMessage('Paper submitted successfully!');
+      invalidatePapers();
       router.push('/admin/papers');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit paper');
@@ -735,7 +739,7 @@ export default function NewResearchPaperPage() {
       setIsSaving(true);
       setError('');
       setMessage('');
-      const response = await fetch(`/api/admin/research-papers/${draftId}`, {
+      const response = await adminFetch(`/api/admin/research-papers/${draftId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildSavePayload()),

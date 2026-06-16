@@ -1,14 +1,18 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForAdminRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
 
 // POST - Bulk operations on papers
 export async function POST(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(

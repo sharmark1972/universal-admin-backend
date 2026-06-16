@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useState, useEffect } from 'react';
 
@@ -36,7 +37,7 @@ export default function ApiKeysPage() {
     try {
       setLoading(true);
       // For now, we'll use mock data since we don't have API keys table in DB yet
-      // In production, this would be: const response = await fetch('/api/admin/api-keys');
+      // In production, this would be: const response = await adminFetch('/api/admin/api-keys');
       const mockApiKeys: ApiKey[] = [
         {
           id: 'key_1234567890',
@@ -102,7 +103,7 @@ export default function ApiKeysPage() {
     }
 
     try {
-      // In production, this would be: await fetch(`/api/admin/api-keys/${keyId}`, { method: 'DELETE' });
+      // In production, this would be: await adminFetch(`/api/admin/api-keys/${keyId}`, { method: 'DELETE' });
       setSuccess('API key deactivated successfully');
       fetchApiKeys(); // Refresh list
     } catch {

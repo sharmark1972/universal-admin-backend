@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 
 export const dynamic = 'force-dynamic';
 
 // GET - Get active announcements for public display
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const prisma = getPrismaClient(_siteSlug);
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const targetAudience = searchParams.get('targetAudience');
@@ -66,9 +69,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching announcements:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ announcements: [] });
   }
 }

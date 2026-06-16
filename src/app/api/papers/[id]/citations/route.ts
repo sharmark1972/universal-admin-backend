@@ -1,5 +1,5 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { CitationGenerator, CitationStyle, extractAuthorsFromPaper } from '@/lib/citations';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +8,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const prisma = getPrismaForRequest(request);
   try {
     const paperId = params.id;
     const { searchParams } = new URL(request.url);

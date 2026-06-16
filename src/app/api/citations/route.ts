@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { generateCitation, CitationStyle, CitationData } from '@/lib/citations';
 import { z } from 'zod';
 
@@ -24,6 +25,7 @@ const createCitationSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { searchParams } = new URL(request.url);
     const paperId = searchParams.get('paperId');
@@ -101,8 +103,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -214,8 +219,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },

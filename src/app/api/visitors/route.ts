@@ -1,5 +1,5 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
 
@@ -111,6 +111,7 @@ function getClientIP(request: NextRequest): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     const body = await request.json();
     const { page, sessionId } = body;
     
@@ -186,15 +187,17 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Error tracking visitor:', error);
-    return NextResponse.json(
-      { error: 'Failed to track visitor' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: true,
+      skipped: true,
+      message: 'Visitor tracking skipped while analytics storage is unavailable'
+    });
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
+    const prisma = getPrismaForRequest(request);
     const { searchParams } = new URL(request.url);
     const timeframe = searchParams.get('timeframe') || '7d';
     
@@ -285,9 +288,11 @@ export async function GET(request: NextRequest) {
     
   } catch (error) {
     console.error('Error fetching visitor analytics:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      totalVisitors: 0,
+      countryStats: [],
+      pageStats: [],
+      timeframe: '7d',
+    });
   }
 }

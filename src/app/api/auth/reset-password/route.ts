@@ -1,11 +1,12 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/smtp';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { token, password } = await request.json();
 
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');

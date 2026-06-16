@@ -1,0 +1,168 @@
+CISPL SignerDigital Loaded content.js:1:9
+GET
+http://localhost:3004/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:38560:1
+XHR
+GET
+http://localhost:3004/api/team-members
+[HTTP/1.1 500 Internal Server Error 2596ms]
+
+XHR
+GET
+http://localhost:3004/api/announcements?limit=3
+[HTTP/1.1 500 Internal Server Error 2596ms]
+
+XHR
+GET
+http://localhost:3004/api/home
+[HTTP/1.1 500 Internal Server Error 2595ms]
+
+XHR
+GET
+http://localhost:3004/api/publication-stats
+[HTTP/1.1 500 Internal Server Error 2595ms]
+
+GET
+http://localhost:3004/ijarcm-logo.svg
+[HTTP/1.1 404 Not Found 3255ms]
+
+XHR
+GET
+http://localhost:3004/api/team-members
+[HTTP/1.1 500 Internal Server Error 2577ms]
+
+XHR
+GET
+http://localhost:3004/api/announcements?limit=3
+[HTTP/1.1 500 Internal Server Error 2542ms]
+
+XHR
+GET
+http://localhost:3004/api/publication-stats
+[HTTP/1.1 500 Internal Server Error 4776ms]
+
+XHR
+GET
+http://localhost:3004/api/home
+[HTTP/1.1 500 Internal Server Error 4776ms]
+
+Web Vitals metrics: 
+Object { lcp: 2400, fid: 85, cls: 0.08, fcp: 1800, ttfb: 200 }
+PerformanceProvider.tsx:29:15
+Web Vitals metrics: 
+Object { lcp: 2400, fid: 85, cls: 0.08, fcp: 1800, ttfb: 200 }
+PerformanceProvider.tsx:29:15
+Error fetching team members: Error: Failed to fetch team members
+    fetchTeamMembers webpack-internal:///(app-pages-browser)/./src/components/shared/OurLeadership.tsx:139
+    OurLeadership webpack-internal:///(app-pages-browser)/./src/components/shared/OurLeadership.tsx:128
+    React 8
+    workLoop webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256
+    flushWork webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225
+    performWorkUntilDeadline webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534
+    EventHandlerNonNull* webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:569
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:630
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/index.js:4
+    NextJS 4
+    React 2
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/index.js:32
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/client.js:3
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:15
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js:9
+    appBootstrap webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:57
+    loadScriptsInSequence webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:23
+    appBootstrap webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:56
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js:8
+    NextJS 7
+app-index.tsx:25:20
+Error fetching announcements: Error: Failed to fetch announcements
+    fetchAnnouncements webpack-internal:///(app-pages-browser)/./src/components/shared/AnnouncementsDisplay.tsx:34
+    AnnouncementsDisplay webpack-internal:///(app-pages-browser)/./src/components/shared/AnnouncementsDisplay.tsx:46
+    React 5
+app-index.tsx:25:20
+Error fetching team members: Error: Failed to fetch team members
+    fetchTeamMembers webpack-internal:///(app-pages-browser)/./src/components/shared/OurLeadership.tsx:139
+    OurLeadership webpack-internal:///(app-pages-browser)/./src/components/shared/OurLeadership.tsx:128
+    React 5
+app-index.tsx:25:20
+Error fetching home data: Error: Failed to fetch home data
+    fetchHomeData webpack-internal:///(app-pages-browser)/./src/app/(wjiis)/page.tsx:58
+    HomePage webpack-internal:///(app-pages-browser)/./src/app/(wjiis)/page.tsx:53
+    React 5
+app-index.tsx:25:20
+Error fetching announcements: Error: Failed to fetch announcements
+    fetchAnnouncements webpack-internal:///(app-pages-browser)/./src/components/shared/AnnouncementsDisplay.tsx:34
+    AnnouncementsDisplay webpack-internal:///(app-pages-browser)/./src/components/shared/AnnouncementsDisplay.tsx:46
+    React 8
+    workLoop webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256
+    flushWork webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225
+    performWorkUntilDeadline webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534
+    EventHandlerNonNull* webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:569
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:630
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/index.js:4
+    NextJS 4
+    React 2
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/index.js:32
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/client.js:3
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:15
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js:9
+    appBootstrap webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:57
+    loadScriptsInSequence webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:23
+    appBootstrap webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:56
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js:8
+    NextJS 7
+app-index.tsx:25:20
+[Fast Refresh] rebuilding hot-reloader-client.tsx:297:15
+[Fast Refresh] done in 371ms hot-reloader-client.tsx:74:11
+XHR
+POST
+http://localhost:3004/api/visitors
+[HTTP/1.1 500 Internal Server Error 1312ms]
+
+XHR
+POST
+http://localhost:3004/api/visitors
+[HTTP/1.1 500 Internal Server Error 1310ms]
+
+Error fetching home data: Error: Failed to fetch home data
+    fetchHomeData webpack-internal:///(app-pages-browser)/./src/app/(wjiis)/page.tsx:58
+    HomePage webpack-internal:///(app-pages-browser)/./src/app/(wjiis)/page.tsx:53
+    React 8
+    workLoop webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256
+    flushWork webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225
+    performWorkUntilDeadline webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534
+    EventHandlerNonNull* webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:569
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:630
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/index.js:4
+    NextJS 4
+    React 2
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/index.js:32
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/client.js:3
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:15
+    NextJS 4
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js:9
+    appBootstrap webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:57
+    loadScriptsInSequence webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:23
+    appBootstrap webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-bootstrap.js:56
+    <anonymous> webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-next-dev.js:8
+    NextJS 7
+app-index.tsx:25:20
+The resource at “http://localhost:3004/ijarcm-logo.svg” preloaded with link preload was not used within a few seconds. Make sure all attributes of the preload tag are set correctly. localhost:3004
+
+​
+

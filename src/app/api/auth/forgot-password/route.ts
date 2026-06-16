@@ -1,11 +1,12 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 import crypto from 'crypto';
 import { sendEmail } from '@/lib/smtp';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { email } = await request.json();
 

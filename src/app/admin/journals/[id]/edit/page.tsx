@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/admin-fetch';
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -27,7 +28,7 @@ export default function EditJournalPage() {
   useEffect(() => {
     const fetch_ = async () => {
       try {
-        const res = await fetch(`/api/admin/journals/${id}`, { cache: 'no-store' });
+        const res = await adminFetch(`/api/admin/journals/${id}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           const j = data.journal;
@@ -60,7 +61,7 @@ export default function EditJournalPage() {
     }
     setSaving(true);
     try {
-      const res = await fetch(`/api/admin/journals/${id}`, {
+      const res = await adminFetch(`/api/admin/journals/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

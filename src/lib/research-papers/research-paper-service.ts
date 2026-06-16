@@ -1,5 +1,5 @@
-import { ResearchPaperStatus } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { ResearchPaperStatus, PrismaClient } from '@prisma/client';
+import { prisma as defaultPrisma } from '@/lib/prisma';
 import {
   extractStructuredDataFromDocx,
 } from './docx-extractor';
@@ -31,6 +31,10 @@ const includeDraftRelations = {
 export type ExtractionStep = 'gemini' | 'zai' | 'basic';
 
 export type ExtractionMode = 'auto' | 'gemini' | 'zai' | 'basic';
+
+function resolvePrismaClient(prismaClient?: PrismaClient) {
+  return prismaClient ?? defaultPrisma;
+}
 
 export async function createResearchPaperDraftFromUpload(
   file: File,
@@ -192,7 +196,8 @@ export async function listResearchPaperDrafts(params: {
   limit?: number;
   status?: ResearchPaperStatus | 'ALL';
   search?: string;
-}) {
+}, prismaClient?: PrismaClient) {
+  const prisma = resolvePrismaClient(prismaClient);
   const page = Math.max(params.page || 1, 1);
   const limit = Math.min(Math.max(params.limit || 10, 1), 50);
   const where: any = {};
@@ -231,14 +236,20 @@ export async function listResearchPaperDrafts(params: {
   };
 }
 
-export async function getResearchPaperDraft(id: string) {
+export async function getResearchPaperDraft(id: string, prismaClient?: PrismaClient) {
+  const prisma = resolvePrismaClient(prismaClient);
   return prisma.researchPaperDraft.findUnique({
     where: { id },
     include: includeDraftRelations,
   });
 }
 
-export async function updateResearchPaperDraft(id: string, input: ResearchPaperDraftUpdateInput) {
+export async function updateResearchPaperDraft(
+  id: string,
+  input: ResearchPaperDraftUpdateInput,
+  prismaClient?: PrismaClient,
+) {
+  const prisma = resolvePrismaClient(prismaClient);
   validateDraftUpdate(input);
 
   const existing = await prisma.researchPaperDraft.findUnique({ where: { id } });
@@ -305,12 +316,17 @@ export async function updateResearchPaperDraft(id: string, input: ResearchPaperD
   });
 }
 
-export async function deleteResearchPaperDraft(id: string) {
+export async function deleteResearchPaperDraft(id: string, prismaClient?: PrismaClient) {
+  const prisma = resolvePrismaClient(prismaClient);
   const existing = await prisma.researchPaperDraft.findUnique({ where: { id } });
   if (!existing) throw new Error('Research paper draft not found.');
 
   // Delete linked Paper record first (cascade does not remove PaperAuthor, must delete manually)
-  const linkedPaper = await prisma.paper.findUnique({ where: { researchPaperDraftId: id } });
+  const linkedPaper = existing.sourceFilePath
+    ? await prisma.paper.findFirst({ where: { sourceFilePath: existing.sourceFilePath } })
+    : existing.sourceFileName
+      ? await prisma.paper.findFirst({ where: { sourceFileName: existing.sourceFileName } })
+      : null;
   if (linkedPaper) {
     console.log('[DELETE] Removing linked Paper record —', linkedPaper.id);
     await prisma.paperAuthor.deleteMany({ where: { paperId: linkedPaper.id } });
@@ -338,7 +354,8 @@ export async function deleteResearchPaperDraft(id: string) {
   console.log('[DELETE] Complete ✅ — id:', id);
 }
 
-export async function publishResearchPaperDraft(id: string) {
+export async function publishResearchPaperDraft(id: string, prismaClient?: PrismaClient) {
+  const prisma = resolvePrismaClient(prismaClient);
   const draft = await prisma.researchPaperDraft.findUnique({
     where: { id },
     include: {
@@ -360,9 +377,11 @@ export async function publishResearchPaperDraft(id: string) {
   });
 
   // Create Paper record only if it does not already exist
-  const existingPaper = await prisma.paper.findUnique({
-    where: { researchPaperDraftId: id },
-  });
+  const existingPaper = draft.sourceFilePath
+    ? await prisma.paper.findFirst({ where: { sourceFilePath: draft.sourceFilePath } })
+    : draft.sourceFileName
+      ? await prisma.paper.findFirst({ where: { sourceFileName: draft.sourceFileName } })
+      : null;
 
   if (!existingPaper && draft.pdfPath) {
     try {
@@ -384,7 +403,6 @@ export async function publishResearchPaperDraft(id: string) {
           sourceFilePath: draft.sourceFilePath,
           sourceFileName: draft.sourceFileName,
           sourceFileSize: draft.sourceFileSize,
-          researchPaperDraftId: draft.id,
         },
       });
 

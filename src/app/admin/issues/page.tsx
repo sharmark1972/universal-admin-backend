@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -70,7 +71,7 @@ export default function AdminIssuesPage() {
         search: searchTerm,
       });
 
-      const response = await fetch(`/api/admin/issues?${params}`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/admin/issues?${params}`, { cache: 'no-store' });
       const data = await response.json();
 
       if (response.ok) {
@@ -154,7 +155,7 @@ export default function AdminIssuesPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/issues/${issueId}`, {
+      const response = await adminFetch(`/api/admin/issues/${issueId}`, {
         method: 'DELETE',
       });
 
@@ -174,7 +175,7 @@ export default function AdminIssuesPage() {
 
   const handleTogglePublished = async (issue: Issue) => {
     try {
-      const response = await fetch(`/api/admin/issues/${issue.id}`, {
+      const response = await adminFetch(`/api/admin/issues/${issue.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !issue.isPublished }),
@@ -199,7 +200,7 @@ export default function AdminIssuesPage() {
     }
     setGeneratingCover(true);
     try {
-      const response = await fetch('/api/admin/issues/generate-cover', {
+      const response = await adminFetch('/api/admin/issues/generate-cover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -229,7 +230,7 @@ export default function AdminIssuesPage() {
 
     setGeneratingCovers(true);
     try {
-      const response = await fetch('/api/admin/issues/generate-all-covers', {
+      const response = await adminFetch('/api/admin/issues/generate-all-covers', {
         method: 'POST',
       });
 

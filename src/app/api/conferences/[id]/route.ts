@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { UserRole, ConferenceStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,7 @@ export async function GET(
   request: NextRequest,
   { params }: RouteParams
 ) {
+  const prisma = getPrismaForRequest(request);
   try {
     const { id } = params;
     
@@ -42,7 +44,9 @@ export async function GET(
     }
 
     // Check if conference is public or user is admin
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     const isAdmin = session?.user?.role === UserRole.ADMIN;
     
     if (!conference.isPublic && !isAdmin) {
@@ -67,8 +71,11 @@ export async function PUT(
   request: NextRequest,
   { params }: RouteParams
 ) {
+  const prisma = getPrismaForRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user || session.user.role !== UserRole.ADMIN) {
       return NextResponse.json(
@@ -152,8 +159,11 @@ export async function DELETE(
   request: NextRequest,
   { params }: RouteParams
 ) {
+  const prisma = getPrismaForRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user || session.user.role !== UserRole.ADMIN) {
       return NextResponse.json(

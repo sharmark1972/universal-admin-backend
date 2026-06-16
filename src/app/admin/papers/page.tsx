@@ -1,5 +1,7 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
+
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import Link from 'next/link';
@@ -115,7 +117,7 @@ export default function AdminPapersPage() {
     }
     try {
       setIssuesLoading(true);
-      const response = await fetch('/api/admin/issues?published=true', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/issues?published=true', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setIssues(data.issues || []);
@@ -132,7 +134,7 @@ export default function AdminPapersPage() {
     e.preventDefault();
     setAddIssueSubmitting(true);
     try {
-      const response = await fetch('/api/admin/issues', {
+      const response = await adminFetch('/api/admin/issues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...addIssueForm, year: parseInt(addIssueForm.year), coverImage: addIssueForm.coverImage || undefined }),
@@ -142,7 +144,7 @@ export default function AdminPapersPage() {
         setShowAddIssueModal(false);
         setAddIssueForm({ title: '', description: '', volume: '', issueNumber: '', year: new Date().getFullYear().toString(), publishDate: new Date().toISOString().split('T')[0], coverImage: '', isPublished: false });
         saveIssues([]);
-        const fresh = await fetch('/api/admin/issues?published=true', { cache: 'no-store' });
+        const fresh = await adminFetch('/api/admin/issues?published=true', { cache: 'no-store' });
         if (fresh.ok) {
           const freshData = await fresh.json();
           setIssues(freshData.issues || []);
@@ -176,7 +178,7 @@ export default function AdminPapersPage() {
         limit: '10'
       });
 
-      const res = await fetch(`/api/admin/papers?${params}`, { cache: 'no-store' });
+      const res = await adminFetch(`/api/admin/papers?${params}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setPapersData(data);
@@ -329,7 +331,7 @@ export default function AdminPapersPage() {
     }
 
     try {
-      const response = await fetch('/api/admin/papers/bulk', {
+      const response = await adminFetch('/api/admin/papers/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, paperIds: selectedPapers })
@@ -456,7 +458,7 @@ export default function AdminPapersPage() {
               </div>
               <div className="flex space-x-3">
                 <Link
-                  href="/admin/research-papers/new"
+                  href="/admin/papers/new"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <FileText className="h-4 w-4 mr-2" />

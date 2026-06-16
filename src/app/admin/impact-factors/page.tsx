@@ -1,9 +1,10 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, Download, Award, TrendingUp, FileText, ExternalLink, CheckCircle, AlertTriangle, X } from 'lucide-react';
-import DynamicSEO from '@/components/DynamicSEO';
-import { WebsiteSchema, OrganizationSchema } from '@/components/SchemaMarkup';
+import DynamicSEO from '@/components/shared/DynamicSEO';
+import { WebsiteSchema, OrganizationSchema } from '@/components/shared/SchemaMarkup';
 
 interface ImpactFactor {
   id: string;
@@ -39,7 +40,7 @@ export default function ImpactFactorsAdminPage() {
 
   const fetchImpactFactors = async () => {
     try {
-      const response = await fetch('/api/admin/impact-factors', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/impact-factors', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch impact factors');
       }
@@ -113,7 +114,7 @@ export default function ImpactFactorsAdminPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/impact-factors/${id}`, {
+      const response = await adminFetch(`/api/admin/impact-factors/${id}`, {
         method: 'DELETE',
       });
       
@@ -130,7 +131,7 @@ export default function ImpactFactorsAdminPage() {
 
   const handleToggleStatus = async (id: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/admin/impact-factors/${id}`, {
+      const response = await adminFetch(`/api/admin/impact-factors/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

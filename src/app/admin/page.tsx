@@ -1,8 +1,12 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
+import { getAdminSiteSlug, setAdminSiteSlug } from '@/lib/admin-site';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
+import AdminSidebar from '@/components/shared/admin/AdminSidebar';
+import { getAllSites } from '@/config/sites';
 import Link from 'next/link';
 import {
   Users,
@@ -28,8 +32,10 @@ import {
   Search,
   DollarSign,
   Award,
-  Sparkles
+  Globe
 } from 'lucide-react';
+
+const ALL_SITES = getAllSites();
 
 interface SearchResult {
   type: 'Paper' | 'User' | 'Conference';
@@ -88,6 +94,9 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [activeSite, setActiveSite] = useState(ALL_SITES[0].slug);
+
+  const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
     if (statsLoaded && cachedStats) {
@@ -98,7 +107,7 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/admin/stats', { cache: 'no-store' });
+        const response = await adminFetch('/api/admin/stats', { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Failed to fetch admin stats');
         }
@@ -115,6 +124,16 @@ export default function AdminDashboard() {
     fetchStats();
   }, [statsLoaded]);
 
+  useEffect(() => {
+    setActiveSite(getAdminSiteSlug());
+  }, []);
+
+  const handleSiteChange = (slug: string) => {
+    setActiveSite(slug);
+    setAdminSiteSlug(slug);
+    window.location.reload();
+  };
+
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.trim().length < 2) {
@@ -126,9 +145,9 @@ export default function AdminDashboard() {
     try {
       // Search across multiple entities
       const [papersRes, usersRes, conferencesRes] = await Promise.all([
-        fetch(`/api/admin/papers?search=${encodeURIComponent(query)}`),
-        fetch(`/api/admin/users?search=${encodeURIComponent(query)}`),
-        fetch(`/api/admin/conferences?search=${encodeURIComponent(query)}`),
+        adminFetch(`/api/admin/papers?search=${encodeURIComponent(query)}`),
+        adminFetch(`/api/admin/users?search=${encodeURIComponent(query)}`),
+        adminFetch(`/api/admin/conferences?search=${encodeURIComponent(query)}`),
       ]);
 
       const results: SearchResult[] = [];
@@ -192,33 +211,11 @@ export default function AdminDashboard() {
     });
   };
 
-  const getSystemHealthColor = (health: string) => {
-    switch (health) {
-      case 'good':
-      case 'healthy':
-        return 'text-green-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'critical':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  const getSystemHealthIcon = (health: string) => {
-    switch (health) {
-      case 'good':
-      case 'healthy':
-        return <CheckCircle className="h-5 w-5" />;
-      case 'warning':
-        return <AlertTriangle className="h-5 w-5" />;
-      case 'critical':
-        return <AlertTriangle className="h-5 w-5" />;
-      default:
-        return <Activity className="h-5 w-5" />;
-    }
-  };
+  const quickActionGroupClass = 'bg-white rounded-xl shadow-sm p-5 border border-slate-200 animate-fade-in-up';
+  const quickActionGridClass = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3';
+  const quickActionItemClass = 'w-full flex items-center min-h-[48px] px-4 py-3 text-left text-sm font-medium text-slate-700 bg-slate-50 border border-slate-100 rounded-lg hover:bg-white hover:border-slate-300 hover:text-slate-950 transition-colors';
+  const quickActionPrimaryClass = 'w-full flex items-center min-h-[48px] px-4 py-3 text-left text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors shadow-md';
+  const quickActionIconBaseClass = 'h-5 w-5 mr-3';
 
   if (loading) {
     return (
@@ -235,23 +232,23 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="py-6">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-              <div className="animate-fade-in-up">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="min-w-0 flex-1 animate-fade-in-up">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent sm:text-4xl">
                   Admin Dashboard
                 </h1>
-                <p className="mt-3 text-lg text-gray-600">
+                <p className="mt-3 max-w-5xl text-base leading-7 text-gray-600 sm:text-lg">
                   Welcome back, <span className="font-semibold text-blue-600">{session?.user?.name}</span>!
                   Here&apos;s what&apos;s happening in your system.
                 </p>
               </div>
               
               {/* Search Bar and Actions */}
-              <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto animate-fade-in-up animation-delay-200">
+              <div className="flex w-full flex-col items-stretch gap-3 animate-fade-in-up animation-delay-200 lg:w-auto lg:flex-row lg:items-center">
                 {/* Global Search */}
-                <div className="relative flex-1 lg:w-80">
+                <div className="relative flex-1 lg:w-80 xl:w-96">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
@@ -310,13 +307,27 @@ export default function AdminDashboard() {
                   )}
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <div className={`flex items-center space-x-2 px-4 py-2 rounded-xl bg-white shadow-md ${getSystemHealthColor(stats?.systemHealth?.status || 'good')}`}>
-                    {getSystemHealthIcon(stats?.systemHealth?.status || 'good')}
-                    <span className="text-sm font-semibold capitalize">
-                      System {stats?.systemHealth?.status || 'healthy'}
-                    </span>
-                  </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  {isSuperAdmin && (
+                    <div className="inline-flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm shadow-sm">
+                      <Globe className="h-4 w-4 text-cyan-600" />
+                      <label className="flex items-center gap-2">
+                        <span className="font-medium text-slate-500">Site</span>
+                        <select
+                          value={activeSite}
+                          onChange={(event) => handleSiteChange(event.target.value)}
+                          className="bg-transparent font-semibold text-slate-950 outline-none"
+                          aria-label="Active site"
+                        >
+                          {ALL_SITES.map((site) => (
+                            <option key={site.slug} value={site.slug}>
+                              {site.shortName}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  )}
                   <Link
                     href="/admin/settings"
                     className="group inline-flex items-center px-6 py-3 border border-transparent text-sm font-semibold rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:-translate-y-1"
@@ -331,7 +342,11 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4">
+      <div className="flex">
+        <AdminSidebar className="sticky top-[var(--admin-header-height)] hidden h-[calc(100vh_-_var(--admin-header-height))] self-start lg:block" />
+
+        <div className="min-w-0 flex-1">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4">
         {/* Main Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1 animate-fade-in-up">
@@ -424,225 +439,212 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="text-center mb-8 animate-fade-in-up">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent mb-2">
+        <div className="mb-5 text-left animate-fade-in-up">
+          <h2 className="text-xl font-semibold text-slate-950">
             Quick Actions
           </h2>
-          <p className="text-gray-600">Manage your system efficiently with these quick access tools</p>
+          <p className="mt-1 text-sm text-slate-500">Manage your system efficiently with these quick access tools</p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1 animate-fade-in-up">
+        <div className="space-y-6 mb-8">
+          {/* Tools */}
+          <div className={quickActionGroupClass}>
             <div className="flex items-center mb-4">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                <Users className="h-5 w-5 text-white" />
+              <div className="p-2 bg-amber-50 rounded-lg border border-amber-100">
+                <Shield className="h-5 w-5 text-amber-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 ml-3">User Management</h3>
+              <h3 className="text-lg font-semibold text-gray-900 ml-3">Tools</h3>
             </div>
-            <div className="space-y-3">
+            <div className={quickActionGridClass}>
               <Link
-                href="/admin/users"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                href="/admin/certificates/generate"
+                className={quickActionPrimaryClass}
               >
-                <Users className="h-5 w-5 mr-3 text-blue-600" />
-                Manage All Users
+                <Shield className={quickActionIconBaseClass} />
+                Generate Certificate
               </Link>
               <Link
-                href="/admin/users?action=add"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                href="/admin/certificates"
+                className={quickActionItemClass}
               >
-                <UserPlus className="h-5 w-5 mr-3 text-green-600" />
-                Add New User
+                <FileText className={`${quickActionIconBaseClass} text-amber-600`} />
+                View All Certificates
               </Link>
               <Link
-                href="/admin/users?filter=banned"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                href="/admin/impact-factors"
+                className={quickActionItemClass}
               >
-                <Shield className="h-5 w-5 mr-3 text-red-600" />
-                Banned Users
+                <TrendingUp className={`${quickActionIconBaseClass} text-blue-600`} />
+                Impact Factors
               </Link>
               <Link
-                href="/admin/users?filter=warned"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                href="/admin/api-keys"
+                className={quickActionItemClass}
               >
-                <AlertTriangle className="h-5 w-5 mr-3 text-yellow-600" />
-                Warned Users
+                <Database className={`${quickActionIconBaseClass} text-green-600`} />
+                API Keys
+              </Link>
+              <Link
+                href="/admin/chief-patrons"
+                className={quickActionItemClass}
+              >
+                <Users className={`${quickActionIconBaseClass} text-purple-600`} />
+                Chief Patrons
+              </Link>
+              <Link
+                href="/admin/animations"
+                className={quickActionItemClass}
+              >
+                <Zap className={`${quickActionIconBaseClass} text-indigo-600`} />
+                Animation Settings
               </Link>
             </div>
           </div>
           
-          <div className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1 animate-fade-in-up animation-delay-100">
+          <div className={`${quickActionGroupClass} animation-delay-100`}>
             <div className="flex items-center mb-4">
-              <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
-                <FileText className="h-5 w-5 text-white" />
+              <div className="p-2 bg-green-50 rounded-lg border border-green-100">
+                <FileText className="h-5 w-5 text-green-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 ml-3">Content Management</h3>
             </div>
-            <div className="space-y-3">
+            <div className={quickActionGridClass}>
               <Link
                 href="/admin/papers"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <FileText className="h-5 w-5 mr-3 text-green-600" />
+                <FileText className={`${quickActionIconBaseClass} text-green-600`} />
                 Manage Papers
               </Link>
               <Link
-                href="/admin/research-papers"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <Sparkles className="h-5 w-5 mr-3 text-violet-600" />
-                Research Paper Studio
-              </Link>
-              <Link
-                href="/admin/ebooks"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <FileText className="h-5 w-5 mr-3 text-indigo-600" />
-                Manage Ebooks
-              </Link>
-              <Link
                 href="/admin/issues"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <FileText className="h-5 w-5 mr-3 text-blue-600" />
+                <FileText className={`${quickActionIconBaseClass} text-blue-600`} />
                 Manage Issues
               </Link>
               <Link
                 href="/admin/reviews"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Eye className="h-5 w-5 mr-3 text-purple-600" />
+                <Eye className={`${quickActionIconBaseClass} text-purple-600`} />
                 Review Management
               </Link>
               <Link
                 href="/admin/conferences"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Calendar className="h-5 w-5 mr-3 text-indigo-600" />
+                <Calendar className={`${quickActionIconBaseClass} text-indigo-600`} />
                 Manage Conferences
               </Link>
               <Link
                 href="/admin/analytics"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <BarChart3 className="h-5 w-5 mr-3 text-yellow-600" />
+                <BarChart3 className={`${quickActionIconBaseClass} text-yellow-600`} />
                 View Analytics
               </Link>
               <Link
                 href="/admin/fees"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <DollarSign className="h-5 w-5 mr-3 text-green-600" />
+                <DollarSign className={`${quickActionIconBaseClass} text-green-600`} />
                 Publication Fees
               </Link>
               <Link
                 href="/admin/ads"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Zap className="h-5 w-5 mr-3 text-orange-600" />
+                <Zap className={`${quickActionIconBaseClass} text-orange-600`} />
                 Manage Ads
               </Link>
               <Link
                 href="/admin/announcements"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Megaphone className="h-5 w-5 mr-3 text-red-600" />
+                <Megaphone className={`${quickActionIconBaseClass} text-red-600`} />
                 Manage Announcements
               </Link>
               <Link
                 href="/admin/seo"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Search className="h-5 w-5 mr-3 text-blue-600" />
+                <Search className={`${quickActionIconBaseClass} text-blue-600`} />
                 SEO Management
               </Link>
               <Link
                 href="/admin/citations"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <FileText className="h-5 w-5 mr-3 text-cyan-600" />
+                <FileText className={`${quickActionIconBaseClass} text-cyan-600`} />
                 Manage Citations
               </Link>
               <Link
                 href="/admin/editorial-board"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Users className="h-5 w-5 mr-3 text-emerald-600" />
+                <Users className={`${quickActionIconBaseClass} text-emerald-600`} />
                 Editorial Board
               </Link>
               <Link
                 href="/admin/submission-guidelines"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <FileText className="h-5 w-5 mr-3 text-teal-600" />
+                <FileText className={`${quickActionIconBaseClass} text-teal-600`} />
                 Submission Guidelines
               </Link>
               <Link
                 href="/admin/peer-review-process"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Eye className="h-5 w-5 mr-3 text-violet-600" />
+                <Eye className={`${quickActionIconBaseClass} text-violet-600`} />
                 Peer Review Process
               </Link>
               <Link
                 href="/admin/archives"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className={quickActionItemClass}
               >
-                <Calendar className="h-5 w-5 mr-3 text-amber-600" />
+                <Calendar className={`${quickActionIconBaseClass} text-amber-600`} />
                 Manage Archives
               </Link>
             </div>
           </div>
 
-          {/* Certificate & Admin Tools */}
-          <div className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl p-6 border border-gray-100 transition-all duration-300 hover:-translate-y-1 animate-fade-in-up animation-delay-200">
+          {/* User Management */}
+          <div className={`${quickActionGroupClass} animation-delay-200`}>
             <div className="flex items-center mb-4">
-              <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg">
-                <Shield className="h-5 w-5 text-white" />
+              <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
+                <Users className="h-5 w-5 text-blue-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 ml-3">Certificates & Tools</h3>
+              <h3 className="text-lg font-semibold text-gray-900 ml-3">User Management</h3>
             </div>
-            <div className="space-y-3">
+            <div className={quickActionGridClass}>
               <Link
-                href="/admin/certificates/generate"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg hover:from-amber-600 hover:to-amber-700 transition-colors shadow-md"
+                href="/admin/users"
+                className={quickActionItemClass}
               >
-                <Shield className="h-5 w-5 mr-3" />
-                Generate Certificate
+                <Users className={`${quickActionIconBaseClass} text-blue-600`} />
+                Manage All Users
               </Link>
               <Link
-                href="/admin/certificates"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                href="/admin/users?action=add"
+                className={quickActionItemClass}
               >
-                <FileText className="h-5 w-5 mr-3 text-amber-600" />
-                View All Certificates
+                <UserPlus className={`${quickActionIconBaseClass} text-green-600`} />
+                Add New User
               </Link>
               <Link
-                href="/admin/impact-factors"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                href="/admin/users?filter=banned"
+                className={quickActionItemClass}
               >
-                <TrendingUp className="h-5 w-5 mr-3 text-blue-600" />
-                Impact Factors
+                <Shield className={`${quickActionIconBaseClass} text-red-600`} />
+                Banned Users
               </Link>
               <Link
-                href="/admin/api-keys"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                href="/admin/users?filter=warned"
+                className={quickActionItemClass}
               >
-                <Database className="h-5 w-5 mr-3 text-green-600" />
-                API Keys
-              </Link>
-              <Link
-                href="/admin/chief-patrons"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <Users className="h-5 w-5 mr-3 text-purple-600" />
-                Chief Patrons
-              </Link>
-              <Link
-                href="/admin/animations"
-                className="w-full flex items-center px-4 py-3 text-left text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <Zap className="h-5 w-5 mr-3 text-indigo-600" />
-                Animation Settings
+                <AlertTriangle className={`${quickActionIconBaseClass} text-yellow-600`} />
+                Warned Users
               </Link>
             </div>
           </div>
@@ -747,6 +749,8 @@ export default function AdminDashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
           </div>
         </div>
       </div>

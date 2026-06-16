@@ -20,6 +20,16 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@/components/ui/*": [
+        "./src/components/shared/ui/*"
+      ],
+      "@/components/shared/*": [
+        "./src/components/shared/*"
+      ],
+      "@/components/*": [
+        "./src/components/shared/*",
+        "./src/components/*"
       ]
     },
     "types": [

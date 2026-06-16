@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
 import { generateIssueCover } from '@/lib/issueCoverGenerator';
 import { revalidatePath } from 'next/cache';
@@ -23,8 +24,11 @@ const issueSchema = z.object({
 
 // GET - List all issues
 export async function GET(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(
@@ -91,8 +95,11 @@ export async function GET(request: NextRequest) {
 
 // POST - Create a new issue
 export async function POST(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(
@@ -101,7 +108,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!['ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }

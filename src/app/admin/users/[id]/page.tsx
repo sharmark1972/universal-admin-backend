@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -57,7 +58,7 @@ export default function UserDetailPage() {
   useEffect(() => {
     const fetchUserDetail = async () => {
       try {
-        const response = await fetch(`/api/admin/users/${userId}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/admin/users/${userId}`, { cache: 'no-store' });
         if (!response.ok) {
           if (response.status === 404) {
             setError('User not found');
@@ -85,7 +86,7 @@ export default function UserDetailPage() {
     if (!confirm('Are you sure you want to ban this user?')) return;
     
     try {
-      const response = await fetch(`/api/admin/users/${userId}/ban`, {
+      const response = await adminFetch(`/api/admin/users/${userId}/ban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -100,7 +101,7 @@ export default function UserDetailPage() {
 
   const handleUnbanUser = async () => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/unban`, {
+      const response = await adminFetch(`/api/admin/users/${userId}/unban`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });

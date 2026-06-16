@@ -1,12 +1,13 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
+import { Button } from '@/components/shared/ui/button';
+import { Badge } from '@/components/shared/ui/badge';
+import { Progress } from '@/components/shared/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared/ui/tabs';
+import { Alert, AlertDescription } from '@/components/shared/ui/alert';
 import GoogleScholarValidator, { 
   GoogleScholarValidationResult, 
   PaperMetadata 
@@ -39,7 +40,7 @@ export default function GoogleScholarValidationPage() {
 
   const loadPapers = async () => {
     try {
-      const response = await fetch('/api/admin/papers', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/papers', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         const formattedPapers = data.papers.map((paper) => ({
@@ -71,7 +72,7 @@ export default function GoogleScholarValidationPage() {
 
   const loadValidationHistory = async () => {
     try {
-      const response = await fetch('/api/admin/seo/validation-history', { cache: 'no-store' });
+      const response = await adminFetch('/api/admin/seo/validation-history', { cache: 'no-store' });
       if (response.ok) {
         const history = await response.json();
         setValidationHistory(history);
@@ -159,7 +160,7 @@ export default function GoogleScholarValidationPage() {
 
   const saveValidationResult = async (entry: ValidationHistory) => {
     try {
-      await fetch('/api/admin/seo/validation-result', {
+      await adminFetch('/api/admin/seo/validation-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(entry)
@@ -171,7 +172,7 @@ export default function GoogleScholarValidationPage() {
 
   const saveBatchValidationResults = async (entries: ValidationHistory[]) => {
     try {
-      await fetch('/api/admin/seo/validation-batch', {
+      await adminFetch('/api/admin/seo/validation-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ results: entries })

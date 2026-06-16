@@ -1,13 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+// Backward-compat bridge — use getPrismaClient(siteSlug) in API routes instead.
+// This fallback is used by lib/ services that have not yet been updated.
+import { getPrismaClient } from '@/lib/prisma-registry';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ['query'],
-  });
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prisma = getPrismaClient('wjiis');

@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useState, useEffect } from 'react';
 import { 
@@ -56,7 +57,7 @@ export default function DeploymentPage() {
 
   const loadFTPConfig = async () => {
     try {
-      const response = await fetch('/api/admin/deployment/config');
+      const response = await adminFetch('/api/admin/deployment/config');
       if (response.ok) {
         const data = await response.json();
         if (data.config) {
@@ -83,7 +84,7 @@ export default function DeploymentPage() {
 
   const loadDeploymentLogs = async () => {
     try {
-      const response = await fetch('/api/admin/deployment/logs');
+      const response = await adminFetch('/api/admin/deployment/logs');
       if (response.ok) {
         const data = await response.json();
         setDeploymentLogs(data.logs || []);
@@ -95,7 +96,7 @@ export default function DeploymentPage() {
 
   const saveFTPConfig = async () => {
     try {
-      const response = await fetch('/api/admin/deployment/config', {
+      const response = await adminFetch('/api/admin/deployment/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ftpConfig)
@@ -121,7 +122,7 @@ export default function DeploymentPage() {
   const testFTPConnection = async () => {
     try {
       setCurrentStep('Testing FTP connection...');
-      const response = await fetch('/api/admin/deployment/test', {
+      const response = await adminFetch('/api/admin/deployment/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ftpConfig)
@@ -153,7 +154,7 @@ export default function DeploymentPage() {
 
     try {
       // Start deployment
-      const response = await fetch('/api/admin/deployment', {
+      const response = await adminFetch('/api/admin/deployment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -190,7 +191,7 @@ export default function DeploymentPage() {
       setCurrentStep('Creating backup...');
       
       // Get the current config from database (with decrypted password)
-      const configResponse = await fetch('/api/admin/deployment/config');
+      const configResponse = await adminFetch('/api/admin/deployment/config');
       if (!configResponse.ok) {
         throw new Error('Failed to load FTP configuration');
       }
@@ -200,7 +201,7 @@ export default function DeploymentPage() {
         throw new Error('No FTP configuration found');
       }
 
-      const response = await fetch('/api/admin/deployment/backup', {
+      const response = await adminFetch('/api/admin/deployment/backup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)

@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/admin-fetch';
 
 import { useEffect, useState } from 'react';
 import { Plus, X } from 'lucide-react';
@@ -33,7 +34,7 @@ export default function PublicationFields({ onChange }: PublicationFieldsProps) 
     setLoadingPapers(true);
     try {
       // Use admin papers API to get uniqueNumber, volumeNumber, issueNumber
-      const res = await fetch(`/api/admin/papers?issueId=${issueId}&status=PUBLISHED&limit=100`, { cache: 'no-store' });
+      const res = await adminFetch(`/api/admin/papers?issueId=${issueId}&status=PUBLISHED&limit=100`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setIssuePapers(data.papers || []);
@@ -69,7 +70,7 @@ export default function PublicationFields({ onChange }: PublicationFieldsProps) 
     e.preventDefault();
     setAddIssueSubmitting(true);
     try {
-      const response = await fetch('/api/admin/issues', {
+      const response = await adminFetch('/api/admin/issues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...addIssueForm, year: parseInt(addIssueForm.year), coverImage: addIssueForm.coverImage || undefined }),
@@ -96,7 +97,7 @@ export default function PublicationFields({ onChange }: PublicationFieldsProps) 
     }
     setGeneratingIssueCover(true);
     try {
-      const response = await fetch('/api/admin/issues/generate-cover', {
+      const response = await adminFetch('/api/admin/issues/generate-cover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ volume: addIssueForm.volume, issueNumber: addIssueForm.issueNumber, year: addIssueForm.year, title: addIssueForm.title }),

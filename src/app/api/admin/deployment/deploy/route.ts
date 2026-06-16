@@ -1,6 +1,7 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 import { Client } from 'basic-ftp';
 import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
@@ -72,7 +73,9 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const session = await getServerSession(authOptions);
+        const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
         
         if (!session || session.user?.role !== 'ADMIN') {
           controller.enqueue(encoder.encode(JSON.stringify({ error: 'Unauthorized' }) + '\n'));

@@ -1,6 +1,7 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 import { PrismaClient } from '@prisma/client'
 import * as ftp from 'basic-ftp'
 import archiver from 'archiver'
@@ -21,7 +22,9 @@ export async function POST(request: NextRequest) {
   let deploymentLog: any = null
 
   try {
-    const session = await getServerSession(authOptions)
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions)
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

@@ -1,10 +1,10 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
 
 const searchSchema = z.object({
   query: z.string().optional(),
@@ -20,8 +20,11 @@ const searchSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const prisma = getPrismaClient(_siteSlug);
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
   try {
-    // const session = await getServerSession(authOptions); // Not used in current implementation
+    const session = await getServerSession(_authOptions);
     
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -249,7 +252,9 @@ export async function GET(request: NextRequest) {
 // Get search suggestions/autocomplete
 export async function POST(request: NextRequest) {
   try {
-    // const session = await getServerSession(authOptions); // Not used in current implementation
+    // const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions); // Not used in current implementation
     
     const body = await request.json();
     const { query, type } = body;

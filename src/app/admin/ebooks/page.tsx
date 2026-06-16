@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -80,7 +81,7 @@ export default function AdminEbooksPage() {
         limit: '10'
       });
 
-      const response = await fetch(`/api/admin/ebooks?${params}`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/admin/ebooks?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setEbooksData(data);
@@ -156,7 +157,7 @@ export default function AdminEbooksPage() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/admin/ebooks/${ebookId}`, {
+      const response = await adminFetch(`/api/admin/ebooks/${ebookId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/admin-fetch';
 
 import { useEffect, useState } from 'react';
 import type { Conference, TypeFieldsData } from '../types';
@@ -24,7 +25,7 @@ export default function ConferenceFields({ onChange }: ConferenceFieldsProps) {
   });
 
   useEffect(() => {
-    fetch('/api/admin/conferences?limit=100')
+    adminFetch('/api/admin/conferences?limit=100')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data) setConferences(data.conferences || []);
@@ -300,7 +301,7 @@ export async function createConferenceIfNeeded(): Promise<{ conferenceName: stri
   if (!endDate) { alert('Please enter an end date'); return null; }
   if (new Date(startDate) >= new Date(endDate)) { alert('End date must be after start date'); return null; }
 
-  const createRes = await fetch('/api/admin/conferences', {
+  const createRes = await adminFetch('/api/admin/conferences', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

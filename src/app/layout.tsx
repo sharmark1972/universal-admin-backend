@@ -1,15 +1,11 @@
 import { DM_Sans } from 'next/font/google';
 import './globals.css';
-import { SessionProvider } from '@/components/providers/SessionProvider';
-import VisitorTrackingProvider from '@/components/providers/VisitorTrackingProvider';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import MainContent from '@/components/layout/MainContent';
+import { SessionProvider } from '@/components/shared/providers/SessionProvider';
+import VisitorTrackingProvider from '@/components/shared/providers/VisitorTrackingProvider';
 import { Toaster } from 'sonner';
 import { Metadata } from 'next';
-import StructuredData from '@/components/StructuredData';
-import PerformanceProvider from '@/components/providers/PerformanceProvider';
-import ChatBot from '@/components/ChatBot';
+import StructuredData from '@/components/shared/StructuredData';
+import PerformanceProvider from '@/components/shared/providers/PerformanceProvider';
 
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-lato', weight: ['300', '400', '500', '600', '700', '800', '900'] });
 
@@ -96,15 +92,8 @@ export default function RootLayout({
           <SessionProvider>
             <VisitorTrackingProvider>
               <div className="flex flex-col min-h-screen">
-                <Navbar />
-                <div className="flex-1">
-                  <MainContent>
-                    {children}
-                  </MainContent>
-                </div>
-                <Footer />
+                {children}
               </div>
-              <ChatBot />
               <Toaster />
             </VisitorTrackingProvider>
           </SessionProvider>

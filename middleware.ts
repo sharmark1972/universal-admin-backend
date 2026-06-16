@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getSiteConfigByDomain } from '@/config/sites';
 
-// Pages that should be accessible during maintenance
 const ALLOWED_PATHS = [
   '/maintenance',
   '/api/maintenance',
@@ -9,75 +9,65 @@ const ALLOWED_PATHS = [
   '/favicon.ico',
   '/images',
   '/static',
-  '/uploads'
+  '/uploads',
 ];
 
-// Admin paths that should always be accessible
-const ADMIN_PATHS = [
-  '/admin',
-  '/api/admin'
-];
+const ADMIN_PATHS = ['/admin', '/api/admin'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Skip middleware for allowed paths
-  if (ALLOWED_PATHS.some(path => pathname.startsWith(path))) {
-    return NextResponse.next();
+
+  // Resolve site from Host header
+  const host = request.headers.get('host') ?? '';
+  const siteConfig = getSiteConfigByDomain(host);
+
+  // Unknown domain → 404
+  if (!siteConfig) {
+    return new NextResponse('Not found', { status: 404 });
   }
 
-  // Check maintenance mode from environment variable
+  // Inject x-site-slug into request headers — all API routes + Server Components read this
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-site-slug', siteConfig.slug);
+
+  // Always allow these paths
+  if (ALLOWED_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  // Admin paths always pass through
+  if (ADMIN_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  // Maintenance mode check
   const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
-  const maintenanceCode = process.env.MAINTENANCE_CODE || '';
+  const maintenanceCode = process.env.MAINTENANCE_CODE ?? '';
 
-  // If maintenance mode is not enabled, continue normally
-  if (!isMaintenanceMode) {
-    return NextResponse.next();
-  }
+  if (isMaintenanceMode) {
+    const bypassCookie = request.cookies.get('maintenance-bypass');
+    const queryCode = request.nextUrl.searchParams.get('code');
 
-  // Check if user has bypass code in cookie or query parameter
-  const bypassCookie = request.cookies.get('maintenance-bypass');
-  const queryCode = request.nextUrl.searchParams.get('code');
-
-  if (bypassCookie?.value === maintenanceCode ||
-      queryCode === maintenanceCode) {
-    
-    // Set bypass cookie if code was provided via query parameter
-    if (queryCode === maintenanceCode) {
-      const response = NextResponse.next();
-      response.cookies.set('maintenance-bypass', maintenanceCode, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 // 24 hours
-      });
-      return response;
+    if (bypassCookie?.value === maintenanceCode || queryCode === maintenanceCode) {
+      if (queryCode === maintenanceCode) {
+        const response = NextResponse.next({ request: { headers: requestHeaders } });
+        response.cookies.set('maintenance-bypass', maintenanceCode, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24,
+        });
+        return response;
+      }
+      return NextResponse.next({ request: { headers: requestHeaders } });
     }
-    
-    return NextResponse.next();
+
+    return NextResponse.redirect(new URL('/maintenance', request.url));
   }
 
-  // Check if it's an admin path and user is authenticated admin
-  if (ADMIN_PATHS.some(path => pathname.startsWith(path))) {
-    // For admin paths, we'll let them through and handle auth in the actual pages
-    return NextResponse.next();
-  }
-
-  // Redirect to maintenance page
-  const maintenanceUrl = new URL('/maintenance', request.url);
-  return NextResponse.redirect(maintenanceUrl);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - uploads (uploaded files)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|uploads).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|uploads).*)'],
 };

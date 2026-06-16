@@ -1,11 +1,12 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { getPrismaForRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
 
 // GET /api/support/tickets - Fetch user's support tickets
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const session = await getServerSession();
     
@@ -98,6 +99,7 @@ export async function GET() {
 
 // POST /api/support/tickets - Create a new support ticket
 export async function POST(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const session = await getServerSession();
     

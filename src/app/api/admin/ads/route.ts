@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
+import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -33,8 +34,11 @@ const updateAdSchema = adSchema.partial();
 
 // POST - Create new advertisement
 export async function POST(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(
@@ -102,8 +106,11 @@ export async function POST(request: NextRequest) {
 
 // GET - Get advertisements
 export async function GET(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(
@@ -196,8 +203,11 @@ export async function GET(request: NextRequest) {
 
 // PUT - Update advertisement
 export async function PUT(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(
@@ -279,8 +289,11 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete advertisement
 export async function DELETE(request: NextRequest) {
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const session = await getServerSession(authOptions);
+    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+  const session = await getServerSession(_authOptions);
     
     if (!session?.user) {
       return NextResponse.json(

@@ -1,4 +1,5 @@
 'use client';
+import { adminFetch } from '@/lib/admin-fetch';
 
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -34,7 +35,7 @@ export default function JournalsPage() {
       return;
     }
     try {
-      const res = await fetch('/api/admin/journals', { cache: 'no-store' });
+      const res = await adminFetch('/api/admin/journals', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setJournals(data.journals || []);
@@ -53,7 +54,7 @@ export default function JournalsPage() {
     if (!confirm(`Are you sure you want to deactivate "${abbr}"? This will not delete existing certificates.`)) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/journals/${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/admin/journals/${id}`, { method: 'DELETE' });
       if (res.ok) {
         invalidateJournals();
         fetchJournals();
@@ -76,7 +77,7 @@ export default function JournalsPage() {
     }
     setAddSubmitting(true);
     try {
-      const res = await fetch('/api/admin/journals', {
+      const res = await adminFetch('/api/admin/journals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addForm),

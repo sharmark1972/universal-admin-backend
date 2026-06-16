@@ -14,7 +14,7 @@ const nextConfig = {
   
   // Image optimization for Core Web Vitals
   images: {
-    domains: ['localhost', 'wjiis.com', 'www.wjiis.com'],
+    domains: ['localhost', 'wjiis.com', 'www.wjiis.com', 'ijarcm.com', 'www.ijarcm.com', 'wjiis.local', 'ijarcm.local'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -43,6 +43,10 @@ const nextConfig = {
   
   // Webpack configuration for PDF.js compatibility
   webpack: (config, { isServer }) => {
+    // Component path aliases for multi-tenant structure
+    config.resolve.alias['@/components/ui'] = require('path').resolve('./src/components/shared/ui');
+    config.resolve.alias['@/components'] = require('path').resolve('./src/components/shared');
+
     // Fix for pdfjs-dist v4.x compatibility with Next.js
     config.resolve.alias.canvas = false;
     config.resolve.alias.encoding = false;

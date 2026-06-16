@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getAuthOptions } from '@/lib/auth-factory';
+import { getPrismaClient } from '@/lib/prisma-registry';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +25,9 @@ const seoConfigSchema = z.object({
 
 // Check if user is admin
 async function checkAdminAuth() {
-  const session = await getServerSession(authOptions);
+  const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const session = await getServerSession(_authOptions);
   if (!session?.user || session.user.role !== 'ADMIN') {
     return false;
   }
@@ -33,6 +36,7 @@ async function checkAdminAuth() {
 
 // GET - Fetch all SEO configs or specific page
 export async function GET(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const isAdmin = await checkAdminAuth();
     if (!isAdmin) {
@@ -89,6 +93,7 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new SEO config
 export async function POST(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const isAdmin = await checkAdminAuth();
     if (!isAdmin) {
@@ -142,6 +147,7 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update existing SEO config
 export async function PUT(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const isAdmin = await checkAdminAuth();
     if (!isAdmin) {
@@ -220,6 +226,7 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete SEO config
 export async function DELETE(request: NextRequest) {
+  const prisma = getPrismaForRequest(request);
   try {
     const isAdmin = await checkAdminAuth();
     if (!isAdmin) {

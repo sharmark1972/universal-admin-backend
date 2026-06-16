@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -74,7 +75,7 @@ export default function AdminSettings() {
 
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/admin/settings', { cache: 'no-store' });
+        const response = await adminFetch('/api/admin/settings', { cache: 'no-store' });
 
         if (!response.ok) {
           throw new Error('Failed to fetch settings');
@@ -98,7 +99,7 @@ export default function AdminSettings() {
     
     setSaving(true);
     try {
-      const response = await fetch('/api/admin/settings', {
+      const response = await adminFetch('/api/admin/settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

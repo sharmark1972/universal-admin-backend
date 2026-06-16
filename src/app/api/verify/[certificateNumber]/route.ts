@@ -1,5 +1,5 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPrismaForRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +7,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { certificateNumber: string } }
 ) {
+  const prisma = getPrismaForRequest(request);
   try {
     const certificateNumber = params.certificateNumber;
 

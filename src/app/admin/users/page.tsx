@@ -1,4 +1,5 @@
-'use client';
+'use client';import { adminFetch } from '@/lib/admin-fetch';
+
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAdminStore } from '@/store/adminStore';
@@ -70,7 +71,7 @@ export default function AdminUsersPage() {
       if (roleFilter !== 'ALL') params.append('role', roleFilter);
       if (statusFilter !== 'ALL') params.append('status', statusFilter);
 
-      const response = await fetch(`/api/admin/users?${params}`);
+      const response = await adminFetch(`/api/admin/users?${params}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch users');
@@ -138,7 +139,7 @@ export default function AdminUsersPage() {
     if (selectedUsers.length === 0) return;
     
     try {
-      const response = await fetch('/api/admin/users/bulk', {
+      const response = await adminFetch('/api/admin/users/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +168,7 @@ export default function AdminUsersPage() {
 
   const handleBanUser = async (userId: string, reason?: string) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/ban`, {
+      const response = await adminFetch(`/api/admin/users/${userId}/ban`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +192,7 @@ export default function AdminUsersPage() {
 
   const handleUnbanUser = async (userId: string) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/unban`, {
+      const response = await adminFetch(`/api/admin/users/${userId}/unban`, {
         method: 'POST'
       });
 
@@ -211,7 +212,7 @@ export default function AdminUsersPage() {
 
   const handleWarnUser = async (userId: string, message?: string) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/warn`, {
+      const response = await adminFetch(`/api/admin/users/${userId}/warn`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
