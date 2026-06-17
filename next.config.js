@@ -75,15 +75,6 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: process.env.ALLOWED_ORIGINS || 'http://localhost:3005' },
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS,PATCH' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type,Authorization,x-site-slug,x-active-site' },
-        ],
-      },
-      {
         source: '/(.*)',
         headers: [
           {
