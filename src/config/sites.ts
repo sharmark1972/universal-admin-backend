@@ -61,6 +61,11 @@ export function getSiteConfigByDomain(host: string): SiteConfig | null {
     return sites[DEV_SITE_SLUG];
   }
 
+  // Admin panel domain — default to first site; actual site resolved via x-active-site header
+  if (domain.includes('universal-admin-backend') || domain.includes('vercel.app')) {
+    return sites[DEV_SITE_SLUG];
+  }
+
   return null;
 }
 
