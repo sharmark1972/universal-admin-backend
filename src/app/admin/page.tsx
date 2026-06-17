@@ -131,6 +131,7 @@ export default function AdminDashboard() {
   const handleSiteChange = (slug: string) => {
     setActiveSite(slug);
     setAdminSiteSlug(slug);
+    invalidateStats();
     window.location.reload();
   };
 

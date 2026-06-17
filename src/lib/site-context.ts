@@ -30,7 +30,8 @@ export function getSiteSlugFromRequest(request: NextRequest | Request): string {
   const hostSlug = resolveSiteSlugFromHost(host);
   if (hostSlug) return hostSlug;
 
-  throw new Error(`Unable to resolve site slug for host: "${host || 'unknown'}"`);
+  // Fallback to default site — handles admin panel domain on Vercel
+  return 'wjiis';
 }
 
 export function getPrismaForRequest(request: NextRequest | Request): PrismaClient {
