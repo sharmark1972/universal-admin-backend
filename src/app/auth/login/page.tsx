@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -20,6 +20,15 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  // If already logged in, redirect to admin
+  useEffect(() => {
+    getSession().then((session) => {
+      if (session?.user) {
+        router.replace('/admin');
+      }
+    });
+  }, [router]);
 
   // Simplified session establishment with reduced retry logic
   const waitForSession = async (maxRetries = 5, initialDelay = 300): Promise<Session | null> => {

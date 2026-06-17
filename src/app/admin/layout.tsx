@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
-import Navbar from '@/components/shared/layout/Navbar';
 import AdminSidebar from '@/components/shared/admin/AdminSidebar';
+import { LogOut, User } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -22,7 +22,7 @@ export default function AdminLayout({
   useEffect(() => {
     if (status === 'loading') return;
     if (!session?.user || !isAdmin) {
-      router.replace('/');
+      router.replace('/auth/login');
     }
   }, [router, session, status, isAdmin]);
 
@@ -41,14 +41,47 @@ export default function AdminLayout({
   const isDashboard = pathname === '/admin';
 
   return (
-    <div className="min-h-screen bg-gray-50 [--admin-header-height:5rem] sm:[--admin-header-height:6.75rem]">
+    <div className="min-h-screen bg-gray-50">
 
-      {/* Navbar — fixed top, renders its own spacer div after itself */}
-      <Navbar />
+      {/* Admin Header */}
+      <header className="fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button
+            className="lg:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <span className="sr-only">Menu</span>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="font-bold text-blue-700 text-lg">Admin Panel</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <User className="h-4 w-4" />
+            <span>{session.user.firstName || session.user.email}</span>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+              {session.user.role}
+            </span>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/auth/login' })}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition-colors px-3 py-1.5 rounded-md hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </button>
+        </div>
+      </header>
+
+      {/* Spacer for fixed header */}
+      <div className="h-14" />
 
       <div className={isDashboard ? '' : 'flex'}>
         {!isDashboard && (
-          <AdminSidebar className="sticky top-[var(--admin-header-height)] hidden h-[calc(100vh_-_var(--admin-header-height))] self-start lg:block" />
+          <AdminSidebar className="sticky top-14 hidden h-[calc(100vh-3.5rem)] self-start lg:block" />
         )}
 
         {/* Mobile sidebar */}
@@ -58,7 +91,7 @@ export default function AdminLayout({
             <AdminSidebar
               mobile
               onClose={() => setSidebarOpen(false)}
-              className="fixed left-0 top-[var(--admin-header-height)] z-50 h-[calc(100vh_-_var(--admin-header-height))] overflow-y-auto"
+              className="fixed left-0 top-14 z-50 h-[calc(100vh-3.5rem)] overflow-y-auto"
             />
           </div>
         )}

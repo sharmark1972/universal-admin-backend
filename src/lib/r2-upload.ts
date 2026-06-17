@@ -1,51 +1,93 @@
 import AWS from 'aws-sdk';
+import { headers } from 'next/headers';
 
-const s3Client = new AWS.S3({
-  accessKeyId: process.env.CLOUDFLARE_ACCESS_KEY_ID,
-  secretAccessKey: process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
-  s3ForcePathStyle: true,
-  signatureVersion: 'v4',
-  region: 'auto',
-});
+function getR2Client(siteSlug?: string) {
+  const slug = siteSlug ?? getSiteSlugFromHeaders();
+
+  const accessKeyId =
+    process.env[`CLOUDFLARE_ACCESS_KEY_ID_${slug.toUpperCase()}`] ??
+    process.env.CLOUDFLARE_ACCESS_KEY_ID;
+
+  const secretAccessKey =
+    process.env[`CLOUDFLARE_SECRET_ACCESS_KEY_${slug.toUpperCase()}`] ??
+    process.env.CLOUDFLARE_SECRET_ACCESS_KEY;
+
+  const endpoint =
+    process.env[`CLOUDFLARE_R2_ENDPOINT_${slug.toUpperCase()}`] ??
+    process.env.CLOUDFLARE_R2_ENDPOINT;
+
+  return new AWS.S3({
+    accessKeyId,
+    secretAccessKey,
+    endpoint,
+    s3ForcePathStyle: true,
+    signatureVersion: 'v4',
+    region: 'auto',
+  });
+}
+
+function getBucketName(siteSlug?: string): string {
+  const slug = siteSlug ?? getSiteSlugFromHeaders();
+  return (
+    process.env[`CLOUDFLARE_R2_BUCKET_NAME_${slug.toUpperCase()}`] ??
+    process.env.CLOUDFLARE_R2_BUCKET_NAME ??
+    'wjiis-files'
+  );
+}
+
+function getPublicUrl(siteSlug?: string): string {
+  const slug = siteSlug ?? getSiteSlugFromHeaders();
+  return (
+    process.env[`CLOUDFLARE_R2_PUBLIC_URL_${slug.toUpperCase()}`] ??
+    process.env.CLOUDFLARE_R2_PUBLIC_URL ??
+    ''
+  );
+}
+
+function getSiteSlugFromHeaders(): string {
+  try {
+    const h = headers();
+    return h.get('x-site-slug') ?? h.get('x-active-site') ?? 'wjiis';
+  } catch {
+    return 'wjiis';
+  }
+}
 
 export async function uploadToR2(
   fileBuffer: Buffer,
   fileName: string,
   folder: string = 'uploads',
-  contentType: string = 'application/octet-stream'
+  contentType: string = 'application/octet-stream',
+  siteSlug?: string
 ): Promise<string> {
   try {
+    const client = getR2Client(siteSlug);
+    const bucket = getBucketName(siteSlug);
+    const publicUrl = getPublicUrl(siteSlug);
     const key = `${folder}/${Date.now()}-${fileName}`;
 
-    const params = {
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!,
+    await client.putObject({
+      Bucket: bucket,
       Key: key,
       Body: fileBuffer,
       ContentType: contentType,
-    };
+    }).promise();
 
-    await s3Client.putObject(params).promise();
-
-    const publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`;
-    return publicUrl;
+    return `${publicUrl}/${key}`;
   } catch (error) {
     console.error('R2 upload error:', error);
     throw new Error('Failed to upload file to R2');
   }
 }
 
-export async function downloadFromR2(fileUrl: string): Promise<Buffer> {
+export async function downloadFromR2(fileUrl: string, siteSlug?: string): Promise<Buffer> {
   try {
+    const client = getR2Client(siteSlug);
+    const bucket = getBucketName(siteSlug);
     const url = new URL(fileUrl);
     const key = url.pathname.substring(1);
 
-    const params = {
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!,
-      Key: key,
-    };
-
-    const result = await s3Client.getObject(params).promise();
+    const result = await client.getObject({ Bucket: bucket, Key: key }).promise();
     return result.Body as Buffer;
   } catch (error) {
     console.error('R2 download error:', error);
@@ -53,17 +95,14 @@ export async function downloadFromR2(fileUrl: string): Promise<Buffer> {
   }
 }
 
-export async function deleteFromR2(fileUrl: string): Promise<void> {
+export async function deleteFromR2(fileUrl: string, siteSlug?: string): Promise<void> {
   try {
+    const client = getR2Client(siteSlug);
+    const bucket = getBucketName(siteSlug);
     const url = new URL(fileUrl);
-    const key = url.pathname.substring(1); // Remove leading slash
+    const key = url.pathname.substring(1);
 
-    const params = {
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!,
-      Key: key,
-    };
-
-    await s3Client.deleteObject(params).promise();
+    await client.deleteObject({ Bucket: bucket, Key: key }).promise();
   } catch (error) {
     console.error('R2 delete error:', error);
     throw new Error('Failed to delete file from R2');

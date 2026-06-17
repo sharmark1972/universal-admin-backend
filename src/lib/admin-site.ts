@@ -20,7 +20,6 @@ export function setAdminSiteSlug(slug: string): void {
   if (typeof window === 'undefined') return;
   if (!isValidAdminSiteSlug(slug)) return;
   localStorage.setItem(ADMIN_SITE_STORAGE_KEY, slug);
-  document.cookie = `active-site=${slug}; path=/; max-age=${60 * 60 * 24 * 30}`;
 }
 
 export function getAdminStoreStorageKey(name: string): string {

@@ -6,14 +6,17 @@ Code dobara analyse karne ki zaroorat na pade, user se poochne ki zaroorat na pa
 
 ---
 
-## SYSTEM KA MAKSAD
+## SYSTEM KA MAKSAD (GOAL — YEH NA BADLE)
 
 **Single Next.js backend jo multiple journals (sites) ko manage karta hai.**
 
 - Har journal ka apna alag database hai
-- Har journal ka apna domain hai
-- Ek SUPER_ADMIN hai jo kisi bhi journal ka data manage kar sakta hai
-- Har journal ka apna ADMIN hota hai jo sirf apna data manage kar sakta hai
+- Har journal apni apni domain par chalta hai (e.g. wjiis.com, ijarcm.com)
+- SUPER_ADMIN: ek hi login, kisi bhi domain se ho sakta hai, apne panel mein kisi bhi site ka data dekh/change kar sakta hai (site-switcher dropdown se)
+- Normal ADMIN: sirf apni domain se login hota hai, sirf apne site ke DB ka data dekhta hai
+- Public visitor: jis domain par jaye, usi journal ka frontend (homepage, papers, about, etc.) dikhe
+
+**Important boundary**: Admin panel ko "poori tarah alag" (separate app/subdomain) nahi karna — abhi jo single-codebase + per-site-secret design hai usi mein SUPER_ADMIN ke session ko site-independent banana hai. Yeh chhota targeted fix hai, redesign nahi.
 
 ---
 
@@ -23,42 +26,66 @@ Code dobara analyse karne ki zaroorat na pade, user se poochne ki zaroorat na pa
 
 Abhi 2 sites configured hain:
 
-| Slug | Domain | DB Env Var | Short Name |
-|------|--------|------------|------------|
-| `wjiis` | `wjiis.com` | `DATABASE_URL_WJIIS` | WJIIS |
-| `ijarcm` | `ijarcm.com` | `DATABASE_URL_IJARCM` | IJARCM |
+| Slug | Domain | Dev domain | DB Env Var | Short Name |
+|------|--------|-----------|------------|------------|
+| `wjiis` | `wjiis.com` | `wjiis.local` | `DATABASE_URL_WJIIS` | WJIIS |
+| `ijarcm` | `ijarcm.com` | `ijarcm.local` | `DATABASE_URL_IJARCM` | IJARCM |
 
-**Localhost fallback:** `DEV_SITE_SLUG = 'wjiis'` — localhost pe sirf wjiis kaam karta hai (line 47)
+`getSiteConfigByDomain(host, activeSiteCookie?)`:
+- Real domain match → us site ka config
+- Dev domain (`wjiis.local` / `ijarcm.local`) → mapped site
+- `localhost` / `127.0.0.1` → `active-site` cookie agar set hai to wahi site, warna `DEV_SITE_SLUG` (wjiis) fallback
+- Unknown domain → `null` (404)
 
-**Naya site add karna ho to:** `sites` object mein entry add karo, `.env` mein DB/SMTP/R2 vars add karo.
+**Naya site add karna ho to:** `sites` object mein entry add karo, `.env` mein DB/SMTP/R2/NEXTAUTH_SECRET vars add karo, `devDomains` mein dev domain map karo.
 
 ---
 
-## HOW SITE IS DETERMINED — FLOW
+## LOCALHOST DEV SETUP (SOLVED)
 
-### Step 1: Middleware (`middleware.ts`)
-- Har incoming request pe `Host` header se domain nikalta hai
-- `getSiteConfigByDomain(host)` se site config milti hai
-- `x-site-slug: 'wjiis'` header inject karta hai request mein
-- Localhost pe → wjiis (hardcoded fallback)
-- Unknown domain → 404
+- Windows hosts file mein `wjiis.local` aur `ijarcm.local` add kiye gaye hain (127.0.0.1 par point)
+- SUPER_ADMIN panel mein site-switch dropdown plain `localhost` par bhi `active-site` cookie set karta hai (`src/lib/admin-site.ts` → `setAdminSiteSlug`), jisse middleware us cookie ke hisaab se site resolve karta hai — sirf localhost/127.0.0.1 par honored, production domains is cookie se affected nahi hote
 
-### Step 2: API Routes — DB Selection (`src/lib/site-context.ts`)
-Function: `getPrismaForAdminRequest(request)`
+---
+
+## ROUTING — PUBLIC PAGES (MIDDLEWARE REWRITE)
+
+**File:** `src/middleware.ts` ⚠️ **root mein nahi, `src/` ke andar hona ZAROORI hai** (project `src/app` structure use karta hai — Next.js convention; root `middleware.ts` silently ignore ho jaata hai, koi error nahi aata)
+
+Public page folders route-groups nahi hain (`(wjiis)`/`(ijarcm)` build error deta hai — "two parallel pages resolve to same path"). Isliye plain folders use hote hain:
 
 ```
-SUPER_ADMIN ke liye:
-  → x-active-site header check karo
-  → Agar valid site slug hai → us site ka Prisma client return karo
-  → Agar nahi → request ke x-site-slug se determine karo
-
-NORMAL ADMIN ke liye:
-  → session.user.siteSlug se Prisma client return karo
+src/app/sites/wjiis/page.tsx, layout.tsx, about/, papers/, etc.
+src/app/sites/ijarcm/page.tsx, layout.tsx  (sirf homepage abhi tak — baaki pages pending)
 ```
 
-### Step 3: Prisma Registry (`src/lib/prisma-registry.ts`)
-- `getPrismaClient(slug)` — slug ke hisaab se DB connection return karta hai
-- Connection pool hai — ek baar bana to cache hota hai
+⚠️ Folder ka naam underscore se shuru NAHI hona chahiye (`_sites` Next.js ka "private folder" convention hai, automatically routing se exclude ho jaata hai — yeh ek baar bug ban chuka hai).
+
+**Middleware flow:**
+1. `Host` header + `active-site` cookie se `siteConfig` resolve karta hai
+2. `x-site-slug` header inject karta hai (sab API routes/Server Components ke liye)
+3. `ALLOWED_PATHS` (`/api/maintenance`, `/api/auth`, `/_next`, `/favicon.ico`, `/images`, `/static`, `/uploads`) aur `ADMIN_PATHS` (`/admin`, `/api/admin`) → sirf header set, pass through, URL nahi badalta
+4. Baaki sab (public pages) → `NextResponse.rewrite()` se `/sites/{slug}{pathname}` par silently rewrite, browser URL same rehta hai
+
+---
+
+## API ROUTES — DB SELECTION
+
+**File:** `src/lib/site-context.ts`
+
+```
+getPrismaForRequest(request) → x-site-slug header se Prisma client (public pages ke liye)
+
+getPrismaForAdminRequest(request):
+  SUPER_ADMIN ke liye:
+    → x-active-site header check karo
+    → Valid site slug hai → us site ka Prisma client return karo
+    → Nahi hai → request ke x-site-slug se determine karo
+  NORMAL ADMIN ke liye:
+    → session.user.siteSlug se Prisma client return karo
+```
+
+**File:** `src/lib/prisma-registry.ts` — `getPrismaClient(slug)`, connection pool cached per site.
 
 ---
 
@@ -67,129 +94,75 @@ NORMAL ADMIN ke liye:
 **File:** `src/lib/auth-factory.ts`
 
 ### SUPER_ADMIN
-- Credentials: `SUPER_ADMIN_EMAIL` + `SUPER_ADMIN_PASS_HASH` env vars se
-- DB mein koi row nahi hota SUPER_ADMIN ka
-- Session mein: `role: 'SUPER_ADMIN'`, `siteSlug: 'super'`
-- `'super'` kisi bhi configured site ka slug nahi hai — yeh sirf identifier hai
+- Credentials: `SUPER_ADMIN_EMAIL` + `SUPER_ADMIN_PASS_HASH` env vars se, DB mein koi row nahi
+- Session: `role: 'SUPER_ADMIN'`, `siteSlug: 'super'`
 
 ### Normal ADMIN
-- DB mein user row hota hai apni site ke DB mein
-- Session mein: `role: 'ADMIN'`, `siteSlug: 'wjiis'` (ya jis site ka admin ho)
+- DB mein user row apni site ke DB mein
+- Session: `role: 'ADMIN'`, `siteSlug: 'wjiis'` (ya jis site ka admin ho)
 
-### Per-Site Auth
+### Per-Site Auth Secret
 - Har site ka apna `NEXTAUTH_SECRET_*` env var hai
-- `getAuthOptions(prisma, siteSlug)` — site ke hisaab se auth options banata hai
+- `getAuthOptions(prisma, siteSlug)` — site ke hisaab se JWT secret select karta hai
 
 ---
 
 ## CLIENT-SIDE SITE SWITCHING
 
-**File:** `src/lib/admin-fetch.ts`
-
-`adminFetch()` function — saare admin API calls isse karte hain.
-
-- SUPER_ADMIN ke liye: `localStorage['superadmin_active_site']` se active site slug uthata hai
-- `x-active-site: 'wjiis'` (ya selected site) header bhejta hai
-- Normal ADMIN ke liye: `session.user.siteSlug` se header set hota hai
+**File:** `src/lib/admin-fetch.ts` — `adminFetch()`, saare admin API calls isse hote hain
+- SUPER_ADMIN: `localStorage['superadmin_active_site']` se `x-active-site` header bhejta hai (sirf agar explicitly select kiya ho)
+- Normal ADMIN: `session.user.siteSlug` se header
 
 **File:** `src/lib/admin-site.ts`
+- `getAdminSiteSlug()` / `setAdminSiteSlug(slug)` — localStorage + `active-site` cookie (cookie sirf localhost site-resolution ke liye)
 
-- `getAdminSiteSlug()` — localStorage se current active site slug
-- `setAdminSiteSlug(slug)` — localStorage mein site slug save karo
-- `getAdminStoreStorageKey(name)` — site-specific sessionStorage key banata hai (e.g., `admin-store:wjiis`)
-
----
-
-## SITE SWITCHER UI
-
-**File:** `src/app/admin/page.tsx` (lines 311-330)
-
-- Sirf SUPER_ADMIN ko dikh`ta hai dashboard header mein
-- `<select>` dropdown — wjiis / ijarcm
-- Switch karne pe: `setAdminSiteSlug(slug)` → `window.location.reload()`
-- Page reload ke baad saari API calls naye site ke liye `x-active-site` header bhejti hain
+**File:** `src/app/admin/page.tsx` — site-switcher dropdown (SUPER_ADMIN only), switch → `setAdminSiteSlug()` → `window.location.reload()`
 
 ---
 
-## ADMIN STORE — CACHING
+## 🔴 KNOWN BUGS — ABHI PENDING (Priority Order)
 
-**File:** `src/store/adminStore.ts`
+### BUG 1 — Public API fetches 404 ho jaate hain (HIGH PRIORITY, next karna hai)
+**Root cause:** `src/middleware.ts` ke `ALLOWED_PATHS` / `ADMIN_PATHS` mein generic `/api/*` (non-admin) paths included nahi hain. Isliye client-side `fetch('/api/team-members')` jaisi calls bhi "public page" samjhi jaati hain aur `NextResponse.rewrite()` se `/sites/{slug}/api/team-members` par bhej di jaati hain — yeh path exist nahi karta (API routes hamesha `src/app/api/...` mein hi hoti hain, kisi `sites/{slug}/api/` mein nahi).
 
-- Zustand store with sessionStorage persistence
-- Site-specific keys: `admin-store:wjiis`, `admin-store:ijarcm`
-- Site switch hone pe page reload se automatically naya site ka store load hota hai
-- `invalidatePapers()`, `invalidateStats()` etc. — manually cache clear karne ke liye
+**Impact:** Har public-facing component jo browser se `fetch('/api/...')` karta hai woh silently fail hota hai (zyada components fail "ho hi error UI nahi dikhate — chhup ke null return karte hain). Confirmed affected: `OurLeadership.tsx` (Editorial Leadership widget, `/api/team-members`). Sambhavtah aur bhi components isी pattern se affected honge (announcements, visitor-counter, stats, etc. — verify karna baaki hai).
 
----
+**Fix approach (decided, abhi implement nahi hua):** Middleware mein generic `/api/` (non-`/api/admin`, non-`/api/auth`, non-`/api/maintenance`) paths ko bhi `ALLOWED_PATHS` jaisa treat karo — sirf `x-site-slug` header set karke pass through karo, rewrite mat karo.
 
-## ROLE CHECK — CURRENT PROBLEM
+### BUG 2 — SUPER_ADMIN site switch karne par login maangta hai (HIGH PRIORITY — USER ABHI STUCK HAI, PEHLE YEH KARNA HAI)
+**Root cause:** `getAuthOptions(prisma, siteSlug)` site-specific `NEXTAUTH_SECRET_*` se JWT sign/verify karta hai. Login ke waqt (`src/app/api/auth/[...nextauth]/route.ts`) bhi `x-site-slug` header (jo cookie-driven hai) se secret choose hota hai. Toh SUPER_ADMIN jab wjiis context mein login karta hai, JWT `NEXTAUTH_SECRET_WJIIS` se signed hoti hai. Site-switch dropdown `active-site` cookie ko `ijarcm` set karta hai → agla request `x-site-slug=ijarcm` → session verify `NEXTAUTH_SECRET_IJARCM` se try hota hai → decode fail (silently null) → session invalid → login screen.
 
-**Sahi check (9 files mein):**
-```ts
-if (!['ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
-  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-}
-```
+**Impact:** SUPER_ADMIN IJARCM select karte hi admin panel se bahar nikal jaata hai, login bhi fail hota hai, state wapas bhi nahi badalti — completely stuck.
 
-**Galat check (57 files mein):**
-```ts
-if (!session?.user || session.user.role !== 'ADMIN') {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-}
-```
+**Fix approach (decided — Approach 1, abhi implement nahi hua):** SUPER_ADMIN ka login/session sign/verify hamesha ek **common, site-independent secret** (`NEXTAUTH_SECRET`) se ho — site switch sirf data-fetch context (`x-active-site`) badle, kabhi login secret nahi. Normal per-site admin/user ka secret pehle jaisa hi site-specific rahega (unka session kabhi site switch nahi karta, isliye unaffected).
+- Iske liye `[...nextauth]/route.ts` mein login attempt SUPER_ADMIN email se match ho to common secret use karna hoga (chicken-egg: login se pehle role pata nahi hota, isliye email-pattern check chahiye)
+- `site-context.ts` ke `getPrismaForAdminRequest`/`getActiveSiteSlug` mein bhi session verify pehle common secret se try, SUPER_ADMIN role confirm hone ke baad hi `x-active-site` se data-context decide karo
 
-**Impact:** SUPER_ADMIN 57 routes pe block ho jata hai — kuch bhi nahi kar sakta.
-
-**Fix:** `role !== 'ADMIN'` ko `!['ADMIN', 'SUPER_ADMIN'].includes(session.user.role)` se replace karna hai.
+**User ka decision: BUG 2 pehle fix karna hai (kyunki abhi stuck hai), BUG 1 uske baad.**
 
 ---
 
-## INCOMPLETE / BROKEN THINGS (Priority Order)
+## IJARCM FRONTEND MIGRATION — STATUS
 
-### 1. Localhost pe sirf WJIIS kaam karta hai
-**Problem:** `sites.ts` line 60-62 mein localhost hardcode hai `wjiis` ke liye.
-Development mein IJARCM test nahi ho sakta.
+Source: standalone project `e:\ijarcm.com` (poora bana hua IJARCM site, alag git/env).
+Target: `e:\wjiis.com\src\app\sites\ijarcm\`
 
-**Fix Options:**
-- Option A: `localhost:3004` → wjiis, `localhost:3005` → ijarcm (alag ports)
-- Option B: Local hosts file mein `wjiis.local` aur `ijarcm.local` add karo
-- Option C: Middleware mein port-based routing add karo
+**Done:**
+- `layout.tsx` — wjiis layout pattern copy (Navbar, MainContent, Footer, ChatBot — sab `@/components/shared/` se)
+- `page.tsx` (homepage) — `e:\ijarcm.com\src\app\page.tsx` se copy, imports `@/components/shared/X` mein adapt kiye, `ijrcam.com` typo `ijarcm.com` fix kiya (DynamicSEO, schema, contact email)
 
-**User ki zaroorat:** Decide karna hai ke development mein dono sites kaise distinguish hongi.
+**Pending (user ne explicitly deferred — "homepage test ho jaye phir baaki"):**
+- About, Papers, Archives, aur baaki saare subdirectories `e:\ijarcm.com` se copy karna `src/app/sites/ijarcm/` mein
+- Root `src/app/layout.tsx` mein hardcoded IJARCM-specific metadata (title, metadataBase URL) hai jo dono sites ke liye shared root layout hai — flag kiya gaya hai, fix nahi kiya (site-agnostic banana hoga ya per-site layout mein move karna hoga)
 
-### 2. SUPER_ADMIN 57 routes pe block hai
-**Problem:** Role check galat hai (dekho upar)
-**Fix:** PowerShell se automated replacement + 5 files manual cleanup
+---
 
-### 3. IJARCM .env incomplete
-```
-# YEH COMMENTED OUT HAIN — ACTIVATE KARNA HOGA:
-# SMTP_USER_IJARCM=
-# SMTP_PASS_IJARCM=
-# SMTP_FROM_IJARCM=
-# R2_BUCKET_IJARCM=ijarcm-files
-# R2_PUBLIC_URL_IJARCM=
-```
+## NOT IN SCOPE / DEFERRED (goal se related nahi, isliye yahan se hata diya gaya)
 
-### 4. next.config.js mein sirf WJIIS ka domain
-```js
-images: {
-  domains: ['localhost', 'wjiis.com', 'www.wjiis.com'],
-  // MISSING: 'ijarcm.com', 'www.ijarcm.com'
-}
-```
-
-### 5. Papers list mein naye papers nahi dikhte
-**Problem:** `/admin/research-papers/new` se paper submit hone ke baad `invalidatePapers()` call nahi hoti.
-Zustand cache stale rehta hai, fresh fetch nahi hota.
-**Fix:** Submit ke baad `invalidatePapers()` call karo phir `router.push('/admin/papers')`.
-
-### 6. research-papers system aur papers system overlap
-**Situation:**
-- `/admin/research-papers/new` — paper add karne ka naya flow (DOCX → AI extract → PDF → submit)
-- `/admin/papers` — paper list
-- Dono `prisma.paper` table use karte hain
-- **Maksad:** research-papers wala add flow `/admin/papers/new` mein merge karna, `/admin/research-papers` hatana
+Niche wale items purane document mein the lekin current goal (multi-tenant routing + auth correctness) se directly judey nahi hain — agar future mein zaroorat ho to alag se discuss karna:
+- Papers / research-papers system overlap aur merge
+- `/admin/research-papers/new` ke baad `invalidatePapers()` cache issue
+- Role-check inconsistency (57 routes mein `role !== 'ADMIN'` vs `!['ADMIN','SUPER_ADMIN'].includes(...)`) — yeh BUG 2 fix hone ke baad recheck karna chahiye, kyunki ho sakta hai connected ho
 
 ---
 
@@ -197,36 +170,32 @@ Zustand cache stale rehta hai, fresh fetch nahi hota.
 
 ```
 e:/wjiis.com/
-├── middleware.ts                          # Domain → x-site-slug injection
-├── next.config.js                         # Image domains, webpack aliases
-├── .env                                   # DB URLs, SMTP, R2, secrets
+├── next.config.js                         # Image domains (dono sites), webpack aliases
+├── .env                                   # DB URLs, SMTP, R2, secrets (per site)
 ├── prisma/schema.prisma                   # Shared schema — dono sites ke liye same
 ├── src/
+│   ├── middleware.ts                      # ⚠️ src/ ke andar — domain/cookie → x-site-slug, public page rewrite
 │   ├── config/
-│   │   └── sites.ts                       # Site configs (slug, domain, env var names)
+│   │   └── sites.ts                       # Site configs + dev domain mapping
 │   ├── lib/
 │   │   ├── auth-factory.ts                # Per-site NextAuth options + SUPER_ADMIN auth
 │   │   ├── prisma-registry.ts             # DB connection pool per site
-│   │   ├── site-context.ts                # Server-side site/DB resolution
+│   │   ├── site-context.ts                # Server-side site/DB/session resolution
 │   │   ├── admin-fetch.ts                 # Client-side fetch with x-active-site header
-│   │   └── admin-site.ts                  # localStorage site slug management
+│   │   └── admin-site.ts                  # localStorage + active-site cookie management
 │   ├── store/
 │   │   └── adminStore.ts                  # Zustand store — site-specific caching
+│   ├── components/shared/                 # Saare sites ke liye common UI (Navbar, Footer, OurLeadership, etc.)
 │   └── app/
-│       ├── admin/
-│       │   ├── layout.tsx                 # Auth check, sidebar, navbar
-│       │   ├── page.tsx                   # Dashboard + site switcher UI (SUPER_ADMIN only)
-│       │   ├── papers/
-│       │   │   └── page.tsx               # Paper list — fetches from /api/admin/papers
-│       │   └── research-papers/
-│       │       └── new/page.tsx           # Paper add flow (DOCX → PDF → submit)
-│       └── api/
-│           └── admin/
-│               ├── papers/route.ts        # GET: paper list (CORRECT role check)
-│               ├── research-papers/
-│               │   ├── route.ts           # GET: WRONG role check (blocks SUPER_ADMIN)
-│               │   └── submit/route.ts    # POST: WRONG role check (blocks SUPER_ADMIN)
-│               └── [57 other routes]      # Sab WRONG role check use karte hain
+│       ├── layout.tsx                     # Root layout — ⚠️ abhi IJARCM-hardcoded metadata hai
+│       ├── admin/page.tsx                 # Dashboard + site switcher UI (SUPER_ADMIN only)
+│       ├── api/
+│       │   ├── auth/[...nextauth]/route.ts  # Login — x-site-slug se secret choose karta hai (BUG 2 yahin)
+│       │   ├── team-members/route.ts        # Public API example (BUG 1 se affected)
+│       │   └── admin/...                    # Admin-only APIs
+│       └── sites/
+│           ├── wjiis/                     # Saare WJIIS public pages (complete)
+│           └── ijarcm/                    # Sirf homepage abhi (page.tsx, layout.tsx)
 ```
 
 ---
@@ -235,21 +204,22 @@ e:/wjiis.com/
 
 1. **Permission pehle, kaam baad mein** — koi bhi change karne se pehle user se confirm karo
 2. **Sirf analyse karne ko bola hai to sirf analyse karo** — code mat badlo
-3. **Naya system mat banao** — jo already bana hua hai use karo (auth-factory, site-context, admin-fetch sab sahi hain)
-4. **Assumptions mat lo** — user se seedha poochho agar kuch unclear ho
+3. **Naya system mat banao** — jo already bana hua hai use karo (auth-factory, site-context, admin-fetch sab sahi pattern hain, sirf bugs fix karne hain)
+4. **Assumptions mat lo** — user se seedha poochho agar kuch unclear ho, ya code padh kar confirm karo
 5. **English only** — code mein comments, errors, UI text, logs — sab English mein
 6. **Ek kaam ek baar** — plan banao, user approve kare, tab karo
 7. **Context waste mat karo** — agar ek agent ya tool se kaam ho jaye to zyada mat chalao
 8. **Galti ho to seedha bolo** — chhupaao mat, baar baar wohi galti mat karo
+9. **Git operations sirf jab commit involved ho** — plain filesystem move/rename (`mv`) ke liye `git mv` mat use karo jab tak commit nahi ho raha
+10. **Dev server middleware/config changes ke baad full restart chahiye** — sirf hot-reload kaafi nahi hota kabhi kabhi (especially middleware file location change)
+11. **Goal se bahar mat jao** — agar koi fix simple ho sakta hai (jaise secret resolution decouple karna), to poora subsystem redesign (jaise admin panel alag app banana) mat suggest karo
 
 ---
 
-## CURRENT TASK STATUS (2026-06-15)
+## CURRENT STATUS (2026-06-16)
 
-**Abhi jo kaam karna tha:**
-Point 1 — Development mein localhost pe dono sites (wjiis + ijarcm) distinguish karna.
+**Abhi turant karna hai:** BUG 2 fix (SUPER_ADMIN session/secret decouple — Approach 1, abhi tak sirf options discuss hue hain, implementation pending, user ne abhi approve nahi kiya final code).
 
-**User ka decision chahiye:** Kaunsa approach use karein localhost pe dono sites ke liye?
-- Port-based (3004 = wjiis, 3005 = ijarcm)?
-- Hosts file based (wjiis.local, ijarcm.local)?
-- Middleware mein kuch aur?
+**Uske baad:** BUG 1 fix (middleware mein generic `/api/*` paths ko rewrite se exempt karna).
+
+**Phir:** IJARCM ke baaki pages (`about`, `papers`, `archives`, etc.) copy karna `e:\ijarcm.com` se.
