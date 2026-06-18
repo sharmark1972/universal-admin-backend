@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
     const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
     const session = await getServerSession(_authOptions);
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
   const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
   const session = await getServerSession(_authOptions);
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -140,7 +140,7 @@ export async function PUT(request: NextRequest) {
     const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
   const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
   const session = await getServerSession(_authOptions);
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -233,7 +233,7 @@ export async function DELETE(request: NextRequest) {
     const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
   const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
   const session = await getServerSession(_authOptions);
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }

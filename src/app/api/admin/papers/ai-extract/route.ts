@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import {
   enhanceExtractedResearchPaperData,
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
     const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
     const session = await getServerSession(_authOptions);
-  if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+  if (!session?.user || (!isAdminOrSuperAdmin(session.user.role) && session.user.role !== 'SUPER_ADMIN')) {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
   }
 

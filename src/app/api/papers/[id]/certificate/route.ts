@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
 import QRCode from 'qrcode';
@@ -25,7 +25,7 @@ export async function GET(
     }
 
     // Only admins can generate certificates
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Insufficient permissions to generate certificate' },
         { status: 403 }

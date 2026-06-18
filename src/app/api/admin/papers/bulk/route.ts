@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }

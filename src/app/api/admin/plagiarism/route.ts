@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can perform plagiarism checks' },
         { status: 403 }
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can view plagiarism checks' },
         { status: 403 }
@@ -218,7 +218,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can delete plagiarism checks' },
         { status: 403 }

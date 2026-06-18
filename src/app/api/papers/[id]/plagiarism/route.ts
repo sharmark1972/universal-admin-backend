@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
 
@@ -24,7 +24,7 @@ export async function POST(
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can trigger plagiarism checks' },
         { status: 403 }
@@ -190,7 +190,7 @@ export async function GET(
     const paperId = params.id;
 
     // Check if user has permission to view this paper's plagiarism check
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       const paper = await prisma.paper.findUnique({
         where: { id: paperId },
         select: { submitterId: true }

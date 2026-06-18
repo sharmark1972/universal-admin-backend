@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { storeResearchPaperFile } from '@/lib/papers/storage';
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
     const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
     const session = await getServerSession(_authOptions);
-    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    if (!session?.user || (!isAdminOrSuperAdmin(session.user.role) && session.user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
@@ -97,6 +97,28 @@ export async function POST(request: NextRequest) {
     const validStatuses = ['SUBMITTED', 'UNDER_REVIEW', 'REVISION_REQUIRED', 'ACCEPTED', 'PUBLISHED', 'REJECTED'];
     const paperStatus = validStatuses.includes(rawStatus) ? rawStatus : 'SUBMITTED';
 
+    // Ensure submitter user exists in database (auto-create if needed)
+    let submitterUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!submitterUser) {
+      // Map SUPER_ADMIN to ADMIN for database (SUPER_ADMIN not in UserRole enum)
+      const dbRole = session.user.role === 'SUPER_ADMIN' ? 'ADMIN' : session.user.role;
+
+      submitterUser = await prisma.user.create({
+        data: {
+          id: session.user.id,
+          email: session.user.email || `user-${session.user.id}@system`,
+          firstName: session.user.firstName || 'User',
+          lastName: session.user.lastName || 'Admin',
+          passwordHash: '',
+          role: dbRole as any,
+          isVerified: true,
+        },
+      });
+    }
+
     // Save directly to papers table
     const paper = await prisma.paper.create({
       data: {
@@ -106,7 +128,7 @@ export async function POST(request: NextRequest) {
         filePath: pdfPath || '',
         status: paperStatus as any,
         publishedAt: paperStatus === 'PUBLISHED' ? new Date() : null,
-        submitterId: session.user.id,
+        submitterId: submitterUser.id,
         issueId: issueId || null,
         doi: doi || null,
         sourceFilePath: storedSourceFilePath,

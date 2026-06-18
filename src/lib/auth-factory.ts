@@ -8,6 +8,10 @@ import { getSiteConfig } from '@/config/sites';
 
 export type ExtendedUserRole = UserRole | 'SUPER_ADMIN';
 
+export function isAdminOrSuperAdmin(role?: string | null): boolean {
+  return role === 'ADMIN' || role === 'SUPER_ADMIN';
+}
+
 export function getAuthOptions(prisma: PrismaClient, siteSlug: string): NextAuthOptions {
   const siteConfig = getSiteConfig(siteSlug);
   const secret = siteConfig
@@ -92,11 +96,19 @@ export function getAuthOptions(prisma: PrismaClient, siteSlug: string): NextAuth
         return encode({ token, secret: s });
       },
       decode: async ({ token, secret: s }) => {
-        try {
-          return await decode({ token, secret: s });
-        } catch {
-          return null;
+        const masterSecret = process.env.NEXTAUTH_SECRET;
+        const secrets = masterSecret && masterSecret !== s
+          ? [masterSecret, s]
+          : [s];
+        for (const sec of secrets) {
+          try {
+            const result = await decode({ token, secret: sec });
+            if (result) return result;
+          } catch {
+            // try next secret
+          }
         }
+        return null;
       },
     },
     callbacks: {

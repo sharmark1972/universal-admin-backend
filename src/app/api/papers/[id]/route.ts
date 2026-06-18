@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
 import { z } from 'zod';
@@ -259,7 +259,8 @@ export async function PUT(
     }
 
     // Check permissions
-    const canEdit = 
+    const canEdit =
+      session.user.role === 'SUPER_ADMIN' ||
       session.user.role === 'ADMIN' ||
       (existingPaper.submitterId === session.user.id && ['SUBMITTED'].includes(existingPaper.status));
 
@@ -271,7 +272,7 @@ export async function PUT(
     }
 
     // Special handling for status changes
-    if (data.status && session.user.role !== 'ADMIN') {
+    if (data.status && !session.user.isAdminOrSuperAdmin(role)) {
       // Only admins can change status
       delete data.status;
     }

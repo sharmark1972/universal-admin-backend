@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can create announcements' },
         { status: 403 }
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {};
     
     // For non-admin users, only show published announcements
-    if (session.user.role !== 'ADMIN' || !adminView) {
+    if (!isAdminOrSuperAdmin(session.user.role) || !adminView) {
       whereClause.isPublished = true;
       
       // Also filter by date range for public view
@@ -213,7 +213,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can update announcements' },
         { status: 403 }
@@ -300,7 +300,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can delete announcements' },
         { status: 403 }

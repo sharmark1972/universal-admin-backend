@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can create advertisements' },
         { status: 403 }
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
     // For non-admin users, only show enabled ads
     const whereClause: any = {};
     
-    if (session.user.role !== 'ADMIN' || !adminView) {
+    if (!isAdminOrSuperAdmin(session.user.role) || !adminView) {
       whereClause.isEnabled = true;
       
       // Also filter by date range for public view
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can update advertisements' },
         { status: 403 }
@@ -302,7 +302,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can delete advertisements' },
         { status: 403 }

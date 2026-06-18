@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
 
@@ -60,7 +60,7 @@ export async function GET(
         }
       });
 
-      if (!assignment && session.user.role !== 'ADMIN') {
+      if (!assignment && !isAdminOrSuperAdmin(session.user.role)) {
         return NextResponse.json(
           { error: 'Review not found or you are not assigned to this paper' },
           { status: 404 }

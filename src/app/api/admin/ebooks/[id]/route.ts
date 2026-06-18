@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { uploadToR2, deleteFromR2 } from '@/lib/r2-upload';
@@ -28,7 +28,7 @@ export async function GET(
       select: { role: true }
     });
 
-    if (user?.role !== 'ADMIN') {
+    if (user?.!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -67,7 +67,7 @@ export async function PUT(
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -260,7 +260,7 @@ export async function DELETE(
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }

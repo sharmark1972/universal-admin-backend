@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
 import { uploadToR2, deleteFromR2 } from '@/lib/r2-upload';
@@ -43,7 +43,7 @@ export async function POST(
     const paper = existingPaper[0];
 
     // Check permissions (only admins can upload cover images)
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Insufficient permissions to upload cover image' },
         { status: 403 }
@@ -148,7 +148,7 @@ export async function DELETE(
     const paper = existingPaper[0];
 
     // Check permissions (only admins can delete cover images)
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Insufficient permissions to delete cover image' },
         { status: 403 }

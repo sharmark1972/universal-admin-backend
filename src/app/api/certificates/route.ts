@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only admins can generate certificates
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -237,7 +237,7 @@ export async function GET(request: NextRequest) {
     const baseWhere: Record<string, unknown> = { isValid: true };
 
     // If not admin, only show user's own certificates
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       baseWhere.userId = session.user.id;
     } else if (userId) {
       baseWhere.userId = userId;

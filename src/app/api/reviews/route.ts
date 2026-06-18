@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
 import { z } from 'zod';
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'REVIEWER' && session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'REVIEWER' && !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only reviewers can submit reviews' },
         { status: 403 }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (!isAssigned && session.user.role !== 'ADMIN') {
+    if (!isAssigned && !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'You are not assigned to review this paper' },
         { status: 403 }
@@ -304,7 +304,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'REVIEWER' && session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'REVIEWER' && !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only reviewers can update reviews' },
         { status: 403 }
@@ -342,7 +342,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (existingReview.reviewerId !== session.user.id && session.user.role !== 'ADMIN') {
+    if (existingReview.reviewerId !== session.user.id && !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'You can only update your own reviews' },
         { status: 403 }

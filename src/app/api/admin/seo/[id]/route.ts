@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 
@@ -17,7 +17,7 @@ export async function GET(
     const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
     const session = await getServerSession(_authOptions);
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -58,7 +58,7 @@ export async function PUT(
   const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
   const session = await getServerSession(_authOptions);
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -162,7 +162,7 @@ export async function DELETE(
   const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
   const session = await getServerSession(_authOptions);
     
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

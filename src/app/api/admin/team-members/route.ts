@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { getAuthOptions } from '@/lib/auth-factory';
+import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can create team members' },
         { status: 403 }
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
   const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
   const session = await getServerSession(_authOptions);
       
-      if (!session?.user || session.user.role !== 'ADMIN') {
+      if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
         return NextResponse.json(
           { error: 'Admin access required' },
           { status: 403 }
@@ -183,7 +183,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can update team members' },
         { status: 403 }
@@ -244,7 +244,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'ADMIN') {
+    if (!isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Only administrators can delete team members' },
         { status: 403 }
