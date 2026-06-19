@@ -28,7 +28,7 @@ export async function GET(
       select: { role: true }
     });
 
-    if (user?.!isAdminOrSuperAdmin(session.user.role)) {
+    if (!isAdminOrSuperAdmin(session.user?.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
