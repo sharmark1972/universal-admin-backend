@@ -147,9 +147,6 @@ interface AdminStore {
   feesLoaded: boolean;
   setFees: (data: any) => void;
   invalidateFees: () => void;
-
-  // Global
-  invalidateAll: () => void;
 }
 
 export const useAdminStore = create<AdminStore>()(
@@ -248,25 +245,6 @@ export const useAdminStore = create<AdminStore>()(
       feesLoaded: false,
       setFees: (data) => set({ fees: data, feesLoaded: true }),
       invalidateFees: () => set({ fees: null, feesLoaded: false }),
-
-      // Global
-      invalidateAll: () => set({
-        stats: null, statsLoaded: false,
-        usersData: null, usersLoaded: false,
-        papersData: null, papersLoaded: false, issues: [], issuesLoaded: false,
-        conferencesData: null, conferencesLoaded: false,
-        ebooksData: null, ebooksLoaded: false,
-        certificates: [], certificatesLoaded: false,
-        journals: [], journalsLoaded: false,
-        teamMembers: [], teamMembersLoaded: false,
-        editorialMembers: [], editorialLoaded: false,
-        archives: [], archivesLoaded: false,
-        analyticsData: null, analyticsLoaded: false,
-        settings: null, settingsLoaded: false,
-        advisoryMembers: [], advisoryLoaded: false,
-        reviewerMembers: [], reviewerLoaded: false,
-        fees: null, feesLoaded: false,
-      }),
     }),
     {
       name: 'admin-store',
