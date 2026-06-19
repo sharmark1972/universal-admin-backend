@@ -132,6 +132,7 @@ export default function AdminDashboard() {
     setActiveSite(slug);
     setAdminSiteSlug(slug);
     invalidateAll();
+    sessionStorage.clear();
     window.location.reload();
   };
 
