@@ -6,11 +6,16 @@ import { getPrismaForAdminRequest } from '@/lib/site-context';
 import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   const prisma = await getPrismaForAdminRequest(request);
   try {
-    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const url = new URL(request.url);
+    const siteFromParam = url.searchParams.get('site');
+    const siteFromHeader = request.headers.get('x-active-site');
+
+    const _siteSlug = siteFromParam ?? siteFromHeader ?? request.headers.get('x-site-slug') ?? 'wjiis';
     const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
     const session = await getServerSession(_authOptions);
     
@@ -82,12 +87,18 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(totalUsers / limit);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       users: transformedUsers,
       totalUsers,
       totalPages,
       currentPage: page,
     });
+
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(

@@ -5,11 +5,16 @@ import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   const prisma = await getPrismaForAdminRequest(request);
   try {
-    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const url = new URL(request.url);
+    const siteFromParam = url.searchParams.get('site');
+    const siteFromHeader = request.headers.get('x-active-site');
+
+    const _siteSlug = siteFromParam ?? siteFromHeader ?? request.headers.get('x-site-slug') ?? 'wjiis';
     const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
     const session = await getServerSession(_authOptions);
     if (!session?.user?.id) {
@@ -161,12 +166,18 @@ export async function GET(request: NextRequest) {
       }))
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       papers: formattedPapers,
       totalPapers,
       totalPages,
       currentPage: page
     });
+
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
   } catch (error) {
     console.error('Error fetching papers:', error);
     return NextResponse.json(

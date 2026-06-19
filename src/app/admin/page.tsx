@@ -107,7 +107,8 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
       try {
-        const response = await adminFetch('/api/admin/stats', { cache: 'no-store' });
+        const site = getAdminSiteSlug();
+        const response = await adminFetch(`/api/admin/stats?site=${site}`, { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Failed to fetch admin stats');
         }
@@ -122,16 +123,18 @@ export default function AdminDashboard() {
     };
 
     fetchStats();
-  }, [statsLoaded]);
+  }, [statsLoaded, activeSite]);
 
   useEffect(() => {
     setActiveSite(getAdminSiteSlug());
   }, []);
 
   const handleSiteChange = (slug: string) => {
+    console.log('Site change initiated:', { from: activeSite, to: slug });
     setActiveSite(slug);
     setAdminSiteSlug(slug);
     invalidateStats();
+    console.log('After invalidate - localStorage:', localStorage.getItem('superadmin_active_site'));
     window.location.reload();
   };
 
