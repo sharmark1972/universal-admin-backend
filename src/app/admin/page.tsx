@@ -88,7 +88,26 @@ interface AdminStats {
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
-  const { stats: cachedStats, statsLoaded, setStats: saveStats, invalidateStats } = useAdminStore();
+  const {
+    stats: cachedStats,
+    statsLoaded,
+    setStats: saveStats,
+    invalidateStats,
+    invalidateUsers,
+    invalidatePapers,
+    invalidateConferences,
+    invalidateEbooks,
+    invalidateCertificates,
+    invalidateJournals,
+    invalidateTeamMembers,
+    invalidateEditorial,
+    invalidateArchives,
+    invalidateAnalytics,
+    invalidateSettings,
+    invalidateAdvisory,
+    invalidateReviewer,
+    invalidateFees,
+  } = useAdminStore();
   const [stats, setStats] = useState<AdminStats | null>(cachedStats);
   const [loading, setLoading] = useState(!statsLoaded);
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,8 +152,25 @@ export default function AdminDashboard() {
     console.log('Site change initiated:', { from: activeSite, to: slug });
     setActiveSite(slug);
     setAdminSiteSlug(slug);
+
+    // Invalidate ALL store data to prevent stale data from previous site
     invalidateStats();
-    console.log('After invalidate - localStorage:', localStorage.getItem('superadmin_active_site'));
+    invalidateUsers();
+    invalidatePapers();
+    invalidateConferences();
+    invalidateEbooks();
+    invalidateCertificates();
+    invalidateJournals();
+    invalidateTeamMembers();
+    invalidateEditorial();
+    invalidateArchives();
+    invalidateAnalytics();
+    invalidateSettings();
+    invalidateAdvisory();
+    invalidateReviewer();
+    invalidateFees();
+
+    console.log('All store data invalidated - localStorage:', localStorage.getItem('superadmin_active_site'));
     window.location.reload();
   };
 

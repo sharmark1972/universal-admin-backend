@@ -31,7 +31,17 @@ export async function adminFetch(
   const extraHeaders: Record<string, string> = {};
   if (activeSite) extraHeaders['x-active-site'] = activeSite;
 
-  return fetch(input, {
+  // Auto-add site parameter to URL for cache busting
+  let urlWithSite = input;
+  if (activeSite && typeof window !== 'undefined') {
+    const url = new URL(input, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+    if (!url.searchParams.has('site')) {
+      url.searchParams.set('site', activeSite);
+      urlWithSite = url.pathname + url.search;
+    }
+  }
+
+  return fetch(urlWithSite, {
     ...init,
     headers: {
       ...(init.headers ?? {}),

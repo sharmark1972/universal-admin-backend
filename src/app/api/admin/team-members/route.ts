@@ -6,6 +6,7 @@ import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const teamMemberSchema = z.object({
   name: z.string().min(1, 'Name is required'),
