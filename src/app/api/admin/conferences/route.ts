@@ -8,19 +8,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
-  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const url = new URL(request.url);
-    const siteFromParam = url.searchParams.get('site');
-    const siteFromHeader = request.headers.get('x-active-site');
-
-    const _siteSlug = siteFromParam ?? siteFromHeader ?? request.headers.get('x-site-slug') ?? 'wjiis';
-    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
-    const session = await getServerSession(_authOptions);
-    
-    if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // getPrismaForAdminRequest already handles auth validation and site context
+    const prisma = await getPrismaForAdminRequest(request);
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
