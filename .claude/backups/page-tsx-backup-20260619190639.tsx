@@ -88,7 +88,7 @@ interface AdminStats {
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
-  const { stats: cachedStats, statsLoaded, setStats: saveStats } = useAdminStore();
+  const { stats: cachedStats, statsLoaded, setStats: saveStats, invalidateAll } = useAdminStore();
   const [stats, setStats] = useState<AdminStats | null>(cachedStats);
   const [loading, setLoading] = useState(!statsLoaded);
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,6 +131,7 @@ export default function AdminDashboard() {
   const handleSiteChange = (slug: string) => {
     setActiveSite(slug);
     setAdminSiteSlug(slug);
+    invalidateAll();
     sessionStorage.clear();
     window.location.reload();
   };
