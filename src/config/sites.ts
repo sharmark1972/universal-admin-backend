@@ -72,6 +72,20 @@ const sites: Record<string, SiteConfig> = {
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_AJOAMS',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_AJOAMS',
   },
+  ejoas: {
+    slug: 'ejoas',
+    domain: 'ejoas.com',
+    name: 'European Journal of Agricultural Sciences',
+    shortName: 'EJOAS',
+    description: 'Agricultural Sciences Research',
+    dbEnvVar: 'DATABASE_URL_EJOAS',
+    smtpUserEnvVar: 'SMTP_USER_EJOAS',
+    smtpPassEnvVar: 'SMTP_PASS_EJOAS',
+    smtpFromEnvVar: 'SMTP_FROM_EJOAS',
+    r2BucketEnvVar: 'R2_BUCKET_EJOAS',
+    r2PublicUrlEnvVar: 'R2_PUBLIC_URL_EJOAS',
+    nextauthSecretEnvVar: 'NEXTAUTH_SECRET_EJOAS',
+  },
 };
 
 const DEV_SITE_SLUG = 'wjiis';
