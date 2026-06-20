@@ -13,6 +13,8 @@ export interface SiteConfig {
   nextauthSecretEnvVar: string;
 }
 
+// all journals
+
 const sites: Record<string, SiteConfig> = {
   wjiis: {
     slug: 'wjiis',
