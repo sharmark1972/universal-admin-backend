@@ -181,8 +181,20 @@ export async function extractResearchPaperFromUpload(
 
   const { aiResult, usedStep } = await runAiExtraction(plainText, onStep, extractionMode);
 
+  const title = aiResult?.title || structured.title;
   const abstract = aiResult?.abstract || structured.abstract;
-  const sanitizedKeywords = structured.keywords.filter((k) => typeof k === 'string');
+  const keywords = aiResult?.keywords?.length ? aiResult.keywords : structured.keywords;
+  const affiliation = aiResult?.affiliation || structured.affiliation;
+  const authors = aiResult?.authors?.length
+    ? aiResult.authors.map((a) => ({
+        name: a.name,
+        email: aiResult?.email || undefined,
+        affiliation: affiliation || undefined,
+        isCorresponding: a.isCorresponding,
+      }))
+    : structured.authors;
+
+  const sanitizedKeywords = keywords.filter((k) => typeof k === 'string');
   const sectionsForDraft = structured.sections.map((section, index) => ({
     heading: section.heading ? section.heading.trim() : 'Untitled Section',
     content: section.content ? section.content.trim() : '',
@@ -192,10 +204,10 @@ export async function extractResearchPaperFromUpload(
 
   return {
     extractedData: {
-      title: structured.title ? structured.title.trim() : '',
+      title: title ? title.trim() : '',
       abstract: abstract ? abstract.trim() : '',
       keywords: sanitizedKeywords,
-      authors: structured.authors.map((author, index) => ({
+      authors: authors.map((author, index) => ({
         name: author.name.trim(),
         email: author.email ? author.email.trim() : '',
         affiliation: author.affiliation ? author.affiliation.trim() : '',
@@ -223,8 +235,20 @@ export async function enhanceExtractedResearchPaperData(
 
   const { aiResult, usedStep } = await runAiExtraction(plainText, onStep, extractionMode);
 
+  const title = aiResult?.title || structured.title;
   const abstract = aiResult?.abstract || structured.abstract;
-  const sanitizedKeywords = structured.keywords.filter((k) => typeof k === 'string');
+  const keywords = aiResult?.keywords?.length ? aiResult.keywords : structured.keywords;
+  const affiliation = aiResult?.affiliation || structured.affiliation;
+  const authors = aiResult?.authors?.length
+    ? aiResult.authors.map((a) => ({
+        name: a.name,
+        email: aiResult?.email || undefined,
+        affiliation: affiliation || undefined,
+        isCorresponding: a.isCorresponding,
+      }))
+    : structured.authors;
+
+  const sanitizedKeywords = keywords.filter((k) => typeof k === 'string');
 
   const sectionsForDraft = structured.sections.map((section, index) => ({
     heading: section.heading ? section.heading.trim() : 'Untitled Section',
@@ -235,10 +259,10 @@ export async function enhanceExtractedResearchPaperData(
 
   return {
     extractedData: {
-      title: structured.title ? structured.title.trim() : '',
+      title: title ? title.trim() : '',
       abstract: abstract ? abstract.trim() : '',
       keywords: sanitizedKeywords,
-      authors: structured.authors.map((author, index) => ({
+      authors: authors.map((author, index) => ({
         name: author.name.trim(),
         email: author.email ? author.email.trim() : '',
         affiliation: author.affiliation ? author.affiliation.trim() : '',

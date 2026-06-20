@@ -71,8 +71,7 @@ export default function AdminSidebar({ className = '', mobile = false, onClose }
 
       {isSuperAdmin && (
         <div className={`border-b border-gray-100 bg-blue-50 px-4 py-3 ${mobile ? 'mt-10' : ''}`}>
-          <p className="text-xs font-medium text-blue-500">Managing</p>
-          <p className="text-sm font-semibold text-blue-800">{activeSiteConfig.name}</p>
+          <p className="mt-3 text-sm font-semibold text-blue-800">{activeSiteConfig.name}</p>
         </div>
       )}
 

@@ -270,7 +270,121 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200/50">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="py-6">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="min-w-0 flex-1 animate-fade-in-up">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text text-transparent sm:text-4xl">
+                  Admin Dashboard
+                </h1>
+                <p className="mt-3 max-w-5xl text-base leading-7 text-gray-600 sm:text-lg">
+                  Welcome back, <span className="font-semibold text-blue-600">{session?.user?.name}</span>!
+                  Here&apos;s what&apos;s happening in your system.
+                </p>
+              </div>
+              
+              {/* Search Bar and Actions */}
+              <div className="flex w-full flex-col items-stretch gap-3 animate-fade-in-up animation-delay-200 lg:w-auto lg:flex-row lg:items-center">
+                {/* Global Search */}
+                <div className="relative flex-1 lg:w-80 xl:w-96">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search papers, users, conferences..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                    />
+                  </div>
+                  
+                  {/* Search Results Dropdown */}
+                  {showSearchResults && searchResults.length > 0 && (
+                    <div className="absolute z-50 mt-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto">
+                      <div className="p-2">
+                        {searchResults.map((result, idx) => (
+                          <Link
+                            key={idx}
+                            href={getSearchResultLink(result)}
+                            onClick={() => setShowSearchResults(false)}
+                            className="block p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                                    result.type === 'Paper' ? 'bg-green-100 text-green-700' :
+                                    result.type === 'User' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-purple-100 text-purple-700'
+                                  }`}>
+                                    {result.type}
+                                  </span>
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {result.title || result.name || result.email || result.firstName}
+                                  </span>
+                                </div>
+                                {result.authors && (
+                                  <p className="text-xs text-gray-500 mt-1">{result.authors}</p>
+                                )}
+                              </div>
+                              <ArrowRight className="h-4 w-4 text-gray-400" />
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-200 p-2">
+                        <button
+                          onClick={() => setShowSearchResults(false)}
+                          className="w-full text-center text-sm text-gray-500 hover:text-gray-700 py-2"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-3">
+                  {isSuperAdmin && (
+                    <div className="inline-flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm shadow-sm">
+                      <Globe className="h-4 w-4 text-cyan-600" />
+                      <label className="flex items-center gap-2">
+                        <span className="font-medium text-slate-500">Site</span>
+                        <select
+                          value={activeSite}
+                          onChange={(event) => handleSiteChange(event.target.value)}
+                          className="bg-transparent font-semibold text-slate-950 outline-none"
+                          aria-label="Active site"
+                        >
+                          {ALL_SITES.map((site) => (
+                            <option key={site.slug} value={site.slug}>
+                              {site.shortName}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  )}
+                  <Link
+                    href="/admin/settings"
+                    className="group inline-flex items-center px-6 py-3 border border-transparent text-sm font-semibold rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:-translate-y-1"
+                  >
+                    <Settings className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+                    Settings
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex">
+        <AdminSidebar className="sticky top-[var(--admin-header-height)] hidden h-[calc(100vh_-_var(--admin-header-height))] self-start lg:block" />
+
         <div className="min-w-0 flex-1">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4">
         {/* Main Stats Cards */}
