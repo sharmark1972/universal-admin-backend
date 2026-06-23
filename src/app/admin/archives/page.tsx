@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { adminFetch } from '@/lib/admin-fetch';
 import { useAdminStore } from '@/store/adminStore';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
@@ -302,7 +303,7 @@ export default function AdminArchivesPage() {
     }
     try {
       setLoading(true);
-      const response = await fetch('/api/archives', { cache: 'no-store' });
+      const response = await adminFetch('/api/archives', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch archives');
       }
@@ -320,7 +321,7 @@ export default function AdminArchivesPage() {
   const handleCreateArchive = async (formData: ArchiveFormData) => {
     try {
       setSubmitting(true);
-      const response = await fetch('/api/archives', {
+      const response = await adminFetch('/api/archives', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -359,7 +360,7 @@ export default function AdminArchivesPage() {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/archives?id=${editingArchive.id}`, {
+      const response = await adminFetch(`/api/archives?id=${editingArchive.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -395,7 +396,7 @@ export default function AdminArchivesPage() {
 
   const handleDeleteArchive = async (id: string) => {
     try {
-      const response = await fetch(`/api/archives?id=${id}`, {
+      const response = await adminFetch(`/api/archives?id=${id}`, {
         method: 'DELETE',
       });
 

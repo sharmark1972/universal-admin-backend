@@ -60,7 +60,7 @@ export default function PublicationFields({ onChange }: PublicationFieldsProps) 
 
   const fetchIssues = () => {
     setLoadingIssues(true);
-    fetch('/api/issues?limit=100')
+    adminFetch('/api/issues?limit=100')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setIssues(data.issues || []); })
       .finally(() => setLoadingIssues(false));

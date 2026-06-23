@@ -109,7 +109,7 @@ export default function AdminIssuesPage() {
 
       const method = editingIssue ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

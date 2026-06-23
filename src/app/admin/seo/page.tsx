@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
@@ -130,7 +131,7 @@ export default function SEOManagement() {
         ...(search && { search })
       });
       
-      const response = await fetch(`/api/seo?${params}`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/seo?${params}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch SEO configs');
       
       const data = await response.json();
@@ -225,7 +226,7 @@ export default function SEOManagement() {
       
       const method = editingConfig ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -263,7 +264,7 @@ export default function SEOManagement() {
     }
 
     try {
-      const response = await fetch(`/api/seo?id=${id}`, {
+      const response = await adminFetch(`/api/seo?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -289,7 +290,7 @@ export default function SEOManagement() {
     }
 
     try {
-      const response = await fetch(`/api/seo?ids=${selectedConfigs.join(',')}`, {
+      const response = await adminFetch(`/api/seo?ids=${selectedConfigs.join(',')}`, {
         method: 'DELETE',
       });
 

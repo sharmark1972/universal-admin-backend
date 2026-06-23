@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { Badge } from '@/components/shared/ui/badge';
@@ -298,7 +299,7 @@ export default function AdminSubmissionGuidelinesPage() {
   const fetchGuidelines = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/submission-guidelines', { cache: 'no-store' });
+      const response = await adminFetch('/api/submission-guidelines', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch guidelines');
       }
@@ -314,7 +315,7 @@ export default function AdminSubmissionGuidelinesPage() {
   const handleCreateGuideline = async (formData: GuidelineFormData) => {
     try {
       setSubmitting(true);
-      const response = await fetch('/api/submission-guidelines', {
+      const response = await adminFetch('/api/submission-guidelines', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -347,7 +348,7 @@ export default function AdminSubmissionGuidelinesPage() {
 
     try {
       setSubmitting(true);
-      const response = await fetch('/api/submission-guidelines', {
+      const response = await adminFetch('/api/submission-guidelines', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -378,7 +379,7 @@ export default function AdminSubmissionGuidelinesPage() {
 
   const handleDeleteGuideline = async (id: string) => {
     try {
-      const response = await fetch('/api/submission-guidelines', {
+      const response = await adminFetch('/api/submission-guidelines', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

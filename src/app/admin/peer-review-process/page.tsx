@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { Button } from '@/components/shared/ui/button';
@@ -276,7 +277,7 @@ export default function AdminPeerReviewProcessPage() {
   const fetchProcesses = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/peer-review-process', { cache: 'no-store' });
+      const response = await adminFetch('/api/peer-review-process', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch processes');
       }
@@ -292,7 +293,7 @@ export default function AdminPeerReviewProcessPage() {
   const handleCreateProcess = async (formData: ProcessFormData) => {
     try {
       setSubmitting(true);
-      const response = await fetch('/api/peer-review-process', {
+      const response = await adminFetch('/api/peer-review-process', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -325,7 +326,7 @@ export default function AdminPeerReviewProcessPage() {
 
     try {
       setSubmitting(true);
-      const response = await fetch('/api/peer-review-process', {
+      const response = await adminFetch('/api/peer-review-process', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -356,7 +357,7 @@ export default function AdminPeerReviewProcessPage() {
 
   const handleDeleteProcess = async (id: string) => {
     try {
-      const response = await fetch('/api/peer-review-process', {
+      const response = await adminFetch('/api/peer-review-process', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

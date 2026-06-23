@@ -89,7 +89,7 @@ export default function ChiefPatronsManagement() {
       const method = editingPatron ? 'PUT' : 'POST';
       const payload = formData; // Remove ID from payload since it's in the URL for updates
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',

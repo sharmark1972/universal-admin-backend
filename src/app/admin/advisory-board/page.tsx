@@ -95,7 +95,7 @@ function MemberForm({
     uploadFormData.append('type', 'resume');
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await adminFetch('/api/upload', {
         method: 'POST',
         body: uploadFormData,
       });
@@ -130,7 +130,7 @@ function MemberForm({
     uploadFormData.append('type', 'image');
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await adminFetch('/api/upload', {
         method: 'POST',
         body: uploadFormData,
       });

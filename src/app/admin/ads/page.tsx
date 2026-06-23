@@ -99,7 +99,7 @@ export default function AdsManagement() {
       const method = editingAd ? 'PUT' : 'POST';
       const payload = editingAd ? { id: editingAd.id, ...formData } : formData;
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',

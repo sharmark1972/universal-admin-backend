@@ -108,7 +108,7 @@ export default function AnnouncementsManagement() {
 
   const fetchConferences = async () => {
     try {
-      const response = await fetch('/api/conferences', { cache: 'no-store' });
+      const response = await adminFetch('/api/conferences', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setConferences(data.conferences || []);
@@ -133,7 +133,7 @@ export default function AnnouncementsManagement() {
         payload.expiresAt = new Date(payload.expiresAt).toISOString();
       }
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',

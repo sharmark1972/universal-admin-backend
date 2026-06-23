@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared/ui/card';
 import { Badge } from '@/components/shared/ui/badge';
@@ -74,7 +75,7 @@ export default function AdminCitationsPage() {
 
   const fetchCitations = async () => {
     try {
-      const response = await fetch('/api/citations', { cache: 'no-store' });
+      const response = await adminFetch('/api/citations', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setCitations(data);
@@ -107,7 +108,7 @@ export default function AdminCitationsPage() {
       const url = editingId ? `/api/citations/${editingId}` : '/api/citations';
       const method = editingId ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(citationData)
@@ -150,7 +151,7 @@ export default function AdminCitationsPage() {
     if (!confirm('Are you sure you want to delete this citation?')) return;
 
     try {
-      const response = await fetch(`/api/citations/${id}`, {
+      const response = await adminFetch(`/api/citations/${id}`, {
         method: 'DELETE'
       });
 
@@ -167,7 +168,7 @@ export default function AdminCitationsPage() {
 
   const generateCitation = async (citation: Citation, format: string) => {
     try {
-      const response = await fetch(`/api/citations/generate?format=${format}`, {
+      const response = await adminFetch(`/api/citations/generate?format=${format}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(citation)

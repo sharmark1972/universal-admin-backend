@@ -213,7 +213,7 @@ export default function GenerateCertificatePage() {
 
     setGenerating(true);
     try {
-      const response = await fetch('/api/certificates', {
+      const response = await adminFetch('/api/certificates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),

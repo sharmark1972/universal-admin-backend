@@ -278,7 +278,7 @@ export default function AdminPapersPage() {
     try {
       setPlagiarismCheckLoading(prev => new Set(prev).add(paperId));
 
-      const response = await fetch(`/api/papers/${paperId}/plagiarism`, {
+      const response = await adminFetch(`/api/papers/${paperId}/plagiarism`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -358,7 +358,7 @@ export default function AdminPapersPage() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/papers/${paperId}`, {
+      const response = await adminFetch(`/api/papers/${paperId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -388,7 +388,7 @@ export default function AdminPapersPage() {
 
     try {
       setAssigning(true);
-      const response = await fetch(`/api/papers/${assigningPaperId}`, {
+      const response = await adminFetch(`/api/papers/${assigningPaperId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ issueId: selectedIssueId || null })
@@ -417,7 +417,7 @@ export default function AdminPapersPage() {
     if (!confirm('Are you sure you want to remove this paper from its issue?')) return;
 
     try {
-      const response = await fetch(`/api/papers/${paperId}`, {
+      const response = await adminFetch(`/api/papers/${paperId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ issueId: null })

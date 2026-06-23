@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -42,7 +43,7 @@ export default function CertificateViewPage() {
   useEffect(() => {
     const fetchCertificate = async () => {
       try {
-        const response = await fetch(`/api/certificates/${id}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/certificates/${id}`, { cache: 'no-store' });
         if (response.ok) {
           const data = await response.json();
           setCertificate(data.certificate);

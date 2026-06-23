@@ -65,7 +65,7 @@ export default function ApiKeysPage() {
     setSuccess(null);
 
     try {
-      const response = await fetch('/api/public/auth', {
+      const response = await adminFetch('/api/public/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

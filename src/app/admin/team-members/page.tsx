@@ -123,7 +123,7 @@ export default function TeamMembersManagement() {
       const method = editingMember ? 'PUT' : 'POST';
       const payload = formData;
 
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',

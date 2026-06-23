@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import { useEffect, useState } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import Link from 'next/link';
@@ -39,7 +40,7 @@ export default function AdminCertificatesPage() {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (typeFilter !== 'ALL') params.append('type', typeFilter);
-      const response = await fetch(`/api/certificates?${params}`, { cache: 'no-store' });
+      const response = await adminFetch(`/api/certificates?${params}`, { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         setCertificates(data.certificates || []);
@@ -62,7 +63,7 @@ export default function AdminCertificatesPage() {
   const handleDelete = async (id: string) => {
     setDeleting(true);
     try {
-      const response = await fetch(`/api/certificates/${id}`, { method: 'DELETE' });
+      const response = await adminFetch(`/api/certificates/${id}`, { method: 'DELETE' });
       if (response.ok) {
         const updated = certificates.filter(c => c.id !== id);
         setCertificates(updated);
@@ -82,7 +83,7 @@ export default function AdminCertificatesPage() {
     try {
       await Promise.all(
         Array.from(selectedIds).map(id =>
-          fetch(`/api/certificates/${id}`, { method: 'DELETE' })
+          adminFetch(`/api/certificates/${id}`, { method: 'DELETE' })
         )
       );
       const updated = certificates.filter(c => !selectedIds.has(c.id));

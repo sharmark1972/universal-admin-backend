@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -77,7 +78,7 @@ export default function AdminPaperViewPage() {
   useEffect(() => {
     const fetchPaper = async () => {
       try {
-        const response = await fetch(`/api/papers/${paperId}`, { cache: 'no-store' });
+        const response = await adminFetch(`/api/papers/${paperId}`, { cache: 'no-store' });
         const result = await response.json();
 
         if (response.ok) {
@@ -137,7 +138,7 @@ export default function AdminPaperViewPage() {
 
     setGeneratingCertificate(true);
     try {
-      const response = await fetch(`/api/papers/${paperId}/certificate`);
+      const response = await adminFetch(`/api/papers/${paperId}/certificate`);
       const result = await response.json();
 
       if (response.ok) {

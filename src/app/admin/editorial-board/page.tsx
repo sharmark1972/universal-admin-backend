@@ -1,5 +1,6 @@
 'use client';
 
+import { adminFetch } from '@/lib/admin-fetch';
 import React, { useState, useEffect } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import Image from 'next/image';
@@ -100,7 +101,7 @@ function MemberForm({
     uploadFormData.append('type', 'resume');
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await adminFetch('/api/upload', {
         method: 'POST',
         body: uploadFormData,
       });
@@ -135,7 +136,7 @@ function MemberForm({
     uploadFormData.append('type', 'image');
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await adminFetch('/api/upload', {
         method: 'POST',
         body: uploadFormData,
       });
@@ -524,7 +525,7 @@ export default function AdminEditorialBoardPage() {
     }
     try {
       setLoading(true);
-      const response = await fetch('/api/editorial-board', { cache: 'no-store' });
+      const response = await adminFetch('/api/editorial-board', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error('Failed to fetch members');
       }
@@ -542,7 +543,7 @@ export default function AdminEditorialBoardPage() {
     try {
       setSubmitting(true);
 
-      const response = await fetch('/api/editorial-board', {
+      const response = await adminFetch('/api/editorial-board', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -581,7 +582,7 @@ export default function AdminEditorialBoardPage() {
     try {
       setSubmitting(true);
 
-      const response = await fetch('/api/editorial-board?id=' + editingMember.id, {
+      const response = await adminFetch('/api/editorial-board?id=' + editingMember.id, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -617,7 +618,7 @@ export default function AdminEditorialBoardPage() {
 
   const handleToggleVisibility = async (id: string, currentIsActive: boolean) => {
     try {
-      const response = await fetch('/api/editorial-board?id=' + id, {
+      const response = await adminFetch('/api/editorial-board?id=' + id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !currentIsActive }),
@@ -635,7 +636,7 @@ export default function AdminEditorialBoardPage() {
 
   const handleDeleteMember = async (id: string) => {
     try {
-      const response = await fetch('/api/editorial-board?id=' + id, {
+      const response = await adminFetch('/api/editorial-board?id=' + id, {
         method: 'DELETE',
       });
 

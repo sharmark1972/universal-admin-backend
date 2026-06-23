@@ -65,7 +65,7 @@ export default function ImpactFactorsAdminPage() {
       
       const method = editingFactor ? 'PUT' : 'POST';
       
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
