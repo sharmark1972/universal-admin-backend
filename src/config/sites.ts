@@ -217,8 +217,16 @@ export function getSiteConfigByDomain(host: string): SiteConfig | null {
     return sites[DEV_SITE_SLUG];
   }
 
+  // Vercel deployment: extract subdomain (e.g., insightonix from insightonix.vercel.app)
+  if (domain.includes('vercel.app')) {
+    const subdomain = domain.split('.')[0];
+    if (sites[subdomain]) return sites[subdomain];
+    // Fallback to default if subdomain not found
+    return sites[DEV_SITE_SLUG];
+  }
+
   // Admin panel domain — default to first site; actual site resolved via x-active-site header
-  if (domain.includes('universal-admin-backend') || domain.includes('vercel.app')) {
+  if (domain.includes('universal-admin-backend')) {
     return sites[DEV_SITE_SLUG];
   }
 
