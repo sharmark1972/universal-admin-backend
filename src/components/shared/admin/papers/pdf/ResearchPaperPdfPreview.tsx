@@ -38,9 +38,26 @@ export function ResearchPaperPdfPreview({ data, hideDoi = false }: ResearchPaper
       <section className="pdf-paper-title">
         <h2>{data.paper.title}</h2>
         <div className="pdf-authors">
-          <p>{data.paper.authors.map((author) => author.name).join(', ')}</p>
-          {data.paper.authors[0]?.affiliation ? <p>{data.paper.authors[0].affiliation}</p> : null}
-          {data.paper.authors[0]?.email ? <p>{data.paper.authors[0].email}</p> : null}
+          {data.paper.authors.map((author, index) => (
+            <div key={index} className="pdf-author-block">
+              <p className="author-number">
+                <strong>Author {index + 1}: {author.name}</strong>
+              </p>
+              {author.affiliation && (
+                <p className="author-affiliation">
+                  <strong>Affiliation:</strong> {author.affiliation}
+                </p>
+              )}
+              {author.email && (
+                <p className="author-email">
+                  <strong>Email:</strong> {author.email}
+                </p>
+              )}
+              {index < data.paper.authors.length - 1 && (
+                <div className="author-separator" />
+              )}
+            </div>
+          ))}
         </div>
       </section>
 

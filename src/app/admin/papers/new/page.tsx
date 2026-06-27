@@ -673,13 +673,7 @@ export default function NewResearchPaperPage() {
           isCorresponding: a.corresponding,
         }));
 
-      // Email validation
-      for (const a of authors) {
-        if (!a.email) {
-          setError(`Author "${a.name}" email is required`);
-          return;
-        }
-      }
+      // Email is now optional - validation removed
 
       // Plain text only — no HTML, no images — for DB
       const sections = draft.sections

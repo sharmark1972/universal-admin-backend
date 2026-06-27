@@ -87,7 +87,6 @@ async function buildPdfHtmlFromData(data: PreviewPdfData): Promise<string> {
   const css = await readFile(cssPath, 'utf8');
   const issue = data.issue;
   const journal = data.journal;
-  const isIjarcm = !journal || journal.abbreviation === 'IJARCM';
   const publishedDate = issue
     ? `${new Date(issue.publishDate).toLocaleString('en-US', { month: 'long' })}-${issue.year}`
     : '';
@@ -95,18 +94,9 @@ async function buildPdfHtmlFromData(data: PreviewPdfData): Promise<string> {
   const journalWebsite = journal?.website || 'https://www.ijarcm.com/';
   const journalIssn = journal?.issnPrint || journal?.issnOnline || '2455-0116';
 
-  let logoBase64 = '';
-  let watermarkStyle = '';
-  let logoHtml = '';
-
-  if (isIjarcm) {
-    const logoBuffer = await readFile(join(process.cwd(), 'public', 'ijarcm_logo.png'));
-    logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
-    watermarkStyle = `background-image: url('${buildWatermarkSvg(logoBase64)}'); background-size: 210mm 297mm; background-repeat: repeat-y; background-position: left top;`;
-    logoHtml = `<img src="${logoBase64}" class="pdf-logo" alt="IJARCM" />`;
-  } else {
-    logoHtml = `<div class="pdf-logo-abbr">${escapeHtml(journal?.abbreviation || '')}</div>`;
-  }
+  // Show text abbreviation for all journals (no images/logos)
+  const logoHtml = `<div class="pdf-logo-abbr">${escapeHtml(journal?.abbreviation || 'IJARCM')}</div>`;
+  const watermarkStyle = ''; // No watermark for any journal
 
   return `<!doctype html>
 <html>
@@ -146,9 +136,24 @@ async function buildPdfHtmlFromData(data: PreviewPdfData): Promise<string> {
       <section class="pdf-paper-title">
         <h2>${escapeHtml(cleanTitle(data.title || 'Untitled Research Paper'))}</h2>
         <div class="pdf-authors">
-          <p>${escapeHtml(data.authors.map((a) => a.name).join(', '))}</p>
-          ${data.authors[0]?.affiliation ? `<p>${escapeHtml(data.authors[0].affiliation)}</p>` : ''}
-          ${data.authors[0]?.email ? `<p>${escapeHtml(data.authors[0].email)}</p>` : ''}
+          ${data.authors.map((author, index) => `
+            <div class="pdf-author-block">
+              <p class="author-number">
+                <strong>Author ${index + 1}: ${escapeHtml(author.name)}</strong>
+              </p>
+              ${author.affiliation ? `
+                <p class="author-affiliation">
+                  <strong>Affiliation:</strong> ${escapeHtml(author.affiliation)}
+                </p>
+              ` : ''}
+              ${author.email ? `
+                <p class="author-email">
+                  <strong>Email:</strong> ${escapeHtml(author.email)}
+                </p>
+              ` : ''}
+              ${index < data.authors.length - 1 ? '<div class="author-separator"></div>' : ''}
+            </div>
+          `).join('')}
         </div>
       </section>
       <div class="pdf-first-page-section">

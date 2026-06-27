@@ -55,12 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON in authors, sections, or keywords' }, { status: 400 });
     }
 
-    // Email required for all authors
-    for (const a of authors) {
-      if (!a.email?.trim()) {
-        return NextResponse.json({ error: `Author "${a.name}" email is required` }, { status: 400 });
-      }
-    }
+    // Email is now optional for authors
 
     // Upload DOCX to R2 if provided
     let storedSourceFilePath: string | null = null;
@@ -131,34 +126,38 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Save authors — find User by email, create if not found
+    // Save authors — only create User if email is provided
     for (let i = 0; i < authors.length; i++) {
       const a = authors[i];
-      const email = a.email.trim().toLowerCase();
+      const email = a.email?.trim().toLowerCase();
 
-      let user = await prisma.user.findUnique({ where: { email } });
-      if (!user) {
-        const nameParts = a.name.trim().split(' ');
-        user = await prisma.user.create({
+      // Only create/link user if email is provided
+      if (email) {
+        let user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+          const nameParts = a.name.trim().split(' ');
+          user = await prisma.user.create({
+            data: {
+              email,
+              firstName: nameParts[0] || a.name,
+              lastName: nameParts.slice(1).join(' ') || 'Author',
+              passwordHash: '',
+              role: 'AUTHOR',
+              isVerified: false,
+            },
+          });
+        }
+
+        await prisma.paperAuthor.create({
           data: {
-            email,
-            firstName: nameParts[0] || a.name,
-            lastName: nameParts.slice(1).join(' ') || 'Author',
-            passwordHash: '',
-            role: 'AUTHOR',
-            isVerified: false,
+            paperId: paper.id,
+            userId: user.id,
+            authorOrder: i + 1,
+            isCorresponding: a.isCorresponding,
           },
         });
       }
-
-      await prisma.paperAuthor.create({
-        data: {
-          paperId: paper.id,
-          userId: user.id,
-          authorOrder: i + 1,
-          isCorresponding: a.isCorresponding,
-        },
-      });
+      // If no email: don't create user or paperAuthor entry - author only appears in PDF from form data
     }
 
     return NextResponse.json({ paperId: paper.id, message: 'Paper submitted successfully' });

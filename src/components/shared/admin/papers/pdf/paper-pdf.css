@@ -192,6 +192,57 @@
   margin: 2px 0;
 }
 
+/* Author Block Styling - Option B Format */
+.pdf-author-block {
+  margin-bottom: 12px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.author-number {
+  margin: 8px 0 4px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.author-number strong {
+  font-weight: 700;
+}
+
+.author-affiliation {
+  margin: 3px 0;
+  font-size: 11px;
+  color: #000000;
+  padding: 0 20px;
+  line-height: 1.4;
+}
+
+.author-affiliation strong {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.author-email {
+  margin: 3px 0;
+  font-size: 11px;
+  color: #000000;
+  padding: 0 20px;
+}
+
+.author-email strong {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.author-separator {
+  height: 1px;
+  background-color: #d1d5db;
+  margin: 6px 40px 4px;
+}
+
 /* ── Article-Info + Abstract float layout ── */
 .pdf-first-page-section {
   margin-top: 10px;
