@@ -26,6 +26,17 @@ export function getSiteSlugFromRequest(request: NextRequest | Request): string {
     return slug;
   }
 
+  // Check x-active-site header if x-site-slug not found
+  const activeSite =
+    (request as NextRequest).headers?.get(ACTIVE_SITE_HEADER) ??
+    (request as Request).headers?.get?.(ACTIVE_SITE_HEADER) ??
+    '';
+  if (activeSite) {
+    const config = getSiteConfig(activeSite);
+    if (!config) throw new Error(`No site config for slug: "${activeSite}"`);
+    return activeSite;
+  }
+
   const host = headers?.get('host') ?? '';
   const hostSlug = resolveSiteSlugFromHost(host);
   if (hostSlug) return hostSlug;

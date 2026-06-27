@@ -93,13 +93,15 @@ export function getAuthOptions(prisma: PrismaClient, siteSlug: string): NextAuth
     jwt: {
       maxAge: 30 * 24 * 60 * 60,
       encode: async ({ token, secret: s }) => {
-        return encode({ token, secret: s });
+        // SUPER_ADMIN tokens encoded with master secret only
+        const masterSecret = process.env.NEXTAUTH_SECRET;
+        const finalSecret = token.role === 'SUPER_ADMIN' && masterSecret ? masterSecret : s;
+        return encode({ token, secret: finalSecret });
       },
       decode: async ({ token, secret: s }) => {
         const masterSecret = process.env.NEXTAUTH_SECRET;
-        const secrets = masterSecret && masterSecret !== s
-          ? [masterSecret, s]
-          : [s];
+        // Try master secret first, then site-specific secret
+        const secrets = [masterSecret, s].filter(Boolean);
         for (const sec of secrets) {
           try {
             const result = await decode({ token, secret: sec });

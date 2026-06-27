@@ -110,7 +110,14 @@ export async function PUT(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const guidelineId = searchParams.get('id');
+    let guidelineId = searchParams.get('id');
+
+    const body = await request.json();
+
+    // Check ID in body if not in query params
+    if (!guidelineId) {
+      guidelineId = body.id;
+    }
 
     if (!guidelineId) {
       return NextResponse.json(
@@ -119,7 +126,6 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
     const validatedData = updateGuidelineSchema.parse(body);
 
     // Check if guideline exists
@@ -170,7 +176,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const guidelineId = searchParams.get('id');
+    let guidelineId = searchParams.get('id');
+
+    // Check ID in body if not in query params
+    if (!guidelineId) {
+      const body = await request.json();
+      guidelineId = body.id;
+    }
 
     if (!guidelineId) {
       return NextResponse.json(
