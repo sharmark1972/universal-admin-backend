@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
-import { getPrismaForRequest } from '@/lib/site-context';
+import { getPrismaForAdminRequest, getActiveSiteSlug } from '@/lib/site-context';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ const createGuidelineSchema = z.object({
 const updateGuidelineSchema = createGuidelineSchema.partial();
 
 export async function GET(request: NextRequest) {
-  const prisma = getPrismaForRequest(request);
+  const prisma = await getPrismaForAdminRequest(request);
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -48,10 +48,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const prisma = getPrismaForRequest(request);
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
-    const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
+    const prismaForAuth = await getPrismaForAdminRequest(request);
+    const siteSlugForAuth = await getActiveSiteSlug(request);
+    const _authOptions = getAuthOptions(prismaForAuth, siteSlugForAuth);
     const session = await getServerSession(_authOptions);
     if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
@@ -95,11 +96,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const prisma = getPrismaForRequest(request);
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
-  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
-  const session = await getServerSession(_authOptions);
+    const prismaForAuth = await getPrismaForAdminRequest(request);
+    const siteSlugForAuth = await getActiveSiteSlug(request);
+    const _authOptions = getAuthOptions(prismaForAuth, siteSlugForAuth);
+    const session = await getServerSession(_authOptions);
     if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
@@ -154,11 +156,12 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const prisma = getPrismaForRequest(request);
+  const prisma = await getPrismaForAdminRequest(request);
   try {
-    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
-  const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
-  const session = await getServerSession(_authOptions);
+    const prismaForAuth = await getPrismaForAdminRequest(request);
+    const siteSlugForAuth = await getActiveSiteSlug(request);
+    const _authOptions = getAuthOptions(prismaForAuth, siteSlugForAuth);
+    const session = await getServerSession(_authOptions);
     if (!session?.user || !isAdminOrSuperAdmin(session.user.role)) {
       return NextResponse.json(
         { error: 'Admin access required' },
