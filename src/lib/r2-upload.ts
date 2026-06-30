@@ -1,9 +1,25 @@
 import AWS from 'aws-sdk';
 import { headers } from 'next/headers';
 
-function getR2Client(siteSlug?: string) {
+// Global R2 client cache (per site)
+const globalForR2 = globalThis as {
+  r2ClientPool?: Map<string, AWS.S3>;
+};
+
+function getR2Client(siteSlug?: string): AWS.S3 {
   const slug = siteSlug ?? getSiteSlugFromHeaders();
 
+  // Initialize cache if needed
+  if (!globalForR2.r2ClientPool) {
+    globalForR2.r2ClientPool = new Map();
+  }
+
+  // Return cached client if available
+  if (globalForR2.r2ClientPool.has(slug)) {
+    return globalForR2.r2ClientPool.get(slug)!;
+  }
+
+  // Create new client only if not cached
   const accessKeyId =
     process.env[`CLOUDFLARE_ACCESS_KEY_ID_${slug.toUpperCase()}`] ??
     process.env.CLOUDFLARE_ACCESS_KEY_ID;
@@ -16,7 +32,7 @@ function getR2Client(siteSlug?: string) {
     process.env[`CLOUDFLARE_R2_ENDPOINT_${slug.toUpperCase()}`] ??
     process.env.CLOUDFLARE_R2_ENDPOINT;
 
-  return new AWS.S3({
+  const client = new AWS.S3({
     accessKeyId,
     secretAccessKey,
     endpoint,
@@ -24,6 +40,10 @@ function getR2Client(siteSlug?: string) {
     signatureVersion: 'v4',
     region: 'auto',
   });
+
+  // Cache the client
+  globalForR2.r2ClientPool.set(slug, client);
+  return client;
 }
 
 function getBucketName(siteSlug?: string): string {

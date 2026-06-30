@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForRequest } from '@/lib/site-context';
+import { deleteFromR2 } from '@/lib/r2-upload';
 import { z } from 'zod';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
@@ -482,7 +483,8 @@ export async function DELETE(
     }
 
     // Check permissions
-    const canDelete = 
+    const canDelete =
+      session.user.role === 'SUPER_ADMIN' ||
       session.user.role === 'ADMIN' ||
       (existingPaper.submitterId === session.user.id && existingPaper.status === 'SUBMITTED');
 
@@ -508,11 +510,17 @@ export async function DELETE(
       await tx.paper.delete({ where: { id: paperId } });
     }, { timeout: 30000 });
 
-    // Delete the file from filesystem
+    // Delete the file from R2 (if it's a cloud URL)
     try {
       if (existingPaper.filePath) {
-        const fullPath = join(process.cwd(), existingPaper.filePath);
-        await unlink(fullPath);
+        if (existingPaper.filePath.startsWith('http')) {
+          // R2 cloud URL - delete from R2
+          await deleteFromR2(existingPaper.filePath);
+        } else {
+          // Local filesystem - delete from disk
+          const fullPath = join(process.cwd(), existingPaper.filePath);
+          await unlink(fullPath);
+        }
       }
     } catch (fileError) {
       console.error('Error deleting file:', fileError);
