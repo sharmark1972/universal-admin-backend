@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
       journalShortName: siteConfig?.shortName,
       issnPrint: siteConfig?.issnPrint,
       issnOnline: siteConfig?.issnOnline,
+      siteSlug: _siteSlug,
     });
 
     // Update issue with new cover

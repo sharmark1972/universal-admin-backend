@@ -10,6 +10,16 @@ interface IssueCoverOptions {
   journalShortName?: string;
   issnPrint?: string;
   issnOnline?: string;
+  siteSlug?: string;
+}
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 export function generateIssueCoverSVG(options: IssueCoverOptions): string {
@@ -25,12 +35,12 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
     issnOnline = '2395-6410 (Online)'
   } = options;
 
-  // Simple escape - just handle the most common cases
-  const escapedTitle = title
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"');
+  // Escape all values that will be inserted into SVG
+  const escapedTitle = escapeXml(title);
+  const escapedJournalName = escapeXml(journalName);
+  const escapedJournalShortName = escapeXml(journalShortName);
+  const escapedIssnPrint = escapeXml(issnPrint);
+  const escapedIssnOnline = escapeXml(issnOnline);
 
   // Truncate title if too long
   const maxTitleLength = 60;
@@ -65,8 +75,8 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
   <circle cx="160" cy="960" r="300" fill="rgba(255,255,255,0.03)" />
   
   <!-- Header - Journal Name -->
-  <text x="400" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">${journalShortName}</text>
-  <text x="400" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-style="italic" fill="rgba(255,255,255,0.9)">${journalName}</text>
+  <text x="400" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">${escapedJournalShortName}</text>
+  <text x="400" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-style="italic" fill="rgba(255,255,255,0.9)">${escapedJournalName}</text>
   
   <!-- Divider line -->
   <line x1="100" y1="160" x2="700" y2="160" stroke="rgba(255,255,255,0.3)" stroke-width="2" />
@@ -90,8 +100,8 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
   <rect x="100" y="950" width="600" height="180" rx="20" ry="20" fill="rgba(255,255,255,0.1)" />
   
   <!-- ISSN -->
-  <text x="400" y="980" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">ISSN: ${issnPrint}</text>
-  <text x="400" y="1005" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">ISSN: ${issnOnline}</text>
+  <text x="400" y="980" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">ISSN: ${escapedIssnPrint}</text>
+  <text x="400" y="1005" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">ISSN: ${escapedIssnOnline}</text>
   
   <!-- DOI info -->
   <text x="400" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.8)">Peer Reviewed | Open Access</text>
@@ -100,7 +110,7 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
   <text x="400" y="1080" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.8)">Published: ${publishDate}</text>
   
   <!-- Footer -->
-  <text x="400" y="1170" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">© ${journalShortName} - All Rights Reserved</text>
+  <text x="400" y="1170" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">© ${escapedJournalShortName} - All Rights Reserved</text>
 </svg>`;
 }
 
@@ -108,7 +118,13 @@ export async function generateIssueCover(options: IssueCoverOptions): Promise<st
   const svgContent = generateIssueCoverSVG(options);
   const filename = `issue_cover_${Date.now()}.svg`;
 
-  return uploadToR2(Buffer.from(svgContent, 'utf-8'), filename, 'covers', 'image/svg+xml');
+  return uploadToR2(
+    Buffer.from(svgContent, 'utf-8'),
+    filename,
+    'covers',
+    'image/svg+xml',
+    options.siteSlug
+  );
 }
 
 export function generateIssueCoverFilename(issueId: string): string {
