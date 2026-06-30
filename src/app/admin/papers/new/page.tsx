@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAdminStore } from '@/store/adminStore';
 import {
   ArrowLeft,
   Download,
@@ -97,6 +98,7 @@ const createAuthor = (overrides: Partial<ResearchPaperDraft['authors'][number]> 
 export default function NewResearchPaperPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { invalidatePapers } = useAdminStore();
   const editId = searchParams.get('edit') || '';
   const isEditMode = !!editId;
   const [file, setFile] = useState<File | null>(null);
@@ -720,6 +722,7 @@ export default function NewResearchPaperPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to submit paper');
 
+      invalidatePapers();
       setMessage('Paper submitted successfully!');
       router.push('/admin/papers');
     } catch (err) {
