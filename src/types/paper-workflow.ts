@@ -40,6 +40,7 @@ export interface ResearchPaperDraft {
   abstract: string;
   keywords: string[];
   authors: Array<{
+    id: string;
     name: string;
     email?: string;
     affiliation?: string;

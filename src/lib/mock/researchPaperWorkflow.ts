@@ -47,6 +47,19 @@ const section = (
   status,
 });
 
+const author = (
+  name: string,
+  corresponding = false,
+  email = '',
+  affiliation = '',
+): ResearchPaperDraft['authors'][number] => ({
+  id: `author-${name.toLowerCase().replace(/\s+/g, '-')}`,
+  name,
+  email,
+  affiliation,
+  corresponding,
+});
+
 export type ResearchSampleKey = 'earthworm' | 'vedic' | 'omnichannel';
 
 export const sampleDrafts: Record<ResearchSampleKey, ResearchPaperDraft> = {
@@ -67,8 +80,8 @@ export const sampleDrafts: Record<ResearchSampleKey, ResearchPaperDraft> = {
       'Sustainable agriculture',
     ],
     authors: [
-      { name: 'Jaspreet Kaur', corresponding: true },
-      { name: 'Dr. Navpreet Kaur', email: '', corresponding: false },
+      author('Jaspreet Kaur', true),
+      author('Dr. Navpreet Kaur'),
     ],
     category: 'Agriculture',
     issueId: 'issue-2026-05',
@@ -151,7 +164,7 @@ export const sampleDrafts: Record<ResearchSampleKey, ResearchPaperDraft> = {
       'Cultural integration',
     ],
     authors: [
-      { name: 'Richa Krishna Sharma', corresponding: true },
+      author('Richa Krishna Sharma', true),
     ],
     category: 'Education',
     issueId: 'issue-2026-06',
@@ -233,7 +246,7 @@ export const sampleDrafts: Record<ResearchSampleKey, ResearchPaperDraft> = {
       'Loyalty',
     ],
     authors: [
-      { name: 'Mrs. Lucky', corresponding: true },
+      author('Mrs. Lucky', true),
     ],
     category: 'Business',
     issueId: 'issue-2026-07',

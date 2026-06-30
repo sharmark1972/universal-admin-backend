@@ -6,10 +6,24 @@ interface IssueCoverOptions {
   year: number;
   title: string;
   paperCount?: number;
+  journalName?: string;
+  journalShortName?: string;
+  issnPrint?: string;
+  issnOnline?: string;
 }
 
 export function generateIssueCoverSVG(options: IssueCoverOptions): string {
-  const { volume, issueNumber, year, title, paperCount } = options;
+  const {
+    volume,
+    issueNumber,
+    year,
+    title,
+    paperCount,
+    journalName = 'International Journal',
+    journalShortName = 'IJARCM',
+    issnPrint = '2455-0116 (Print)',
+    issnOnline = '2395-6410 (Online)'
+  } = options;
 
   // Simple escape - just handle the most common cases
   const escapedTitle = title
@@ -51,9 +65,8 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
   <circle cx="160" cy="960" r="300" fill="rgba(255,255,255,0.03)" />
   
   <!-- Header - Journal Name -->
-  <text x="400" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">IJARCM</text>
-  <text x="400" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-style="italic" fill="rgba(255,255,255,0.9)">International Journal of Academic Research</text>
-  <text x="400" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-style="italic" fill="rgba(255,255,255,0.9)">in Commerce and Management</text>
+  <text x="400" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#ffffff">${journalShortName}</text>
+  <text x="400" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-style="italic" fill="rgba(255,255,255,0.9)">${journalName}</text>
   
   <!-- Divider line -->
   <line x1="100" y1="160" x2="700" y2="160" stroke="rgba(255,255,255,0.3)" stroke-width="2" />
@@ -77,8 +90,8 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
   <rect x="100" y="950" width="600" height="180" rx="20" ry="20" fill="rgba(255,255,255,0.1)" />
   
   <!-- ISSN -->
-  <text x="400" y="980" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">ISSN: 2455-0116 (Print)</text>
-  <text x="400" y="1005" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">ISSN: 2395-6410 (Online)</text>
+  <text x="400" y="980" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">ISSN: ${issnPrint}</text>
+  <text x="400" y="1005" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">ISSN: ${issnOnline}</text>
   
   <!-- DOI info -->
   <text x="400" y="1040" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.8)">Peer Reviewed | Open Access</text>
@@ -87,7 +100,7 @@ export function generateIssueCoverSVG(options: IssueCoverOptions): string {
   <text x="400" y="1080" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.8)">Published: ${publishDate}</text>
   
   <!-- Footer -->
-  <text x="400" y="1170" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">© IJARCM - All Rights Reserved</text>
+  <text x="400" y="1170" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="rgba(255,255,255,0.5)">© ${journalShortName} - All Rights Reserved</text>
 </svg>`;
 }
 

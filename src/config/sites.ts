@@ -11,6 +11,9 @@ export interface SiteConfig {
   r2BucketEnvVar: string;
   r2PublicUrlEnvVar: string;
   nextauthSecretEnvVar: string;
+  issnPrint?: string;
+  issnOnline?: string;
+  subtitle?: string;
 }
 
 // all journals
@@ -29,6 +32,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_WJIIS',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_WJIIS',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_WJIIS',
+    issnPrint: '2278-0505 (Print)',
+    issnOnline: '2278-5388 (Online)',
   },
   ijarcm: {
     slug: 'ijarcm',
@@ -43,6 +48,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_IJARCM',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_IJARCM',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_IJARCM',
+    issnPrint: '2455-0116 (Print)',
+    issnOnline: '2395-6410 (Online)',
   },
   insightonix: {
     slug: 'insightonix',
@@ -57,6 +64,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_INSIGHTONIX',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_INSIGHTONIX',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_INSIGHTONIX',
+    issnPrint: '2456-7175 (Print)',
+    issnOnline: '2456-9380 (Online)',
   },
   ajoams: {
     slug: 'ajoams',
@@ -71,6 +80,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_AJOAMS',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_AJOAMS',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_AJOAMS',
+    issnPrint: '2768-5624 (Print)',
+    issnOnline: '2768-5632 (Online)',
   },
   ajomait: {
     slug: 'ajomait',
@@ -85,6 +96,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_AJOMAIT',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_AJOMAIT',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_AJOMAIT',
+    issnPrint: '2768-9379 (Print)',
+    issnOnline: '2768-9387 (Online)',
   },
   ijipal: {
     slug: 'ijipal',
@@ -99,6 +112,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_IJIPAL',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_IJIPAL',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_IJIPAL',
+    issnPrint: '2456-7396 (Print)',
+    issnOnline: '2456-8171 (Online)',
   },
   ejoas: {
     slug: 'ejoas',
@@ -113,6 +128,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_EJOAS',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_EJOAS',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_EJOAS',
+    issnPrint: '2768-6493 (Print)',
+    issnOnline: '2768-6507 (Online)',
   },
   ijlscl: {
     slug: 'ijlscl',
@@ -127,6 +144,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_IJLSCL',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_IJLSCL',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_IJLSCL',
+    issnPrint: '2456-5156 (Print)',
+    issnOnline: '2456-5164 (Online)',
   },
   ejaamss: {
     slug: 'ejaamss',
@@ -141,6 +160,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_EJAAMSS',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_EJAAMSS',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_EJAAMSS',
+    issnPrint: '2768-7511 (Print)',
+    issnOnline: '2768-752X (Online)',
   },
   ejffabls: {
     slug: 'ejffabls',
@@ -155,6 +176,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_EJFFABLS',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_EJFFABLS',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_EJFFABLS',
+    issnPrint: '2768-5934 (Print)',
+    issnOnline: '2768-5942 (Online)',
   },
   ejlilejgp: {
     slug: 'ejlilejgp',
@@ -169,6 +192,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_EJLILEJGP',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_EJLILEJGP',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_EJLILEJGP',
+    issnPrint: '2768-6175 (Print)',
+    issnOnline: '2768-6183 (Online)',
   },
   ejimapss: {
     slug: 'ejimapss',
@@ -183,6 +208,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_EJIMAPSS',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_EJIMAPSS',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_EJIMAPSS',
+    issnPrint: '2768-7007 (Print)',
+    issnOnline: '2768-7015 (Online)',
   },
   ejauipar: {
     slug: 'ejauipar',
@@ -197,6 +224,8 @@ const sites: Record<string, SiteConfig> = {
     r2BucketEnvVar: 'R2_BUCKET_EJAUIPAR',
     r2PublicUrlEnvVar: 'R2_PUBLIC_URL_EJAUIPAR',
     nextauthSecretEnvVar: 'NEXTAUTH_SECRET_EJAUIPAR',
+    issnPrint: '2768-6256 (Print)',
+    issnOnline: '2768-6264 (Online)',
   },
 };
 

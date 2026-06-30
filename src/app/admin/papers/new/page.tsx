@@ -85,6 +85,15 @@ function blankDraft(): ResearchPaperDraft {
   };
 }
 
+const createAuthor = (overrides: Partial<ResearchPaperDraft['authors'][number]> = {}) => ({
+  id: `author-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+  name: '',
+  email: '',
+  affiliation: '',
+  corresponding: false,
+  ...overrides,
+});
+
 export default function NewResearchPaperPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -440,6 +449,7 @@ export default function NewResearchPaperPage() {
       abstract: extractedData.abstract || '',
       keywords: extractedData.keywords || [],
       authors: extractedData.authors.map((author) => ({
+        id: `author-${author.authorOrder}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         name: author.name,
         email: author.email || '',
         affiliation: author.affiliation || '',
@@ -529,7 +539,7 @@ export default function NewResearchPaperPage() {
   const addAuthor = () => {
     setDraft((prev) => ({
       ...prev,
-      authors: [...prev.authors, { name: '', email: '', affiliation: '', corresponding: false }],
+      authors: [...prev.authors, createAuthor()],
     }));
   };
 
@@ -1162,7 +1172,7 @@ export default function NewResearchPaperPage() {
                   <p className="text-sm text-slate-500">No authors extracted yet.</p>
                 ) : (
                   draft.authors.map((author, index) => (
-                    <div key={`${author.name}-${index}`} className="rounded-lg border border-slate-200 p-3 space-y-2">
+                    <div key={author.id} className="rounded-lg border border-slate-200 p-3 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-medium text-slate-500">Author {index + 1}</span>
                         <Button

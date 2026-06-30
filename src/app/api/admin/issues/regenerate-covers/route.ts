@@ -4,16 +4,17 @@ import { getAuthOptions, isAdminOrSuperAdmin } from '@/lib/auth-factory';
 import { getPrismaClient } from '@/lib/prisma-registry';
 import { getPrismaForAdminRequest } from '@/lib/site-context';
 import { generateIssueCover } from '@/lib/issueCoverGenerator';
+import { getSiteConfig } from '@/config/sites';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   const prisma = await getPrismaForAdminRequest(request);
   try {
-    const _siteSlug = request.headers.get('x-site-slug') ?? 'wjiis';
+    const _siteSlug = request.headers.get('x-active-site') ?? request.headers.get('x-site-slug') ?? 'wjiis';
     const _authOptions = getAuthOptions(getPrismaClient(_siteSlug), _siteSlug);
     const session = await getServerSession(_authOptions);
-    
+
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -37,6 +38,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Get site configuration
+    const siteConfig = getSiteConfig(_siteSlug);
 
     // Get issue details
     const issue = await prisma.issue.findUnique({
@@ -62,6 +66,10 @@ export async function POST(request: NextRequest) {
       year: issue.year,
       title: issue.title,
       paperCount: issue._count.papers,
+      journalName: siteConfig?.name,
+      journalShortName: siteConfig?.shortName,
+      issnPrint: siteConfig?.issnPrint,
+      issnOnline: siteConfig?.issnOnline,
     });
 
     // Update issue with new cover
